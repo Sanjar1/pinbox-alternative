@@ -1,0 +1,13 @@
+﻿{
+  "executedAt": "2026-02-28T08:41:21.943Z",
+  "platform": "Yandex Maps",
+  "scope": "Unanswered positive 2025 reviews",
+  "runSummary": {
+    "reviewPagesProcessed": 11,
+    "positive2025Seen": 10,
+    "repliesPublished": 10,
+    "alreadyRepliedPositive2025": 62,
+    "skippedNonTarget": 50,
+    "errors": 0
+  }
+}

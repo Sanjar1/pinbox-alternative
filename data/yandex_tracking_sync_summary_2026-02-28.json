@@ -1,0 +1,11 @@
+{
+  "date": "2026-02-28",
+  "source": "data\\stores_telegram_status_2026_02_28.json",
+  "source_xlsx": "data\\stores_audit.xlsx",
+  "output_xlsx": "data\\stores_audit_tracking_2026-02-28.xlsx",
+  "telegram_url": "https://t.me/SirnayaLavka_Uzb",
+  "accessible_total": 28,
+  "telegram_done": 3,
+  "telegram_pending": 25,
+  "needs_claim": 3
+}

@@ -1,0 +1,120 @@
+{
+  "successful": [],
+  "failed": [],
+  "skipped": [
+    {
+      "storeId": 2605231525,
+      "reason": "Company fetch failed with 302"
+    },
+    {
+      "storeId": 51521899757,
+      "reason": "Company fetch failed with 302"
+    },
+    {
+      "storeId": 55688698857,
+      "reason": "Company fetch failed with 302"
+    },
+    {
+      "storeId": 56694713534,
+      "reason": "Company fetch failed with 302"
+    },
+    {
+      "storeId": 57759219843,
+      "reason": "Company fetch failed with 302"
+    },
+    {
+      "storeId": 60741588343,
+      "reason": "Company fetch failed with 302"
+    },
+    {
+      "storeId": 61215143624,
+      "reason": "Company fetch failed with 302"
+    },
+    {
+      "storeId": 62267895777,
+      "reason": "Company fetch failed with 302"
+    },
+    {
+      "storeId": 63381407799,
+      "reason": "Company fetch failed with 302"
+    },
+    {
+      "storeId": 64756694799,
+      "reason": "Company fetch failed with 302"
+    },
+    {
+      "storeId": 65432179851,
+      "reason": "Company fetch failed with 302"
+    },
+    {
+      "storeId": 66195433027,
+      "reason": "Company fetch failed with 302"
+    },
+    {
+      "storeId": 67108982991,
+      "reason": "Company fetch failed with 302"
+    },
+    {
+      "storeId": 70254390516,
+      "reason": "Company fetch failed with 302"
+    },
+    {
+      "storeId": 70974416044,
+      "reason": "Company fetch failed with 302"
+    },
+    {
+      "storeId": 71826729793,
+      "reason": "Company fetch failed with 302"
+    },
+    {
+      "storeId": 72614082620,
+      "reason": "Company fetch failed with 302"
+    },
+    {
+      "storeId": 73785839151,
+      "reason": "Company fetch failed with 302"
+    },
+    {
+      "storeId": 74952963019,
+      "reason": "Company fetch failed with 302"
+    },
+    {
+      "storeId": 76104847278,
+      "reason": "Company fetch failed with 302"
+    },
+    {
+      "storeId": 77203456789,
+      "reason": "Company fetch failed with 302"
+    },
+    {
+      "storeId": 78312567890,
+      "reason": "Company fetch failed with 302"
+    },
+    {
+      "storeId": 79421678901,
+      "reason": "Company fetch failed with 302"
+    },
+    {
+      "storeId": 80530789012,
+      "reason": "Company fetch failed with 302"
+    },
+    {
+      "storeId": 81639890123,
+      "reason": "Company fetch failed with 302"
+    },
+    {
+      "storeId": 82748901234,
+      "reason": "Company fetch failed with 302"
+    },
+    {
+      "storeId": 83857012345,
+      "reason": "Company fetch failed with 302"
+    },
+    {
+      "storeId": 84966123456,
+      "reason": "Company fetch failed with 302"
+    }
+  ],
+  "startTime": "2026-02-28T08:38:44.524Z",
+  "endTime": "2026-02-28T08:38:47.542Z"
+}

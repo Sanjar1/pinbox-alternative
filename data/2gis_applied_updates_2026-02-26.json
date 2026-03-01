@@ -1,0 +1,54 @@
+{
+  "date": "2026-02-26",
+  "org_id": "70000001036827089",
+  "excel_base": "data/stores_audit.xlsx",
+  "applied_updates": [
+    {
+      "type": "schedule_update",
+      "branch_id": "70000001080425853",
+      "from": "08:00-20:00",
+      "to": "08:00-22:00",
+      "source_row": 27
+    },
+    {
+      "type": "branch_create",
+      "tmp_id": "branch_69a0976f94d5e",
+      "address": "Чиланзар Ц квартал микрорайон, 8а/6",
+      "source_row": 21
+    },
+    {
+      "type": "branch_create",
+      "tmp_id": "branch_69a0979789091",
+      "address": "Катта Чиланзар, 3",
+      "source_row": 1
+    }
+  ],
+  "temporary_test_branch": "branch_69a09623d9e3f",
+  "pending_branches_now": [
+    {
+      "id": "branch_69a08c05deaad",
+      "address": "Буюк Турон, 73",
+      "buildingId": "70030076171544296",
+      "name": "Сырная лавка, магазин, ООО Cheese Day"
+    },
+    {
+      "id": "branch_69a09623d9e3f",
+      "address": "test",
+      "buildingId": "1",
+      "name": "TEST"
+    },
+    {
+      "id": "branch_69a0979789091",
+      "address": "Катта Чиланзар, 3",
+      "buildingId": "70030076171449344",
+      "name": "Сырная лавка, магазин, ООО Cheese Day"
+    },
+    {
+      "id": "branch_69a0976f94d5e",
+      "address": "Чиланзар Ц квартал микрорайон, 8а/6",
+      "buildingId": "70030076171776706",
+      "name": "Сырная лавка, магазин, ООО Cheese Day"
+    }
+  ],
+  "total_branches_now": 30
+}

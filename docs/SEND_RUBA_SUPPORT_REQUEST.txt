@@ -1,0 +1,29 @@
+IMPORTANT: Send this support request to Yandex Business support to create RUBA stores.
+
+Subject: Создание трёх новых точек продаж RUBA в Яндекс.Бизнес
+(Create three new RUBA locations in Yandex Business)
+
+Аккаунт: sismatullaev@gmail.com (Sanjar Sanjar)
+Телефон: +998 78 555 15 15
+
+Требуется создать 3 новые точки продаж RUBA:
+
+1. RUBA — Урикзор
+   Адрес: Ташкент, Учтепинский район, Бурхониддин Маргинони 9
+   Часы: 07:00–18:00, Ежедневно
+   https://yandex.uz/maps/-/CPewED33
+
+2. RUBA — Сергели оптом
+   Адрес: Ташкент, Сергелийский район, мсг Фарогатли
+   Часы: 08:00–18:00, Ежедневно
+   https://yandex.uz/maps/-/CPewMV0V
+
+3. RUBA — Бухара
+   Адрес: Бухара (координаты: 39.781670, 64.404903)
+   Часы: 08:00–18:00, Ежедневно
+   https://yandex.uz/maps/10330/bukhara/?ll=64.404903%2C39.781670
+
+Просим: Создайте эти магазины и предоставьте нам org ID для каждого.
+
+---
+FULL TEMPLATE: See docs/YANDEX_RUBA_SUPPORT_REQUEST_TEMPLATE.md

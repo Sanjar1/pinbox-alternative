@@ -1,0 +1,38 @@
+[
+  {
+    "row": 34,
+    "name": "RUBA",
+    "internal": "Урикзор",
+    "address": "Ташкент, Учтепинский район, Бурхониддин Маргинони 9",
+    "map_link": "https://yandex.uz/maps/-/CPewED33",
+    "hours": "07:00-18:00",
+    "days": "Ежедневно",
+    "phone": "+998 78 555 15 15",
+    "org_id": null,
+    "status": "На модерации в Яндексе → будет: RUBA, 07:00-18:00"
+  },
+  {
+    "row": 35,
+    "name": "RUBA",
+    "internal": "Сергели оптом",
+    "address": "Ташкент, Сергелийский район, мсг Фарогатли",
+    "map_link": "https://yandex.uz/maps/-/CPewMV0V",
+    "hours": "08:00-18:00",
+    "days": "Ежедневно",
+    "phone": "+998 78 555 15 15",
+    "org_id": null,
+    "status": "На модерации в Яндексе → будет: RUBA, 08:00-18:00"
+  },
+  {
+    "row": 36,
+    "name": "RUBA",
+    "internal": "Бухара",
+    "address": null,
+    "map_link": "https://yandex.uz/maps/10330/bukhara/?ll=64.404903%2C39.781670&mode=search&sll=64.401806%2C39.779750&text=39.779750%2C64.401806&utm_source=share&z=15.07",
+    "hours": "08:00-18:00",
+    "days": "Ежедневно",
+    "phone": "+998 78 555 15 15",
+    "org_id": null,
+    "status": "На модерации в Яндексе → будет: RUBA, 08:00-18:00"
+  }
+]

@@ -1,0 +1,236 @@
+{
+  "name_normalization": {
+    "target_name": "?????? ?????",
+    "attempted": 33,
+    "ok": 33,
+    "errors": 0,
+    "skipped": 1,
+    "details": [
+      {
+        "branch_id": "70000001036827090",
+        "status": "skip_already_ok"
+      },
+      {
+        "branch_id": "70000001091424245",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      },
+      {
+        "branch_id": "70000001094396147",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      },
+      {
+        "branch_id": "70000001052419800",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      },
+      {
+        "branch_id": "70000001093966504",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      },
+      {
+        "branch_id": "70000001067997859",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, АО Askiya dehqon bozori"
+      },
+      {
+        "branch_id": "70000001037259464",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      },
+      {
+        "branch_id": "70000001040321484",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      },
+      {
+        "branch_id": "70000001053063519",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      },
+      {
+        "branch_id": "70000001043537394",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      },
+      {
+        "branch_id": "70000001043537421",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      },
+      {
+        "branch_id": "70000001112343958",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      },
+      {
+        "branch_id": "70000001045909625",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      },
+      {
+        "branch_id": "70000001053010087",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      },
+      {
+        "branch_id": "70000001080425853",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      },
+      {
+        "branch_id": "70000001045909556",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      },
+      {
+        "branch_id": "70000001112344381",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      },
+      {
+        "branch_id": "70000001090902037",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      },
+      {
+        "branch_id": "70000001112344087",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      },
+      {
+        "branch_id": "70000001053172745",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная Лавка"
+      },
+      {
+        "branch_id": "70000001112344194",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      },
+      {
+        "branch_id": "70000001102705210",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      },
+      {
+        "branch_id": "70000001112344126",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      },
+      {
+        "branch_id": "70000001052419488",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      },
+      {
+        "branch_id": "70000001101204210",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      },
+      {
+        "branch_id": "70000001059879340",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      },
+      {
+        "branch_id": "70000001112344064",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      },
+      {
+        "branch_id": "70000001112344316",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      },
+      {
+        "branch_id": "70000001112344462",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      },
+      {
+        "branch_id": "70000001075700194",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      },
+      {
+        "branch_id": "70000001087708490",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      },
+      {
+        "branch_id": "70000001098489959",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      },
+      {
+        "branch_id": "70000001043537457",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      },
+      {
+        "branch_id": "70000001092737938",
+        "status": "ok",
+        "meta_code": 200,
+        "from_name": "Сырная лавка, магазин, ООО Cheese Day"
+      }
+    ]
+  },
+  "hour_updates": {
+    "attempted": 2,
+    "ok": 2,
+    "errors": 0,
+    "details": [
+      {
+        "row": 18,
+        "branch_id": "70000001053172745",
+        "from_hours": "08:00-20:00",
+        "to_hours": "08:00-19:00",
+        "status": "ok",
+        "meta_code": 200
+      },
+      {
+        "row": 14,
+        "branch_id": "70000001094396147",
+        "from_hours": "08:00-20:00",
+        "to_hours": "08:00-22:00",
+        "status": "ok",
+        "meta_code": 200
+      }
+    ]
+  }
+}

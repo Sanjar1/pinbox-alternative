@@ -1,0 +1,67 @@
+[
+  {
+    "row": 7,
+    "internal_id": "Лавка Буз бозор",
+    "building_id": "70030076172821387",
+    "status": "created",
+    "tmp_id": "branch_69a09a71ee01d",
+    "city": {
+      "id": "70030076171122914",
+      "name": "Ташкент",
+      "type": "byGeometryId",
+      "originalName": null
+    }
+  },
+  {
+    "row": 10,
+    "internal_id": "Лавка Госпитальный",
+    "building_id": "70030076395188270",
+    "status": "created",
+    "tmp_id": "branch_69a09a72938e6",
+    "city": {
+      "id": "70030076171122914",
+      "name": "Ташкент",
+      "type": "byGeometryId",
+      "originalName": null
+    }
+  },
+  {
+    "row": 15,
+    "internal_id": "Лавка Аския",
+    "building_id": "70030076172613976",
+    "status": "created",
+    "tmp_id": "branch_69a09a732b7ad",
+    "city": {
+      "id": "70030076171122914",
+      "name": "Ташкент",
+      "type": "byGeometryId",
+      "originalName": null
+    }
+  },
+  {
+    "row": 23,
+    "internal_id": "Лавка Чилонзор 21",
+    "building_id": "70030076171957934",
+    "status": "created",
+    "tmp_id": "branch_69a09a73bffbd",
+    "city": {
+      "id": "70030076171122914",
+      "name": "Ташкент",
+      "type": "byGeometryId",
+      "originalName": null
+    }
+  },
+  {
+    "row": 26,
+    "internal_id": "Лавка Чирчик",
+    "building_id": "70030076411814630",
+    "status": "created",
+    "tmp_id": "branch_69a09a746a71b",
+    "city": {
+      "id": "70030076375705692",
+      "name": "Чирчик",
+      "type": "byGeometryId",
+      "originalName": null
+    }
+  }
+]

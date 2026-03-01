@@ -1,0 +1,771 @@
+{
+  "excel_rows_total": 35,
+  "excel_rows_with_yandex_point": 0,
+  "excel_rows_with_manual_or_url_point": 0,
+  "branches_total": 35,
+  "branches_with_point": 34,
+  "matches": 0,
+  "unmatched_rows": 35,
+  "unmatched_branches": 35,
+  "hour_mismatches": 0,
+  "yandex_point_failures": [
+    {
+      "row": 1,
+      "reason": "no_yandex_org_id_or_point"
+    },
+    {
+      "row": 2,
+      "org_id": "70000001040321484",
+      "reason": "coordinates_not_found"
+    },
+    {
+      "row": 3,
+      "reason": "no_yandex_org_id_or_point"
+    },
+    {
+      "row": 4,
+      "org_id": "70000001052419488",
+      "reason": "coordinates_not_found"
+    },
+    {
+      "row": 5,
+      "org_id": "70000001093966504",
+      "reason": "coordinates_not_found"
+    },
+    {
+      "row": 6,
+      "org_id": "70000001102705210",
+      "reason": "coordinates_not_found"
+    },
+    {
+      "row": 7,
+      "reason": "no_yandex_org_id_or_point"
+    },
+    {
+      "row": 8,
+      "org_id": "70000001043537421",
+      "reason": "coordinates_not_found"
+    },
+    {
+      "row": 9,
+      "org_id": "70000001045909556",
+      "reason": "coordinates_not_found"
+    },
+    {
+      "row": 10,
+      "reason": "no_yandex_org_id_or_point"
+    },
+    {
+      "row": 11,
+      "reason": "no_yandex_org_id_or_point"
+    },
+    {
+      "row": 12,
+      "org_id": "70000001053063519",
+      "reason": "coordinates_not_found"
+    },
+    {
+      "row": 13,
+      "org_id": "70000001092737938",
+      "reason": "coordinates_not_found"
+    },
+    {
+      "row": 14,
+      "org_id": "70000001094396147",
+      "reason": "coordinates_not_found"
+    },
+    {
+      "row": 15,
+      "reason": "no_yandex_org_id_or_point"
+    },
+    {
+      "row": 16,
+      "org_id": "70000001059879340",
+      "reason": "coordinates_not_found"
+    },
+    {
+      "row": 17,
+      "org_id": "70000001043537457",
+      "reason": "coordinates_not_found"
+    },
+    {
+      "row": 18,
+      "org_id": "70000001053172745",
+      "reason": "coordinates_not_found"
+    },
+    {
+      "row": 19,
+      "org_id": "70000001091424245",
+      "reason": "coordinates_not_found"
+    },
+    {
+      "row": 20,
+      "org_id": "70000001043537394",
+      "reason": "coordinates_not_found"
+    },
+    {
+      "row": 21,
+      "reason": "no_yandex_org_id_or_point"
+    },
+    {
+      "row": 22,
+      "org_id": "70000001101204210",
+      "reason": "coordinates_not_found"
+    },
+    {
+      "row": 23,
+      "reason": "no_yandex_org_id_or_point"
+    },
+    {
+      "row": 24,
+      "org_id": "70000001087708490",
+      "reason": "coordinates_not_found"
+    },
+    {
+      "row": 25,
+      "org_id": "70000001052419800",
+      "reason": "coordinates_not_found"
+    },
+    {
+      "row": 26,
+      "reason": "no_yandex_org_id_or_point"
+    },
+    {
+      "row": 27,
+      "org_id": "70000001080425853",
+      "reason": "coordinates_not_found"
+    },
+    {
+      "row": 28,
+      "org_id": "70000001037259464",
+      "reason": "coordinates_not_found"
+    },
+    {
+      "row": 29,
+      "org_id": "70000001053010087",
+      "reason": "coordinates_not_found"
+    },
+    {
+      "row": 30,
+      "reason": "no_yandex_org_id_or_point"
+    },
+    {
+      "row": 31,
+      "reason": "no_yandex_org_id_or_point"
+    },
+    {
+      "row": 32,
+      "reason": "no_yandex_org_id_or_point"
+    },
+    {
+      "row": 33,
+      "reason": "no_yandex_org_id_or_point"
+    },
+    {
+      "row": 34,
+      "reason": "no_yandex_org_id_or_point"
+    },
+    {
+      "row": 35,
+      "reason": "no_yandex_org_id_or_point"
+    }
+  ],
+  "branch_point_failures": [],
+  "match_details": [],
+  "unmatched_row_details": [
+    {
+      "row": 1,
+      "brand_excel": "",
+      "internal_id": "Лавка Чилонзор Торговый",
+      "reason": "no_yandex_point",
+      "yandex_org_id": null
+    },
+    {
+      "row": 2,
+      "brand_excel": "Сырная лавка, магазин, ООО Cheese Day",
+      "internal_id": "Лавка Кадышева",
+      "reason": "no_yandex_point",
+      "yandex_org_id": "70000001040321484"
+    },
+    {
+      "row": 3,
+      "brand_excel": "",
+      "internal_id": "Лавка Авайхон",
+      "reason": "no_yandex_point",
+      "yandex_org_id": null
+    },
+    {
+      "row": 4,
+      "brand_excel": "Сырная лавка, магазин, ООО Cheese Day",
+      "internal_id": "Лавка Чорсу",
+      "reason": "no_yandex_point",
+      "yandex_org_id": "70000001052419488"
+    },
+    {
+      "row": 5,
+      "brand_excel": "Сырная лавка, магазин, ООО Cheese Day",
+      "internal_id": "Лавка Олой",
+      "reason": "no_yandex_point",
+      "yandex_org_id": "70000001093966504"
+    },
+    {
+      "row": 6,
+      "brand_excel": "Сырная лавка, магазин, ООО Cheese Day",
+      "internal_id": "Лавка Паркентский",
+      "reason": "no_yandex_point",
+      "yandex_org_id": "70000001102705210"
+    },
+    {
+      "row": 7,
+      "brand_excel": "",
+      "internal_id": "Лавка Буз бозор",
+      "reason": "no_yandex_point",
+      "yandex_org_id": null
+    },
+    {
+      "row": 8,
+      "brand_excel": "Сырная лавка, магазин, ООО Cheese Day",
+      "internal_id": "Лавка Бектемир",
+      "reason": "no_yandex_point",
+      "yandex_org_id": "70000001043537421"
+    },
+    {
+      "row": 9,
+      "brand_excel": "Сырная лавка, магазин, ООО Cheese Day",
+      "internal_id": "Лавка Катортол",
+      "reason": "no_yandex_point",
+      "yandex_org_id": "70000001045909556"
+    },
+    {
+      "row": 10,
+      "brand_excel": "",
+      "internal_id": "Лавка Госпитальный",
+      "reason": "no_yandex_point",
+      "yandex_org_id": null
+    },
+    {
+      "row": 11,
+      "brand_excel": "",
+      "internal_id": "Лавка Food city",
+      "reason": "no_yandex_point",
+      "yandex_org_id": null
+    },
+    {
+      "row": 12,
+      "brand_excel": "Сырная лавка, магазин, ООО Cheese Day",
+      "internal_id": "Лавка Авиасозлар",
+      "reason": "no_yandex_point",
+      "yandex_org_id": "70000001053063519"
+    },
+    {
+      "row": 13,
+      "brand_excel": "Сырная лавка, магазин, ООО Cheese Day",
+      "internal_id": "Лавка Янги Хаёт",
+      "reason": "no_yandex_point",
+      "yandex_org_id": "70000001092737938"
+    },
+    {
+      "row": 14,
+      "brand_excel": "Сырная лавка, магазин, ООО Cheese Day",
+      "internal_id": "Лавка Панельный",
+      "reason": "no_yandex_point",
+      "yandex_org_id": "70000001094396147"
+    },
+    {
+      "row": 15,
+      "brand_excel": "",
+      "internal_id": "Лавка Аския",
+      "reason": "no_yandex_point",
+      "yandex_org_id": null
+    },
+    {
+      "row": 16,
+      "brand_excel": "Сырная лавка, магазин, ООО Cheese Day",
+      "internal_id": "Лавка Учтепа",
+      "reason": "no_yandex_point",
+      "yandex_org_id": "70000001059879340"
+    },
+    {
+      "row": 17,
+      "brand_excel": "Сырная лавка, магазин, ООО Cheese Day",
+      "internal_id": "Лавка Юнусабад",
+      "reason": "no_yandex_point",
+      "yandex_org_id": "70000001043537457"
+    },
+    {
+      "row": 18,
+      "brand_excel": "Сырная Лавка",
+      "internal_id": "Лавка Ялангач",
+      "reason": "no_yandex_point",
+      "yandex_org_id": "70000001053172745"
+    },
+    {
+      "row": 19,
+      "brand_excel": "Сырная лавка, магазин, ООО Cheese Day",
+      "internal_id": "Лавка Газалкент",
+      "reason": "no_yandex_point",
+      "yandex_org_id": "70000001091424245"
+    },
+    {
+      "row": 20,
+      "brand_excel": "Сырная лавка, магазин, ООО Cheese Day",
+      "internal_id": "Лавка Тансикбаев",
+      "reason": "no_yandex_point",
+      "yandex_org_id": "70000001043537394"
+    },
+    {
+      "row": 21,
+      "brand_excel": "",
+      "internal_id": "Лавка Метро Чиланзар",
+      "reason": "no_yandex_point",
+      "yandex_org_id": null
+    },
+    {
+      "row": 22,
+      "brand_excel": "Сырная лавка, магазин, ООО Cheese Day",
+      "internal_id": "Лавка ЭКО",
+      "reason": "no_yandex_point",
+      "yandex_org_id": "70000001101204210"
+    },
+    {
+      "row": 23,
+      "brand_excel": "",
+      "internal_id": "Лавка Чилонзор 21",
+      "reason": "no_yandex_point",
+      "yandex_org_id": null
+    },
+    {
+      "row": 24,
+      "brand_excel": "Сырная лавка, магазин, ООО Cheese Day",
+      "internal_id": "Лавка Сайрам",
+      "reason": "no_yandex_point",
+      "yandex_org_id": "70000001087708490"
+    },
+    {
+      "row": 25,
+      "brand_excel": "Сырная лавка, магазин, ООО Cheese Day",
+      "internal_id": "Лавка Рисовый",
+      "reason": "no_yandex_point",
+      "yandex_org_id": "70000001052419800"
+    },
+    {
+      "row": 26,
+      "brand_excel": "",
+      "internal_id": "Лавка Чирчик",
+      "reason": "no_yandex_point",
+      "yandex_org_id": null
+    },
+    {
+      "row": 27,
+      "brand_excel": "Сырная лавка, магазин, ООО Cheese Day",
+      "internal_id": "Лавка Корасув",
+      "reason": "no_yandex_point",
+      "yandex_org_id": "70000001080425853"
+    },
+    {
+      "row": 28,
+      "brand_excel": "Сырная лавка, магазин, ООО Cheese Day",
+      "internal_id": "Лавка ТТЗ",
+      "reason": "no_yandex_point",
+      "yandex_org_id": "70000001037259464"
+    },
+    {
+      "row": 29,
+      "brand_excel": "Сырная лавка, магазин, ООО Cheese Day",
+      "internal_id": "Лавка Навруз",
+      "reason": "no_yandex_point",
+      "yandex_org_id": "70000001053010087"
+    },
+    {
+      "row": 30,
+      "brand_excel": "",
+      "internal_id": "Лавка Цум",
+      "reason": "no_yandex_point",
+      "yandex_org_id": null
+    },
+    {
+      "row": 31,
+      "brand_excel": "",
+      "internal_id": "Лавка Янгиюль",
+      "reason": "no_yandex_point",
+      "yandex_org_id": null
+    },
+    {
+      "row": 32,
+      "brand_excel": "",
+      "internal_id": "Лавка Фергана",
+      "reason": "no_yandex_point",
+      "yandex_org_id": null
+    },
+    {
+      "row": 33,
+      "brand_excel": "",
+      "internal_id": "Урикзор",
+      "reason": "no_yandex_point",
+      "yandex_org_id": null
+    },
+    {
+      "row": 34,
+      "brand_excel": "",
+      "internal_id": "Сергели оптом",
+      "reason": "no_yandex_point",
+      "yandex_org_id": null
+    },
+    {
+      "row": 35,
+      "brand_excel": "",
+      "internal_id": "Бухара",
+      "reason": "no_yandex_point",
+      "yandex_org_id": null
+    }
+  ],
+  "unmatched_branch_details": [
+    {
+      "branch_id": "branch_69a09623d9e3f",
+      "branch_name": "TEST",
+      "branch_address": "test",
+      "point": null,
+      "daily_hours": null
+    },
+    {
+      "branch_id": "70000001036827090",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "Сайрам, 37е",
+      "point": {
+        "lat": 41.328483,
+        "lon": 69.325743
+      },
+      "daily_hours": "08:00-20:00"
+    },
+    {
+      "branch_id": "70000001091424245",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "G'azalkent sh. (Boʻstonliq tumani, Toshkentlik viloyat, O'zbekiston)",
+      "point": {
+        "lat": 41.568853,
+        "lon": 69.768566
+      },
+      "daily_hours": "08:00-19:00"
+    },
+    {
+      "branch_id": "70000001094396147",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "Toshkent sh. (Toshkent respublika ahamiyatga ega shahar, O'zbekiston)",
+      "point": {
+        "lat": 41.25463,
+        "lon": 69.343164
+      },
+      "daily_hours": "08:00-22:00"
+    },
+    {
+      "branch_id": "70000001052419800",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "Абдурауфа Фитрата, 4",
+      "point": {
+        "lat": 41.272806,
+        "lon": 69.309073
+      },
+      "daily_hours": "09:00-21:00"
+    },
+    {
+      "branch_id": "70000001093966504",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "проспект Амира Темура, 40/з",
+      "point": {
+        "lat": 41.318629,
+        "lon": 69.285637
+      },
+      "daily_hours": "08:00-20:00"
+    },
+    {
+      "branch_id": "70000001067997859",
+      "branch_name": "Сырная лавка, магазин, АО Askiya dehqon bozori",
+      "branch_address": "Аския, 44/7",
+      "point": {
+        "lat": 41.283773,
+        "lon": 69.250511
+      },
+      "daily_hours": "08:00-20:00"
+    },
+    {
+      "branch_id": "70000001037259464",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "улица Ахиллик, 10Б",
+      "point": {
+        "lat": 41.353973,
+        "lon": 69.385384
+      },
+      "daily_hours": "08:00-20:00"
+    },
+    {
+      "branch_id": "70000001040321484",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "Бешарыкская улица, 1 п1",
+      "point": {
+        "lat": 41.28614,
+        "lon": 69.347393
+      },
+      "daily_hours": "08:00-20:00"
+    },
+    {
+      "branch_id": "70000001053063519",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "Бешарыкская улица, 1 п1а",
+      "point": {
+        "lat": 41.28595,
+        "lon": 69.347999
+      },
+      "daily_hours": "08:00-20:00"
+    },
+    {
+      "branch_id": "70000001043537394",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "Бешкурган 1-й квартал, 1/11",
+      "point": {
+        "lat": 41.367206,
+        "lon": 69.204019
+      },
+      "daily_hours": "08:00-20:00"
+    },
+    {
+      "branch_id": "70000001043537421",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "Большая кольцевая дорога, 17/10",
+      "point": {
+        "lat": 41.236926,
+        "lon": 69.329196
+      },
+      "daily_hours": "08:00-20:00"
+    },
+    {
+      "branch_id": "70000001112343958",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "Буюк Турон, 73",
+      "point": {
+        "lat": 41.306763,
+        "lon": 69.268699
+      },
+      "daily_hours": "09:00-19:00"
+    },
+    {
+      "branch_id": "70000001045909625",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "жилмассив Госпитальный, 1/1",
+      "point": {
+        "lat": 41.291493,
+        "lon": 69.275261
+      },
+      "daily_hours": "08:00-20:00"
+    },
+    {
+      "branch_id": "70000001053010087",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "Гульсанам, 7а",
+      "point": {
+        "lat": 41.354623,
+        "lon": 69.38708
+      },
+      "daily_hours": "08:00-21:00"
+    },
+    {
+      "branch_id": "70000001080425853",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "Карасу 1-й массив, 15а",
+      "point": {
+        "lat": 41.335184,
+        "lon": 69.370008
+      },
+      "daily_hours": "08:00-22:00"
+    },
+    {
+      "branch_id": "70000001045909556",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "Катартал, 60",
+      "point": {
+        "lat": 41.292663,
+        "lon": 69.212111
+      },
+      "daily_hours": "08:00-20:00"
+    },
+    {
+      "branch_id": "70000001112344381",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "Катта Хирмонтепа, 1",
+      "point": {
+        "lat": 41.27522,
+        "lon": 69.172553
+      },
+      "daily_hours": "09:00-20:00"
+    },
+    {
+      "branch_id": "70000001090902037",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "Катта Хирмонтепа, 65/4",
+      "point": {
+        "lat": 41.289437,
+        "lon": 69.173128
+      },
+      "daily_hours": "08:00-22:00"
+    },
+    {
+      "branch_id": "70000001112344087",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "Катта Чиланзар, 3",
+      "point": {
+        "lat": 41.291596,
+        "lon": 69.236233
+      },
+      "daily_hours": "09:00-20:00"
+    },
+    {
+      "branch_id": "70000001053172745",
+      "branch_name": "Сырная Лавка",
+      "branch_address": "Массив Ялангач, 13/6",
+      "point": {
+        "lat": 41.346974,
+        "lon": 69.344954
+      },
+      "daily_hours": "08:00-19:00"
+    },
+    {
+      "branch_id": "70000001112344194",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "Мирабад 1-ая, 43",
+      "point": {
+        "lat": 41.292357,
+        "lon": 69.265422
+      },
+      "daily_hours": "09:00-20:00"
+    },
+    {
+      "branch_id": "70000001102705210",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "Паркент, 74/3",
+      "point": {
+        "lat": 41.314514,
+        "lon": 69.322178
+      },
+      "daily_hours": "08:00-20:00"
+    },
+    {
+      "branch_id": "70000001112344126",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "Сайрам, 37Б/1",
+      "point": {
+        "lat": 41.328739,
+        "lon": 69.325192
+      },
+      "daily_hours": "09:00-20:00"
+    },
+    {
+      "branch_id": "70000001052419488",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "улица Сакичмон, 1",
+      "point": {
+        "lat": 41.326998,
+        "lon": 69.234734
+      },
+      "daily_hours": "07:00-19:00"
+    },
+    {
+      "branch_id": "70000001101204210",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "улица Тимура Малика, 3а",
+      "point": {
+        "lat": 41.353765,
+        "lon": 69.350748
+      },
+      "daily_hours": "08:00-21:00"
+    },
+    {
+      "branch_id": "70000001059879340",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "Фархадская улица, 6а/6",
+      "point": {
+        "lat": 41.285773,
+        "lon": 69.190961
+      },
+      "daily_hours": "07:00-19:00"
+    },
+    {
+      "branch_id": "70000001112344064",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "Чиланзар Ц квартал микрорайон, 8а/6",
+      "point": {
+        "lat": 41.277057,
+        "lon": 69.201706
+      },
+      "daily_hours": "09:00-20:00"
+    },
+    {
+      "branch_id": "70000001112344316",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "улица Шота Руставели, 48",
+      "point": {
+        "lat": 41.284039,
+        "lon": 69.251514
+      },
+      "daily_hours": "09:00-20:00"
+    },
+    {
+      "branch_id": "70000001112344462",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "улица Ш.Рашидова, 14",
+      "point": {
+        "lat": 41.47,
+        "lon": 69.58774
+      },
+      "daily_hours": "09:00-20:00"
+    },
+    {
+      "branch_id": "70000001075700194",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "улица Ш.Рашидова, 35/6",
+      "point": {
+        "lat": 41.473637,
+        "lon": 69.591865
+      },
+      "daily_hours": "08:00-19:00"
+    },
+    {
+      "branch_id": "70000001087708490",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "Юнусабад 14-й квартал, 71",
+      "point": {
+        "lat": 41.36993,
+        "lon": 69.310675
+      },
+      "daily_hours": "08:00-22:00"
+    },
+    {
+      "branch_id": "70000001098489959",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "Юнусабад 3-й квартал, 3/1",
+      "point": {
+        "lat": 41.363745,
+        "lon": 69.289583
+      },
+      "daily_hours": "08:00-20:00"
+    },
+    {
+      "branch_id": "70000001043537457",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "Юнусабад 3-й квартал, 3/6",
+      "point": {
+        "lat": 41.365072,
+        "lon": 69.292265
+      },
+      "daily_hours": "08:00-20:00"
+    },
+    {
+      "branch_id": "70000001092737938",
+      "branch_name": "Сырная лавка, магазин, ООО Cheese Day",
+      "branch_address": "улица Янги Сергели, 9/11",
+      "point": {
+        "lat": 41.227452,
+        "lon": 69.218387
+      },
+      "daily_hours": "08:00-20:00"
+    }
+  ]
+}

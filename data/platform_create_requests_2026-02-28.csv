@@ -1,0 +1,42 @@
+platform,sheet,row,store_name,internal_id,address,map_url,phone,hours,days,platform_id,status,action
+yandex,Yandex,30,Сырная Лавка,Лавка Цум,"Ташкент, Мирабадский район, Буюк Турон 73",https://yandex.uz/maps/-/CPeszXpx,+998 78 555 15 15,08:00-22:00,Ежедневно,,обновление,create_request
+yandex,Yandex,33,RUBA,Урикзор,"Ташкент, Учтепинский район, Бурхониддин Маргинони 9",https://yandex.uz/maps/-/CPewED33,+998 78 555 15 15,07:00-18:00,Ежедневно,,обновление,create_request
+yandex,Yandex,34,RUBA,Сергели оптом,"Ташкент, Сергелийский район, мсг Фарогатли",https://yandex.uz/maps/-/CPewMV0V,+998 78 555 15 15,08:00-18:00,Ежедневно,,обновление,create_request
+yandex,Yandex,35,RUBA,Бухара,,https://yandex.uz/maps/10330/bukhara/?ll=64.404903%2C39.781670&mode=search&sll=64.401806%2C39.779750&text=39.779750%2C64.401806&utm_source=share&z=15.07,+998 78 555 15 15,08:00-18:00,Ежедневно,,обновление,create_request
+2gis,2gis,3,,Лавка Авайхон,,,,,,,"ждем информацию: ближайший 2GIS 70000001080425853, 2113м, Карасу 1-й массив, 15а",create_request
+2gis,2gis,11,,Лавка Food city,,,,,,,"ждем информацию: ближайший 2GIS 70000001043537421, 3387м, Большая кольцевая дорога, 17/10",create_request
+2gis,2gis,31,,Лавка Янгиюль,,,,,,,"ждем информацию: ближайший 2GIS 70000001092737938, 18379м, улица Янги Сергели, 9/11",create_request
+2gis,2gis,32,,Лавка Фергана,,,,,,,"ждем информацию: ближайший 2GIS 70000001091424245, 214224м, G'azalkent sh. (Boʻstonliq tumani, Toshkentlik viloyat, O'zbekiston)",create_request
+2gis,2gis,33,,Урикзор,,,,,,,ждем информацию (RUBA): нет pin в Яндексе (добавьте lat/lon или ll= в ссылке),create_request
+2gis,2gis,34,,Сергели оптом,,,,,,,ждем информацию (RUBA): нет pin в Яндексе (добавьте lat/lon или ll= в ссылке),create_request
+2gis,2gis,35,,Бухара,,,,,,,"ждем информацию (RUBA): ближайший 2GIS 70000001090902037, 436362м, Катта Хирмонтепа, 65/4",create_request
+google,google map,1,,Лавка Чилонзор Торговый,,,,08:00-22:00,Ежедневно,,ждём информацию: не найдено в нашем Google Business,create_request
+google,google map,2,,Лавка Кадышева,,,,08:00-20:00,Ежедневно,,already covered by managed Google profile,create_request
+google,google map,3,,Лавка Авайхон,,,,08:00-20:00,Ежедневно,,ждём информацию: не найдено в нашем Google Business,create_request
+google,google map,4,,Лавка Чорсу,,,,07:00-19:00,Ежедневно,,ждём информацию: не найдено в нашем Google Business,create_request
+google,google map,6,,Лавка Паркентский,,,,08:00-20:00,Ежедневно,,ждём информацию: не найдено в нашем Google Business,create_request
+google,google map,7,,Лавка Буз бозор,,,,08:00-20:00,Ежедневно,,ждём информацию: не найдено в нашем Google Business,create_request
+google,google map,9,,Лавка Катортол,,,,08:00-20:00,Ежедневно,,ждём информацию: не найдено в нашем Google Business,create_request
+google,google map,10,,Лавка Госпитальный,,,,08:00-20:00,Ежедневно,,ждём информацию: не найдено в нашем Google Business,create_request
+google,google map,11,,Лавка Food city,,,,07:00-19:00,Ежедневно,,ждём информацию: не найдено в нашем Google Business,create_request
+google,google map,12,,Лавка Авиасозлар,,,,08:00-20:00,Ежедневно,,already covered by managed Google profile,create_request
+google,google map,13,,Лавка Янги Хаёт,,,,08:00-20:00,Ежедневно,,ждём информацию: не найдено в нашем Google Business,create_request
+google,google map,14,,Лавка Панельный,,,,08:00-22:00,Ежедневно,,ждём информацию: не найдено в нашем Google Business,create_request
+google,google map,15,Сырная Лавка,Лавка Аския,"Near yakkasaroy street, Tashkent",https://business.google.com/n/2036140660410611774/profile?fid=12242063773800875924,+998 78 555 15 15,08:00-20:00,Ежедневно,fid:12242063773800875924,есть в Google (Verified),create_request
+google,google map,16,,Лавка Учтепа,,,,07:00-19:00,Ежедневно,,ждём информацию: не найдено в нашем Google Business,create_request
+google,google map,17,,Лавка Юнусабад,,,,08:00-20:00,Ежедневно,,ждём информацию: не найдено в нашем Google Business,create_request
+google,google map,18,,Лавка Ялангач,,,,08:00-19:00,Ежедневно,,ждём информацию: не найдено в нашем Google Business,create_request
+google,google map,19,,Лавка Газалкент,,,,08:00-19:00,Ежедневно,,ждём информацию: не найдено в нашем Google Business,create_request
+google,google map,21,,Лавка Метро Чиланзар,,,,08:00-20:00,Ежедневно,,ждём информацию: не найдено в нашем Google Business,create_request
+google,google map,22,,Лавка ЭКО,,,,08:00-21:00,Ежедневно,,ждём информацию: не найдено в нашем Google Business,create_request
+google,google map,23,,Лавка Чилонзор 21,,,,08:00-22:00,Ежедневно,,ждём информацию: не найдено в нашем Google Business,create_request
+google,google map,24,,Лавка Сайрам,,,,08:00-22:00,Ежедневно,,ждём информацию: не найдено в нашем Google Business,create_request
+google,google map,26,,Лавка Чирчик,,,,08:00-19:00,Ежедневно,,ждём информацию: не найдено в нашем Google Business,create_request
+google,google map,27,,Лавка Корасув,,,,08:00-22:00,Ежедневно,,ждём информацию: не найдено в нашем Google Business,create_request
+google,google map,29,,Лавка Навруз,,,,08:00-21:00,Ежедневно,,ждём информацию: не найдено в нашем Google Business,create_request
+google,google map,30,,Лавка Цум,,,,08:00-22:00,Ежедневно,,ждём информацию: не найдено в нашем Google Business,create_request
+google,google map,31,,Лавка Янгиюль,,,,08:00-20:00,Ежедневно,,ждём информацию: не найдено в нашем Google Business,create_request
+google,google map,32,,Лавка Фергана,,,,07:00-19:00,Ежедневно,,ждём информацию: не найдено в нашем Google Business,create_request
+google,google map,33,,Урикзор,,,,07:00-18:00,Ежедневно,,ждём информацию (RUBA),create_request
+google,google map,34,,Сергели оптом,,,,08:00-18:00,Ежедневно,,ждём информацию (RUBA),create_request
+google,google map,35,,Бухара,,,,08:00-18:00,Ежедневно,,ждём информацию (RUBA),create_request
