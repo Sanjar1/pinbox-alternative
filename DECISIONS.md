@@ -1,5 +1,26 @@
 # Decisions Log
 
+## D-023: Deploy to Railway (PostgreSQL)
+
+- Date: 2026-03-11
+- Decision: Deploy the app to Railway.app with PostgreSQL instead of SQLite.
+- Reason: SQLite is wiped on every Railway deploy (ephemeral filesystem). PostgreSQL on Railway persists across deploys and is free on starter tier. Always-online hosting required for QR codes to work in stores.
+- Impact: Prisma schema must change `provider = "sqlite"` → `provider = "postgresql"`. Existing data must be migrated/re-seeded.
+
+## D-022: Vote Saved Before Showing Platform Links
+
+- Date: 2026-03-11
+- Decision: The voting page saves the vote to DB on Submit, then shows platform links or comment form — never before.
+- Reason: Previous flow showed platform links immediately after rating, allowing customers to click away without the vote being recorded.
+- Impact: All QR feedback data is now reliably captured regardless of post-vote action.
+
+## D-021: Launch QR Feedback Before Full Map Coverage
+
+- Date: 2026-03-08
+- Decision: Allow pilot launch even if some stores are not yet connected on Google/Yandex/2GIS.
+- Reason: The QR/private-feedback flow works independently of public map listings, so missing external listings should not block customer feedback collection.
+- Impact: Launch can start earlier; disconnected stores simply skip public review-routing until their platform links are connected.
+
 ## D-020: Yandex-Only Active Platform Scope
 
 - Date: 2026-02-25

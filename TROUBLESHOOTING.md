@@ -17,6 +17,16 @@
 - **Cause:** Database connection issue or schema conflict.
 - **Solution:** Check `DATABASE_URL`. For clean local reset: delete `prisma/dev.db` and rerun migration.
 
+### Feedback save fails with Prisma `P2022` missing column error
+- **Symptom:** QR feedback submission or feedback queries fail with errors like `The column main.Feedback.deviceHash does not exist`.
+- **Cause:** The local database is behind the current Prisma schema/migrations.
+- **Solution:** Run the latest Prisma migration in `app` before testing the QR flow.
+
+### Prisma generate fails with Windows `EPERM` rename on query engine
+- **Symptom:** `prisma migrate dev` applies the migration but fails at the generate step with an `EPERM` rename error on `query_engine-windows.dll.node`.
+- **Cause:** Windows file lock on Prisma engine binary.
+- **Solution:** Close running Node/Next processes that may hold Prisma files, then rerun `npx prisma generate` or restart the shell and rerun the migration/generate step.
+
 ### Docker Postgres not starting
 - **Symptom:** `docker compose up` fails or Postgres exits.
 - **Cause:** Port 5432 in use or Docker Desktop not running.

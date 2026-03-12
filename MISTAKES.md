@@ -1,5 +1,17 @@
 # Mistakes and Lessons Learned
 
+## 2026-03-08 - Tried live QR testing before local schema was fully migrated
+
+- **What happened:** The QR feedback flow was prepared for testing, but feedback queries hit a missing-column error because the local SQLite DB had not applied the newest feedback-protection migration.
+- **Root cause:** Code and Prisma schema had moved ahead of the local database state.
+- **Lesson:** Before any end-to-end test, explicitly verify local DB migrations against the active Prisma schema.
+
+## 2026-03-08 - First poster draft gave too much space to copy and not enough to the QR
+
+- **What happened:** The first printable QR poster looked correct technically but was not strong enough visually for in-store use.
+- **Root cause:** Layout priority favored descriptive text over scanability.
+- **Lesson:** For real-world print QR assets, make the code the dominant visual element first and compress instructions/copy aggressively.
+
 ## 2026-02-25 - Strategy scope stayed too broad for too long
 
 - **What happened:** Active planning continued to include multiple external platforms after repeated access and ownership constraints were known.

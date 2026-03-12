@@ -1,45 +1,49 @@
 # Status
 
-**Updated:** 2026-02-28
+**Updated:** 2026-03-11
 
 ## Current Phase
 
-`Execution - Yandex profile operations + 2GIS cleanup`
+`Railway deployment preparation — QR feedback pilot ready to go live`
 
-## Session Snapshot
+## Session Snapshot (2026-03-11)
 
-- 2GIS updates completed on 2026-02-28: branch names normalized and 2 hour fixes applied.
-- Telegram tracking data source is `data/stores_telegram_status_2026_02_28.json`:
-  - Accessible stores: `28`
-  - Telegram completed: `3`
-  - Telegram pending: `25`
-  - Needs claim/access: `3`
-- Tracking workbook generated: `data/stores_audit_tracking_2026-02-28.xlsx`.
-- Sync summary generated: `data/yandex_tracking_sync_summary_2026-02-28.json`.
+- QR voting page fully redesigned with correct 2-step flow:
+  - Step 1: Rate all 3 questions → click Submit → **vote saved to DB first**
+  - Step 2 high (avg ≥ 4): show public platform links "Сделайте ваш голос публичным"
+  - Step 2 low (avg < 4): show private comment form
+  - Step 3: Thank you screen after comment sent
+- Questions updated to final approved short versions (both UZ + RU)
+- QR poster fully rewritten in clean Russian, all layout issues fixed:
+  - Store name UPPERCASE (AVIASOZLAR) — rule applies to all posters
+  - All text in Russian, no mixed languages
+  - URL removed from footer
+  - "Как вам у нас?" on one line
+- Platform buttons with correct brand colors + icons:
+  - Google Maps: #1A73E8 (Google blue)
+  - Яндекс Карты: #FC3F1D (Yandex red)
+  - 2ГИС: #1BA53E (2GIS green)
+- Decision made: deploy to Railway for always-online production hosting
+- SQLite → PostgreSQL migration required before Railway deploy
 
 ## What Works
 
-1. Yandex store baseline data remains stable (names/hours/contacts documented and tracked).
-2. 2GIS bulk update workflow is operational with JSON execution artifacts.
-3. Telegram progress can now be synced to Excel tracking columns via:
-   - `python scripts/sync_yandex_tracking_from_telegram.py`
+1. QR feedback flow — complete 2-step UX, vote always saved before next step
+2. Anti-abuse protection — device/IP throttling, 7-day vote limit
+3. QR poster generator — Russian text, UPPERCASE store name, no URL, correct layout
+4. Admin panel — store management, discovery, approval scaffold
+5. Platform buttons — correct brand colors, real store URLs for Авиасозлар (Yandex + Google)
 
 ## What Is Blocked
 
-1. In-place write to `data/stores_audit.xlsx` is currently locked in this environment.
-2. Yandex UI tasks (adding Telegram/amenities/ratings) require authenticated browser execution.
-3. Pending 2GIS technical branch removal still requires cabinet moderation UI path.
-
-## Active Blockers
-
-| # | Blocker | Owner | Status |
-|---|---------|-------|--------|
-| 1 | Telegram still pending on 25 accessible stores (per latest JSON tracker) | Operator | In progress |
-| 2 | Amenities and ratings updates are not yet applied to the full store set | Operator | Not started |
-| 3 | Technical pending 2GIS branch `branch_69a09623d9e3f` cannot be removed via API | Operator | Pending manual cabinet action |
+1. **Railway deploy blocked** — SQLite must be migrated to PostgreSQL first
+2. **Platform links** — 2GIS + Yandex links are still search queries for most stores (only Авиасозлар has real Yandex URL fixed)
+3. Google Business batch 2 (14 stores) still waiting for quota reset
 
 ## Next Actions
 
-1. Continue Yandex UI batch for remaining Telegram updates on `25` stores.
-2. Execute amenities and ratings pass, then update tracking columns from actual outcomes.
-3. Replace/merge `data/stores_audit_tracking_2026-02-28.xlsx` into main audit workbook once lock is cleared.
+1. Migrate database from SQLite → PostgreSQL (schema change + data export)
+2. Push code to GitHub
+3. Deploy to Railway
+4. Set environment variables on Railway
+5. Generate and print QR posters for all pilot stores using production URL

@@ -5,6 +5,53 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added (2026-03-11)
+- 2-step QR voting flow: vote saved to DB on submit, then platform links or comment form shown
+- Private comment form for low-score votes (avg < 4) with send button
+- Platform buttons with SVG brand icons (Google, Yandex, 2GIS)
+- Railway deployment documentation: `docs/RAILWAY_DEPLOY.md`
+
+### Changed (2026-03-11)
+- QR voting questions updated to final approved short versions (UZ + RU)
+- QR poster: all-Russian text, UPPERCASE store name, URL removed, "Как вам у нас?" on one line
+- Platform button colors corrected: Google #1A73E8, Yandex #FC3F1D, 2GIS #1BA53E
+- Store name UPPERCASE on voting page (`page.tsx`) and poster generator
+- Yandex link for Авиасозлар updated to real org card (was broken search query)
+
+### Fixed (2026-03-11)
+- Platform links were shown before vote was saved — fixed by saving vote first then showing links
+- Mixed-language text in QR poster (was Russian + Latin Uzbek + Cyrillic Uzbek)
+- URL breaking mid-number in poster footer
+
+### Added (2026-03-08)
+- QR feedback hardening in `app`:
+  - 3-question public feedback flow
+  - Uzbek Cyrillic default + Russian language switch
+  - anti-abuse feedback protection with device/IP checks
+- `app/scripts/generate-qr-poster.mjs` to generate branded QR poster HTML + PNG assets
+- `app/test-output/qr-poster-523da2.html` and `app/test-output/qr-poster-523da2.png` as pilot poster outputs
+
+### Changed (2026-03-08)
+- Launch readiness policy clarified: stores without Google/Yandex listings do not block QR/private-feedback launch
+- QR poster restyled toward orange/white brand colors with larger QR dominance
+
+### Added (2026-03-08)
+- Google Business Profile bulk import workflow documented and tested:
+  - `data/Google-Business-Profile-Import-v4.xlsx` - geocoded version with Nominatim API lat/lng
+  - `data/Google-Business-Profile-Import-v5.csv` - first batch (10 stores) with proper admin areas - uploaded
+  - `data/Google-Business-Profile-Import-v6.csv` - second batch (14 stores) ready for upload
+  - `data/Google-Business-Profile-Import-v6.xlsx` - Excel version of batch 2, formatted and ready (NEW)
+  - `data/details-Ungrouped locations-20260308-121947-0cc4fb6a0b2cbf2598e2dcc7d3b5539c.csv` - downloaded from Google Business showing current status
+- `scripts/geocode_v4.py` - Python geocoding script using Nominatim API + fixed coordinates for stores without results
+
+### Changed (2026-03-08)
+- Google Business import strategy: split into 2 batches due to Google's ~10 store per-session rate limit
+- Admin area validation: blank for Tashkent city stores, regional names (Toshkent Viloyati, etc.) for outlying areas
+
+### In Progress (2026-03-08)
+- Batch 1 verification: 4/10 verified, 6/10 in "get verification" status
+- Batch 2 upload: waiting for quota reset (24-48 hours)
+
 ### Added (2026-02-28)
 - `scripts/sync_yandex_tracking_from_telegram.py` to map Telegram tracking JSON into Excel tracking columns.
 - `data/stores_audit_tracking_2026-02-28.xlsx` generated as a tracking workbook copy with Yandex status columns.

@@ -1,6 +1,61 @@
 ﻿# TODO
 
-**Updated:** 2026-02-28
+**Updated:** 2026-03-11
+
+## Railway Deployment (2026-03-11) - PRIORITY 1
+
+- [ ] Migrate Prisma schema from `sqlite` → `postgresql`
+- [ ] Create GitHub repository and push code
+- [ ] Create Railway project + add PostgreSQL plugin
+- [ ] Set environment variables on Railway (DATABASE_URL, SESSION_SECRET, FEEDBACK_HASH_SALT, NEXTAUTH_URL)
+- [ ] Run `prisma migrate deploy` on Railway
+- [ ] Seed production database with stores data
+- [ ] Test voting page on production URL
+- [ ] Regenerate all QR posters with production URL
+
+## QR Feedback Pilot (2026-03-11) - PRIORITY 1
+
+- [x] Upgrade public QR page to 3-question feedback flow
+- [x] Add Uzbek Cyrillic default + Russian language switch
+- [x] Add anti-abuse protection for duplicate/self-voting
+- [x] Add branded QR poster generator for printable PNG output
+- [x] Fix 2-step flow: save vote first, then show platform links or comment form
+- [x] Lock final question text (UZ + RU)
+- [x] Fix poster: UPPERCASE store name, all-Russian text, remove URL, fix line breaks
+- [x] Fix platform button colors and icons (correct brand colors)
+- [ ] Generate QR posters for all 33 pilot stores (after production URL is live)
+- [ ] Fix 2GIS + Yandex links for all stores in DB (currently search queries, not direct cards)
+- [ ] Remove temporary QR debug scripts from `app/scripts/`
+
+## QR Feedback Pilot (2026-03-08) - PRIORITY 1
+
+- [x] Upgrade public QR page to 3-question feedback flow
+- [x] Add Uzbek Cyrillic default + Russian language switch
+- [x] Add anti-abuse protection for duplicate/self-voting
+- [x] Add branded QR poster generator for printable PNG output
+- [~] Iterate poster visual direction and brand colors (orange/white active version generated)
+- [ ] Generate final QR posters for all pilot stores
+- [ ] Remove temporary QR debug scripts from `app/scripts/`
+- [ ] Normalize and verify UTF-8 text rendering across the public QR UI
+- [ ] Decide final poster copy and lock the print template
+- [ ] Pilot-launch stores even if some map listings are still disconnected
+- [ ] Connect missing public review links incrementally after launch
+
+## Google Business Profile Import (2026-03-08) - PRIORITY 1
+
+- [x] Generate v5.csv (10 stores) with proper geocoding and admin areas
+- [x] Upload v5.csv via Add business → Import businesses workflow
+- [x] Create v6.xlsx (14 stores) - ready for upload
+- [~] Monitor verification of batch 1: 4/10 verified, 6/10 in progress (expect 1-3 days each)
+- [ ] **WAIT 24-48 hours** for Google's rate limit quota to reset (approx 2026-03-09 to 2026-03-10)
+- [ ] Upload v6.xlsx (14 remaining stores) after quota reset
+- [ ] Monitor verification of batch 2 (expect 1-3 days per store, approx 2026-03-11 to 2026-03-13)
+- [ ] After batch 2 verified: update all 24 stores with:
+  - [ ] Hours (Sun-Sat: 08:00-22:00 or custom hours from data)
+  - [ ] Logo photo URL: `https://avatars.mds.yandex.net/get-altay/18150755/2a0000019c9af2e3ae35b3364448d95f4b1d/orig`
+  - [ ] Business description: "Магазин качественных сыров и молочных продуктов. Широкий выбор отечественных и импортных сортов. Свежая продукция каждый день."
+  - [ ] Phone: +998 78 555 15 15
+  - [ ] Social links (Instagram, Facebook, Telegram) - gather from brand guidelines
 
 ## 2GIS Execution (2026-02-28)
 

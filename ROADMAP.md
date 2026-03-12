@@ -1,15 +1,15 @@
 # Roadmap
 
-## Current Milestone: M3 - Yandex-only MVP Execution
+## Current Milestone: M3 - QR Feedback Pilot Launch Readiness
 
-**Goal:** Ship a usable MVP focused only on Yandex store-card operations.
+**Goal:** Launch the customer QR/private-feedback flow while public map coverage is still being completed incrementally.
 
 **Key tasks:**
-- Build accurate store-to-owner account map for Yandex
-- Finalize Yandex-only operating model for fragmented ownership
-- Freeze Yandex connector mode (SEMI_AUTO or MANUAL per capability)
-- Implement Yandex approval execution baseline
-- Implement rollback baseline and operator workflow
+- Finalize public QR page UX and text quality
+- Generate branded printable QR posters for launch stores
+- Keep private feedback operational even for disconnected stores
+- Connect missing Google/Yandex/2GIS review links incrementally after launch
+- Continue Google batch upload/verification in parallel where useful
 
 ## Completed Milestones
 
@@ -31,22 +31,28 @@
 - **M2.3 - Single-Platform Focus** (2026-02-25)
   Active scope narrowed from multi-platform to Yandex-only delivery.
 
+- **M2.4 - QR Feedback Pilot Hardening** (2026-03-08)
+  Public feedback flow upgraded, anti-abuse checks added, branded poster generation started.
+
 ## Upcoming Milestones
 
-- **M4 - Diff + Approval Pipeline (Yandex)**
+- **M4 - Map Link Completion**
+  Connect remaining stores to public review destinations without blocking QR launch.
+
+- **M5 - Diff + Approval Pipeline (Yandex)**
   Build per-field diff UI and approval execution flow.
 
-- **M5 - Yandex Sync Execution**
+- **M6 - Yandex Sync Execution**
   Controlled-account update flow, retry/backoff, failure state handling.
 
-- **M6 - Federated Yandex Operations**
+- **M7 - Federated Yandex Operations**
   For non-controlled stores, generate operator tasks and verification checklists.
 
-- **M7 - Rollback + Operations Hardening**
+- **M8 - Rollback + Operations Hardening**
   Snapshot-based rollback, alerts, dead-letter handling.
 
-- **M8 - Pilot**
-  Operator-run pilot on the baseline store set.
+- **M9 - Pilot Expansion**
+  Expand operator-run pilot after QR launch and public link coverage stabilize.
 
 ## Deferred/Archived Tracks
 
