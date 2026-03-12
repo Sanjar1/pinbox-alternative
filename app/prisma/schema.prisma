@@ -1,0 +1,297 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String   // Hashed
+  role      String   @default("STORE_MANAGER") // OWNER, STORE_MANAGER
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  stores    Store[]  // If store manager, assigned stores
+  sessions  Session[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Tenant {
+  id        String   @id @default(uuid())
+  name      String
+  users     User[]
+  stores    Store[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Store {
+  id          String   @id @default(uuid())
+  name        String
+  address     String?
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  managers    User[]
+  
+  // New Core
+  masterProfile StoreMasterProfile?
+  locationLinks PlatformLocationLink[]
+  
+  qrCodes     QRCode[]
+  feedbacks   Feedback[]
+  mapReviews  MapReview[]
+  
+  matchCandidates MatchCandidate[]
+  approvalTasks   ApprovalTask[]
+  changeSnapshots ChangeSnapshot[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model StoreMasterProfile {
+  id          String   @id @default(uuid())
+  storeId     String   @unique
+  store       Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  
+  // Syncable Fields
+  name        String?
+  address     String?
+  lat         Float?
+  lng         Float?
+  phone       String?
+  hours       String? // Text for MVP
+  description String?
+  website     String?
+  categoryId  String? // Internal Category ID
+  
+  photos      StorePhoto[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model StorePhoto {
+  id              String @id @default(uuid())
+  profileId       String
+  profile         StoreMasterProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  url             String
+  type            String // COVER, INTERIOR, EXTERIOR, LOGO
+  platformRefs    PlatformPhotoRef[]
+  createdAt       DateTime @default(now())
+}
+
+model PlatformPhotoRef {
+  id              String @id @default(uuid())
+  photoId         String
+  photo           StorePhoto @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  platform        String // GOOGLE, YANDEX, TWOGIS
+  externalId      String
+  createdAt       DateTime @default(now())
+}
+
+model PlatformLocationLink {
+  id              String   @id @default(uuid())
+  storeId         String
+  store           Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  platform        String   // GOOGLE, YANDEX, TWOGIS
+  
+  externalId      String?
+  url             String?
+  
+  syncStatus      String   @default("DISCONNECTED") // DISCONNECTED, SYNCED, OUT_OF_SYNC, PENDING_VERIFICATION, FAILED
+  lastSyncHash    String?
+  capabilityLevel String   @default("MANUAL") // MANUAL, SEMI_AUTO, FULL_AUTO
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([storeId, platform])
+}
+
+model MatchCandidate {
+  id              String   @id @default(uuid())
+  storeId         String
+  store           Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  platform        String
+  
+  externalId      String
+  name            String
+  address         String?
+  lat             Float?
+  lng             Float?
+  distanceMeters  Float?
+  score           Float    // Confidence score 0-1
+  matchData       String?  // JSON with extra signals
+  
+  status          String   @default("PENDING") // PENDING, REJECTED, ACCEPTED
+  
+  createdAt       DateTime @default(now())
+}
+
+model ApprovalTask {
+  id              String   @id @default(uuid())
+  tenantId        String
+  storeId         String
+  store           Store    @relation(fields: [storeId], references: [id])
+  
+  actionType      String   // LINK, CREATE, UPDATE_FIELD, UPLOAD_PHOTO
+  platform        String
+  
+  dataOld         String?  // JSON
+  dataNew         String?  // JSON
+  diffSummary     String?
+  
+  status          String   @default("PENDING") // PENDING, APPROVED, REJECTED, SKIPPED
+  
+  approvedBy      String?
+  approvedAt      DateTime?
+  
+  createdAt       DateTime @default(now())
+}
+
+model SyncJob {
+  id              String   @id @default(uuid())
+  tenantId        String
+  triggerType     String   // MANUAL, AUTO_EDIT, SCHEDULED
+  status          String   @default("QUEUED") // QUEUED, RUNNING, COMPLETED, FAILED, PARTIAL
+  
+  startedAt       DateTime?
+  finishedAt      DateTime?
+  
+  steps           SyncStep[]
+  createdAt       DateTime @default(now())
+}
+
+model SyncStep {
+  id              String   @id @default(uuid())
+  jobId           String
+  job             SyncJob  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  
+  storeId         String
+  platform        String
+  action          String
+  status          String   // PENDING, SUCCESS, FAILED
+  errorDetails    String?
+  
+  createdAt       DateTime @default(now())
+}
+
+model ChangeSnapshot {
+  id              String   @id @default(uuid())
+  storeId         String
+  store           Store    @relation(fields: [storeId], references: [id])
+  platform        String
+  
+  snapshotData    String   // JSON
+  actionType      String
+  
+  restoredAt      DateTime?
+  
+  createdAt       DateTime @default(now())
+}
+
+model CategoryMapping {
+  id              String   @id @default(uuid())
+  internalId      String   // e.g., "coffee_shop"
+  tenantId        String?  // Null for global defaults
+  platform        String
+  externalId      String   // Google GCID or Yandex ID
+  
+  createdAt       DateTime @default(now())
+  
+  @@unique([internalId, platform, tenantId])
+}
+
+model QRCode {
+  id        String   @id @default(uuid())
+  name      String   // e.g. "Table 5" or "Main Counter"
+  slug      String   @unique // For the short URL
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id])
+  scans     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Feedback {
+  id        String   @id @default(uuid())
+  rating    Int
+  comment   String?
+  contact   String?  // Email or Phone
+  deviceHash String?
+  ipHash     String?
+  userAgentHash String?
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id])
+  status    String   @default("NEW") // NEW, RESOLVED, ARCHIVED
+  createdAt DateTime @default(now())
+
+  @@index([storeId, deviceHash, createdAt])
+  @@index([storeId, ipHash, createdAt])
+}
+
+model MapReview {
+  id               String   @id @default(uuid())
+  source           String   // YANDEX, TWOGIS
+  storeId          String?
+  store            Store?   @relation(fields: [storeId], references: [id], onDelete: SetNull)
+  placeId          String?
+  externalReviewId String
+  reviewUrl        String
+  authorName       String?
+  rating           Int?
+  reviewText       String
+  reviewTime       DateTime?
+  status           String   @default("NEW") // NEW, NOTIFIED, REPLY_OPENED, DONE
+  rawPayload       String?
+  notifications    TelegramNotification[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([source, externalReviewId])
+  @@index([status, createdAt])
+  @@index([storeId, createdAt])
+}
+
+model TelegramNotification {
+  id             String    @id @default(uuid())
+  reviewId       String
+  review         MapReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  chatId         String
+  messageId      String?
+  deliveryStatus String    @default("PENDING") // PENDING, SENT, FAILED
+  errorDetails   String?
+  sentAt         DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([reviewId, createdAt])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  action    String
+  details   String?
+  tenantId  String?
+  userId    String?
+  createdAt DateTime @default(now())
+
+  @@index([tenantId, createdAt])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
