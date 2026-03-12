@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/db';
+import { prisma, withDbRetry } from '@/lib/db';
 import { notFound } from 'next/navigation';
 import PublicRatingClient from './client';
 
@@ -23,24 +23,28 @@ function toInternalId(name: string): string {
 export default async function PublicQRPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   
-  const qr = await prisma.qRCode.findUnique({
-    where: { slug },
-    include: {
-      store: {
-        include: {
-          locationLinks: true, // Updated from platformLinks
+  const qr = await withDbRetry(() =>
+    prisma.qRCode.findUnique({
+      where: { slug },
+      include: {
+        store: {
+          include: {
+            locationLinks: true, // Updated from platformLinks
+          },
         },
       },
-    },
-  });
+    }),
+  );
 
   if (!qr) notFound();
 
   // Track scan (async, non-blocking)
-  await prisma.qRCode.update({
-    where: { id: qr.id },
-    data: { scans: { increment: 1 } },
-  });
+  await withDbRetry(() =>
+    prisma.qRCode.update({
+      where: { id: qr.id },
+      data: { scans: { increment: 1 } },
+    }),
+  );
   const internalId = toInternalId(qr.store.name || 'store').toUpperCase();
 
   return (
