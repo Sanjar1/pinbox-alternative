@@ -1,5 +1,105 @@
 # Progress Log
 
+## 2026-03-11 - QR Voting UX Overhaul + Railway Deployment Prep
+
+**Done:**
+- Fixed QR voting page flow: vote is now saved to DB **before** showing platform links or comment form
+- Added 2-step flow: Step 1 = rate + submit → Step 2 = platform links (high score) or comment form (low score)
+- Updated questions to final approved versions (UZ + RU, short labels + direct sub-questions)
+- Rewrote QR poster text entirely in Russian — clean, consistent, no mixed languages
+- Fixed QR poster: UPPERCASE store name, "Как вам у нас?" on one line, URL removed from footer
+- Added correct brand colors + SVG icons to platform buttons (Google #1A73E8, Yandex #FC3F1D, 2GIS #1BA53E)
+- Fixed Yandex link for Авиасозлар to use real org ID (96275437524)
+- Store name rendered UPPERCASE on both voting page and poster
+- Decided to deploy on Railway for always-online production hosting
+
+**Found:**
+- All 2GIS + Yandex DB links were search queries, not direct store cards — only Авиасозлар Yandex link fixed
+- SQLite is incompatible with Railway's ephemeral filesystem — PostgreSQL migration required before deploy
+- `VotingPage.tsx` component is a duplicate of `client.tsx` — only `client.tsx` is used on the real `/[slug]` route
+
+**Next:**
+- Migrate database schema from SQLite to PostgreSQL
+- Push project to GitHub
+- Deploy to Railway
+- Set all env vars on Railway dashboard
+- Generate QR posters for all 33 stores using production URL
+
+---
+
+## 2026-03-08 - QR Feedback Pilot Hardening + Poster Generator
+
+**Done:**
+- Upgraded the public QR feedback page in `app`:
+  - Uzbek Cyrillic default + Russian language switch
+  - 3 separate rating questions
+  - average-score routing for public map links
+- Added anti-abuse protection to feedback submission:
+  - one vote per device per 7 days
+  - IP throttling / burst limits
+  - suspicious vote flagging
+- Applied Prisma migration `20260307100000_add_feedback_abuse_protection_fields` after finding schema mismatch during live test preparation
+- Generated a real QR test asset for store slug `523da2`
+- Added branded QR poster generator:
+  - script: `app/scripts/generate-qr-poster.mjs`
+  - outputs HTML + PNG in `app/test-output/`
+- Iterated poster design with customer-facing store name and orange/white brand colors
+- Clarified launch behavior from the codebase:
+  - missing Google/Yandex listings do not block launch
+  - private feedback still works even when public map links are not connected
+
+**Found:**
+- Feedback submission would fail until the latest Prisma migration was applied locally
+- Poster quality depends heavily on layout proportions: large QR performs better than text-heavy layouts
+- Current root docs were still centered on older Yandex-only/Google-import threads and needed a fresh snapshot
+
+**Next:**
+- Finalize poster visual direction and generate posters for all pilot stores
+- Remove temporary debug scripts in `app/scripts/`
+- Keep Google batch 2 queued until quota reset
+- Start pilot with private feedback even for stores that still lack public map listings
+
+## 2026-03-08 - Google Business Profile Import Complete Preparation
+
+**Done:**
+- Restored context from previous sessions: Google Business bulk import work in progress
+- Verified actual status on business.google.com:
+  - 19 businesses total, 47% verified (green progress bar)
+  - First batch (10 stores) submitted and partially verified
+  - Second batch affected by Google's rate limit quota
+- Confirmed file state:
+  - v5.csv: First batch (10 stores) with proper admin areas - uploaded successfully
+  - v6.csv: Second batch (14 remaining stores) validated and ready
+- Created v6.xlsx Excel format from v6.csv:
+  - File: `data/Google-Business-Profile-Import-v6.xlsx`
+  - Format: proper Excel formatting with bold headers
+  - All 14 stores with correct data (addresses, hours, coords, phone, logo URL, description)
+- Geocoding verified working: all 24 stores have accurate lat/lng coordinates
+- Admin area validation confirmed: blank for Tashkent city, regional names for outlying areas
+- Clarified Google Business requirements:
+  - Video: NOT mandatory for verification
+  - Photos: NOT mandatory for verification
+  - Automatic verification: Google will verify location 1-3 days after upload
+  - Photos can be added AFTER verification passes (optional enhancement)
+
+**Status of 24 stores:**
+- 4 fully verified ✓
+- 6 in "get verification" status (awaiting 1-3 day auto-verification from batch 1)
+- 14 queued in v6.xlsx (pending upload after 24-48h quota reset)
+
+**Key Findings:**
+- First batch experience showed ~10 store limit per import cycle (Google's rate limiting)
+- "Get verification" status is normal and expected - Google processes automatically
+- Videos and photos are optional enhancements, not blockers for verification
+- Both CSV and Excel formats accepted by Google Business import
+
+**Next:**
+- Wait 24-48 hours for quota reset (approx 2026-03-09 to 2026-03-10)
+- Upload v6.xlsx with remaining 14 stores using: Add business → Import businesses
+- Monitor verification progress daily on business.google.com
+- Expected verification completion: approx 2026-03-13 (1-3 days per store)
+- After all verified: optionally add photos (logo + store images) for better visibility
+
 ## 2026-02-28 - Context Restore + Telegram Tracking Sync
 
 **Done:**
