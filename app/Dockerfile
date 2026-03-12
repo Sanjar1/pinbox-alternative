@@ -29,7 +29,10 @@ COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/next.config.ts ./next.config.ts
+COPY docker-entrypoint.sh ./docker-entrypoint.sh
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "npm start -- --hostname 0.0.0.0 --port ${PORT:-3000}"]
+RUN chmod +x ./docker-entrypoint.sh
+
+ENTRYPOINT ["./docker-entrypoint.sh"]
