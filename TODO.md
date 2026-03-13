@@ -1,6 +1,15 @@
 ﻿# TODO
 
-**Updated:** 2026-03-11
+**Updated:** 2026-03-13
+
+## Copy & UX Polish (2026-03-13) - PRIORITY 1
+
+- [x] Correct grammar and wording for RU voting questions on production page
+- [x] Correct grammar and wording for UZ voting questions on production page
+- [x] Replace QR poster headline/subline with approved copy (`Оставьте ваш отзыв`, `Ваше мнение важно для нас.`)
+- [x] Deploy wording fixes to Railway and verify production pages
+- [x] Fix UZ product question wording (`Маҳсулот янги ва сифатлими?`)
+- [x] Refresh Railway redeploy cheatsheet so any AI/dev can redeploy from CLI
 
 ## Railway Deployment (2026-03-11) - PRIORITY 1
 

@@ -1,5 +1,40 @@
 # Progress Log
 
+## 2026-03-13 - Voting/Poster Wording Fixes + Railway Redeploy
+
+**Done:**
+- Updated production voting copy in `app/src/app/[slug]/client.tsx`:
+  - RU:
+    - `Хорошо ли вас обслужил продавец?`
+    - `Был ли продукт свежим и качественным?`
+    - `Насколько привлекательна для вас цена относительно других торговых точек?`
+  - UZ:
+    - `Сотувчининг хизмат кўрсатиш жараёни қониқарли даражада бўлдими?`
+    - `Маҳсулот янги ва сифатлими?`
+    - `Бошқа савдо нуқталарига нисбатан нархлар сиз учун адолатлими?`
+- Updated primary QR poster copy in `app/src/app/poster/[slug]/page.tsx`:
+  - Title changed to `Оставьте ваш отзыв`
+  - Subtitle changed to `Ваше мнение важно для нас.`
+- Synced the same poster copy in:
+  - `app/scripts/generate-qr-poster.mjs`
+  - `app/test-output/qr-poster-523da2.html`
+- Built locally successfully (`npm --prefix app run build`).
+- Pushed commit `fd566ed` to `main`.
+- Deployed to Railway successfully (`beba68a3-efce-44e6-9b93-8b369fbb8ae7`).
+- Updated deployment docs for reproducible AI/operator redeploys:
+  - `RAILWAY_CHEATSHEET.md` rewritten with verified CLI flow
+  - `DEPLOY_CLI_GUIDE.md` command corrections (`railway deployment list`)
+
+**Found:**
+- Default voting language is Uzbek; Russian wording is visible after switching to `РУ`.
+- One retry deployment fell back to Nixpacks and failed (`433417ce`), while Dockerfile deployment succeeded.
+
+**Next:**
+- Continue cleaning store map URLs to direct card links for all platforms.
+- Keep deployment runbook synchronized with actual Railway CLI behavior.
+
+---
+
 ## 2026-03-11 - QR Voting UX Overhaul + Railway Deployment Prep
 
 **Done:**

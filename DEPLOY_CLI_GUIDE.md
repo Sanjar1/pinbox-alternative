@@ -231,7 +231,7 @@ railway redeploy
 
 ```bash
 # List recent deployments
-railway deployments list
+railway deployment list
 
 # Watch logs in real-time
 railway logs --tail
@@ -316,7 +316,7 @@ railway logs --tail
 **Check status:**
 
 ```bash
-railway deployments list
+railway deployment list
 ```
 
 **Redeploy:**

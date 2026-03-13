@@ -5,6 +5,18 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Changed (2026-03-13)
+- Voting page wording refined (UZ + RU) on production route `/[slug]`.
+- Primary QR poster copy updated:
+  - `Как вам у нас?` -> `Оставьте ваш отзыв`
+  - supporting line -> `Ваше мнение важно для нас.`
+- Uzbek product question corrected to `Маҳсулот янги ва сифатлими?`.
+
+### Fixed (2026-03-13)
+- Deployment runbook commands updated to match current Railway CLI:
+  - `railway deployment list` used instead of deprecated `railway deployments list`.
+- Railway CLI cheatsheet rewritten for reliable CLI-only redeploy flow.
+
 ### Added (2026-03-11)
 - 2-step QR voting flow: vote saved to DB on submit, then platform links or comment form shown
 - Private comment form for low-score votes (avg < 4) with send button
