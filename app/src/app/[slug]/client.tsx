@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { submitFeedback } from './actions';
 import type { Store, PlatformLocationLink } from '@prisma/client';
 import { isDirectPlatformLocationUrl } from '@/lib/validation';
+import { getStoreLinkOverrides } from '@/lib/store-link-overrides';
 
 type StoreWithLinks = Store & { locationLinks: PlatformLocationLink[] };
 type Language = 'uz' | 'ru';
@@ -129,11 +130,30 @@ export default function PublicRatingClient({ store }: { store: StoreWithLinks })
   const t = copy[lang];
   const allRated = ratings.every((r) => r > 0);
   const platformOrder: Record<string, number> = { YANDEX: 0, TWOGIS: 1, GOOGLE: 2 };
-  const publicLinks = store.locationLinks.filter((l) => {
+  const directDbLinks = store.locationLinks.filter((l) => {
     if (!l.url || l.url.length === 0) return false;
     if (l.platform !== 'GOOGLE' && l.platform !== 'YANDEX' && l.platform !== 'TWOGIS') return false;
     return isDirectPlatformLocationUrl(l.platform, l.url);
-  }).sort((a, b) => (platformOrder[a.platform] ?? 99) - (platformOrder[b.platform] ?? 99));
+  });
+
+  const override = getStoreLinkOverrides(store.name);
+  const dbByPlatform = new Map(directDbLinks.map((link) => [link.platform, link]));
+  const publicLinks = (['YANDEX', 'TWOGIS', 'GOOGLE'] as const)
+    .map((platform) => {
+      const dbLink = dbByPlatform.get(platform);
+      if (dbLink) return dbLink;
+
+      const fallbackUrl = override?.[platform];
+      if (!fallbackUrl) return null;
+
+      return {
+        id: `fallback-${store.id}-${platform}`,
+        platform,
+        url: fallbackUrl,
+      } as Pick<PlatformLocationLink, 'id' | 'platform' | 'url'>;
+    })
+    .filter((link): link is Pick<PlatformLocationLink, 'id' | 'platform' | 'url'> => Boolean(link))
+    .sort((a, b) => (platformOrder[a.platform] ?? 99) - (platformOrder[b.platform] ?? 99));
 
   async function handleSubmitVote() {
     if (!allRated) {
