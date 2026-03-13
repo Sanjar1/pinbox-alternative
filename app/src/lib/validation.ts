@@ -6,6 +6,17 @@ const URL_PATTERNS: Record<Platform, RegExp[]> = {
   TWOGIS: [/2gis\./i],
 };
 
+const DIRECT_URL_PATTERNS: Record<Platform, RegExp[]> = {
+  GOOGLE: [
+    /google\.[^/]+\/maps\/place\//i,
+    /google\.[^/]+\/maps\?.*(cid=|ftid=|q=place_id:)/i,
+    /maps\.app\.goo\.gl/i,
+    /g\.page/i,
+  ],
+  YANDEX: [/yandex\.[^/]+\/maps\/org\//i, /yandex\.[^/]+\/org\//i],
+  TWOGIS: [/2gis\.[^/]+\/[^?]*\/firm\//i],
+};
+
 export type StoreInput = {
   name: string;
   address: string;
@@ -40,6 +51,16 @@ export function isValidPlatformUrl(platform: Platform, value: string): boolean {
   return URL_PATTERNS[platform].some((pattern) => pattern.test(value));
 }
 
+export function isDirectPlatformLocationUrl(platform: Platform, value: string): boolean {
+  if (!value) {
+    return true;
+  }
+  if (!isValidPlatformUrl(platform, value)) {
+    return false;
+  }
+  return DIRECT_URL_PATTERNS[platform].some((pattern) => pattern.test(value));
+}
+
 export function validateStoreInput(input: StoreInput): string | null {
   if (!input.name || input.name.length < 2 || input.name.length > 120) {
     return 'Store name must be between 2 and 120 characters';
@@ -47,14 +68,14 @@ export function validateStoreInput(input: StoreInput): string | null {
   if (input.address.length > 255) {
     return 'Address is too long';
   }
-  if (!isValidPlatformUrl('GOOGLE', input.googleUrl)) {
-    return 'Google URL is invalid';
+  if (!isDirectPlatformLocationUrl('GOOGLE', input.googleUrl)) {
+    return 'Google URL must be a direct place/card link';
   }
-  if (!isValidPlatformUrl('YANDEX', input.yandexUrl)) {
-    return 'Yandex URL is invalid';
+  if (!isDirectPlatformLocationUrl('YANDEX', input.yandexUrl)) {
+    return 'Yandex URL must be a direct org/card link';
   }
-  if (!isValidPlatformUrl('TWOGIS', input.twogisUrl)) {
-    return '2GIS URL is invalid';
+  if (!isDirectPlatformLocationUrl('TWOGIS', input.twogisUrl)) {
+    return '2GIS URL must be a direct firm/card link';
   }
   return null;
 }
@@ -138,4 +159,3 @@ export function parseCsv(text: string): CsvRow[] {
 
   return rows;
 }
-
