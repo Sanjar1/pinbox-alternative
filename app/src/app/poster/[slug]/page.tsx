@@ -108,9 +108,9 @@ export default async function PosterBySlugPage({ params }: { params: Promise<{ s
             <div style={{ textAlign: 'right', fontSize: 28, color: 'var(--muted)' }}>{brandName}</div>
           </div>
           <div>
-            <h1 style={{ margin: '12px 0 10px', fontSize: 76, lineHeight: 0.96 }}>Как вам у нас?</h1>
+            <h1 style={{ margin: '12px 0 10px', fontSize: 76, lineHeight: 0.96 }}>Оставьте ваш отзыв</h1>
             <p style={{ margin: 0, maxWidth: 860, fontSize: 36, lineHeight: 1.15, color: '#302925' }}>
-              Отсканируйте и оцените — это займёт <strong style={{ color: 'var(--accent)' }}>1 минуту</strong>.
+              Ваше мнение важно для нас.
             </p>
           </div>
         </section>

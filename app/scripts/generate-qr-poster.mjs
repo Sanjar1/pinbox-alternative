@@ -290,8 +290,8 @@ async function main() {
           <div class="store">${escapeHtml(brandName)}</div>
         </div>
         <div>
-          <h1>Как вам у нас?</h1>
-          <p class="lead">Отсканируйте и оцените — это займёт <strong>1 минуту</strong>.</p>
+          <h1>Оставьте ваш отзыв</h1>
+          <p class="lead">Ваше мнение важно для нас.</p>
         </div>
       </section>
 
