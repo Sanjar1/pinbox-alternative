@@ -200,100 +200,87 @@ export default function PublicRatingClient({ store }: { store: StoreWithLinks })
 
   // ── POST-VOTE ──
   if (phase === 'post-vote') {
-    if (avgRating >= 4) {
-      return (
-        <div style={{ padding: '8px 0' }}>
-          <p style={{ fontWeight: 600, fontSize: 16, marginBottom: 20, color: '#1A3A2A' }}>
-            {t.makePublic}
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {publicLinks.length > 0 ? publicLinks.map((link) => {
-              const p = platforms[link.platform];
-              return (
-                <a
-                  key={link.id}
-                  href={link.url!}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 12,
-                    padding: '14px 20px',
-                    borderRadius: 6,
-                    background: p?.bg || '#555',
-                    color: '#fff',
-                    fontWeight: 600,
-                    fontSize: 15,
-                    textDecoration: 'none',
-                  }}
-                >
-                  {p && <span dangerouslySetInnerHTML={{ __html: p.icon }} />}
-                  {p?.label || link.platform}
-                  <span style={{ marginLeft: 'auto', opacity: 0.7 }}>→</span>
-                </a>
-              );
-            }) : (
-              <p style={{ color: '#A09070', fontSize: 14 }}>Ссылки пока не настроены.</p>
-            )}
-          </div>
-        </div>
-      );
-    }
-
-    // Low score → comment form
-    if (commentSent) {
-      return (
-        <div style={{ textAlign: 'center', padding: '48px 0' }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>✓</div>
-          <p style={{ fontSize: 20, fontWeight: 600, color: '#1A3A2A' }}>{t.thankYou}</p>
-          <p style={{ fontSize: 14, color: '#8A7A5A', marginTop: 8 }}>{t.thankYouSub}</p>
-        </div>
-      );
-    }
-
     return (
       <div style={{ padding: '8px 0' }}>
-        <p style={{ fontWeight: 600, fontSize: 16, marginBottom: 16, color: '#2A1810' }}>
-          {t.privateFeedback}
+        <p style={{ fontWeight: 600, fontSize: 16, marginBottom: 20, color: '#1A3A2A' }}>
+          {t.makePublic}
         </p>
-        <textarea
-          rows={5}
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          placeholder={t.commentPlaceholder}
-          style={{
-            width: '100%',
-            padding: 12,
-            border: '1.5px solid #EFE0B8',
-            borderRadius: 4,
-            fontSize: 15,
-            fontFamily: 'inherit',
-            resize: 'none',
-            boxSizing: 'border-box',
-          }}
-        />
-        {error && <p style={{ color: '#B85C38', fontSize: 13, marginTop: 6 }}>{error}</p>}
-        <button
-          type="button"
-          onClick={handleSendComment}
-          disabled={!comment.trim() || loading}
-          style={{
-            marginTop: 12,
-            width: '100%',
-            padding: '14px',
-            background: comment.trim() ? '#B85C38' : '#D8CBA8',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 4,
-            fontWeight: 600,
-            fontSize: 14,
-            cursor: comment.trim() ? 'pointer' : 'not-allowed',
-            letterSpacing: '0.05em',
-          }}
-        >
-          {loading ? '...' : t.sendComment}
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {publicLinks.length > 0 ? publicLinks.map((link) => {
+            const p = platforms[link.platform];
+            return (
+              <a
+                key={link.id}
+                href={link.url!}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  padding: '14px 20px',
+                  borderRadius: 6,
+                  background: p?.bg || '#555',
+                  color: '#fff',
+                  fontWeight: 600,
+                  fontSize: 15,
+                  textDecoration: 'none',
+                }}
+              >
+                {p && <span dangerouslySetInnerHTML={{ __html: p.icon }} />}
+                {p?.label || link.platform}
+                <span style={{ marginLeft: 'auto', opacity: 0.7 }}>→</span>
+              </a>
+            );
+          }) : (
+            <p style={{ color: '#A09070', fontSize: 14 }}>Ссылки пока не настроены.</p>
+          )}
+        </div>
+
+        {avgRating < 4 && (
+          <div style={{ marginTop: 20 }}>
+            <p style={{ fontWeight: 600, fontSize: 16, marginBottom: 16, color: '#2A1810' }}>
+              {t.privateFeedback}
+            </p>
+            <textarea
+              rows={5}
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder={t.commentPlaceholder}
+              style={{
+                width: '100%',
+                padding: 12,
+                border: '1.5px solid #EFE0B8',
+                borderRadius: 4,
+                fontSize: 15,
+                fontFamily: 'inherit',
+                resize: 'none',
+                boxSizing: 'border-box',
+              }}
+            />
+            {error && <p style={{ color: '#B85C38', fontSize: 13, marginTop: 6 }}>{error}</p>}
+            <button
+              type="button"
+              onClick={handleSendComment}
+              disabled={!comment.trim() || loading}
+              style={{
+                marginTop: 12,
+                width: '100%',
+                padding: '14px',
+                background: comment.trim() ? '#B85C38' : '#D8CBA8',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 4,
+                fontWeight: 600,
+                fontSize: 14,
+                cursor: comment.trim() ? 'pointer' : 'not-allowed',
+                letterSpacing: '0.05em',
+              }}
+            >
+              {loading ? '...' : t.sendComment}
+            </button>
+          </div>
+        )}
       </div>
     );
   }
