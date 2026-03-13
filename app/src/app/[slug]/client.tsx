@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { submitFeedback } from './actions';
 import type { Store, PlatformLocationLink } from '@prisma/client';
-import { isDirectPlatformLocationUrl } from '@/lib/validation';
+import { isDirectPlatformLocationUrl, isValidPlatformUrl } from '@/lib/validation';
 
 type StoreWithLinks = Store & { locationLinks: PlatformLocationLink[] };
 type Language = 'uz' | 'ru';
@@ -128,11 +128,17 @@ export default function PublicRatingClient({ store }: { store: StoreWithLinks })
 
   const t = copy[lang];
   const allRated = ratings.every((r) => r > 0);
-  const publicLinks = store.locationLinks.filter((l) => {
+  const directLinks = store.locationLinks.filter((l) => {
     if (!l.url || l.url.length === 0) return false;
     if (l.platform !== 'GOOGLE' && l.platform !== 'YANDEX' && l.platform !== 'TWOGIS') return false;
     return isDirectPlatformLocationUrl(l.platform, l.url);
   });
+  const fallbackLinks = store.locationLinks.filter((l) => {
+    if (!l.url || l.url.length === 0) return false;
+    if (l.platform !== 'GOOGLE' && l.platform !== 'YANDEX' && l.platform !== 'TWOGIS') return false;
+    return isValidPlatformUrl(l.platform, l.url);
+  });
+  const publicLinks = directLinks.length > 0 ? directLinks : fallbackLinks;
 
   async function handleSubmitVote() {
     if (!allRated) {
