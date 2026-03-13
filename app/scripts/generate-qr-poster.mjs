@@ -22,24 +22,6 @@ function parseArgs(argv) {
   return result;
 }
 
-function toInternalId(name) {
-  const map = {
-    а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'yo', ж: 'j', з: 'z', и: 'i', й: 'y',
-    к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r', с: 's', т: 't', у: 'u', ф: 'f',
-    х: 'x', ц: 'ts', ч: 'ch', ш: 'sh', щ: 'sh', ъ: '', ы: 'i', ь: '', э: 'e', ю: 'yu', я: 'ya',
-    қ: 'q', ғ: 'g', ҳ: 'h', ў: 'o', ':': ' ', '"': ' ', "'": ' ', '(': ' ', ')': ' ', ',': ' ',
-  };
-
-  return name
-    .toLowerCase()
-    .split('')
-    .map((char) => map[char] ?? char)
-    .join('')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .replace(/-+/g, '-');
-}
-
 function escapeHtml(value) {
   return value
     .replaceAll('&', '&amp;')
@@ -51,6 +33,7 @@ function escapeHtml(value) {
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const slug = args.slug;
+  const storeNameArg = args['store-name'];
   const baseUrl = args['base-url'] ?? 'http://localhost:3000';
   const outputDir = args['output-dir'] ?? path.join(process.cwd(), 'test-output');
 
@@ -58,17 +41,20 @@ async function main() {
     throw new Error('Missing required --slug argument');
   }
 
-  const qr = await prisma.qRCode.findUnique({
-    where: { slug },
-    include: { store: true },
-  });
+  let storeName = storeNameArg;
+  if (!storeName) {
+    const qr = await prisma.qRCode.findUnique({
+      where: { slug },
+      include: { store: true },
+    });
 
-  if (!qr) {
-    throw new Error(`QR slug not found: ${slug}`);
+    if (!qr) {
+      throw new Error(`QR slug not found: ${slug}`);
+    }
+    storeName = qr.store.name || 'Store';
   }
 
-  const internalId = toInternalId(qr.store.name || 'store').toUpperCase();
-  const brandName = `${internalId} | Сырная Лавка`;
+  const storeLabel = `${storeName}`;
   const publicUrl = `${baseUrl.replace(/\/$/, '')}/${slug}`;
   const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1400x1400&data=${encodeURIComponent(publicUrl)}`;
 
@@ -82,7 +68,7 @@ async function main() {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${escapeHtml(brandName)}</title>
+    <title>${escapeHtml(storeLabel)}</title>
     <style>
       :root {
         --bg: #fff4ea;
@@ -155,7 +141,7 @@ async function main() {
 
       .store {
         text-align: right;
-        font-size: 28px;
+        font-size: 20px;
         color: var(--muted);
       }
 
@@ -287,7 +273,7 @@ async function main() {
       <section class="hero">
         <div class="brand-row">
           <div class="badge">Оцените нас</div>
-          <div class="store">${escapeHtml(brandName)}</div>
+          <div class="store">${escapeHtml(storeLabel)}</div>
         </div>
         <div>
           <h1>Оставьте ваш отзыв</h1>
@@ -328,8 +314,8 @@ async function main() {
 
   console.log(JSON.stringify({
     slug,
-    storeName: qr.store.name,
-    brandName,
+    storeName,
+    storeLabel,
     publicUrl,
     htmlPath,
     pngPath,

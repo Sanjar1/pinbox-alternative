@@ -82,6 +82,52 @@ const platforms: Record<string, { label: string; bg: string; icon: string }> = {
   },
 };
 
+function toReviewUrl(platform: string, rawUrl: string): string {
+  const url = rawUrl.trim();
+  if (!url) return rawUrl;
+
+  try {
+    const parsed = new URL(url);
+
+    if (platform === 'YANDEX') {
+      const m = parsed.pathname.match(/\/(?:maps\/)?org\/(\d+)/i);
+      if (m) {
+        return `${parsed.origin}/maps/org/${m[1]}/reviews/`;
+      }
+      return rawUrl;
+    }
+
+    if (platform === 'TWOGIS') {
+      if (/\/firm\//i.test(parsed.pathname)) {
+        const cleanPath = parsed.pathname.replace(/\/+$/, '');
+        return `${parsed.origin}${cleanPath}/tab/reviews`;
+      }
+      return rawUrl;
+    }
+
+    if (platform === 'GOOGLE') {
+      const placeId = parsed.searchParams.get('q')?.replace(/^place_id:/i, '')
+        || parsed.searchParams.get('query_place_id')
+        || parsed.searchParams.get('place_id');
+
+      if (placeId) {
+        return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(placeId)}`;
+      }
+
+      if (/g\.page$/i.test(parsed.hostname) || /^g\.page$/i.test(parsed.hostname.replace(/^www\./i, ''))) {
+        const cleanPath = parsed.pathname.replace(/\/+$/, '');
+        return `${parsed.origin}${cleanPath}/review`;
+      }
+
+      return rawUrl;
+    }
+  } catch {
+    return rawUrl;
+  }
+
+  return rawUrl;
+}
+
 function StarRow({
   value,
   onChange,
@@ -235,7 +281,7 @@ export default function PublicRatingClient({ store }: { store: StoreWithLinks })
               return (
                 <a
                   key={link.id}
-                  href={link.url!}
+                  href={toReviewUrl(link.platform, link.url!)}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
