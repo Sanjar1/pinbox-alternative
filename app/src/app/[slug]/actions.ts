@@ -5,7 +5,7 @@ import { toCleanString, validateFeedbackInput } from '@/lib/validation';
 import { sendFeedbackAlert } from '@/lib/notifications';
 import { writeAuditLog } from '@/lib/audit';
 import { cookies, headers } from 'next/headers';
-import { getClientIp, getOrCreateDeviceId, sha256 } from '@/lib/feedback-protection';
+import { getClientIp, getOrCreateDeviceId, isTesterDeviceId, sha256 } from '@/lib/feedback-protection';
 
 export async function submitFeedback(formData: FormData): Promise<{ error?: string; success?: string }> {
   const storeId = toCleanString(formData.get('storeId'));
@@ -64,6 +64,7 @@ export async function submitFeedback(formData: FormData): Promise<{ error?: stri
   const salt = process.env.FEEDBACK_HASH_SALT?.trim() || process.env.SESSION_SECRET?.trim() || 'pinbox-feedback';
 
   const deviceId = getOrCreateDeviceId(cookieStore, clientDeviceId);
+  const testerBypass = isTesterDeviceId(deviceId);
   const deviceHash = sha256(`${salt}:device:${deviceId}`);
   const ipHash = clientIp ? sha256(`${salt}:ip:${clientIp}`) : '';
   const userAgentHash = userAgent ? sha256(`${salt}:ua:${userAgent}`) : '';
@@ -71,7 +72,7 @@ export async function submitFeedback(formData: FormData): Promise<{ error?: stri
   const antiAbuseDisabled = process.env.DISABLE_ANTI_ABUSE === '1';
   let suspicious = false;
 
-  if (!antiAbuseDisabled) {
+  if (!antiAbuseDisabled && !testerBypass) {
     const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const weeklyDeviceVotes = await prisma.feedback.count({
       where: {

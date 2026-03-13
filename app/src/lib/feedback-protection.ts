@@ -63,3 +63,16 @@ export function getOrCreateDeviceId(cookieStore: CookieReader, clientDeviceId: s
   return generated;
 }
 
+function parseEnvList(value: string | undefined): string[] {
+  if (!value) return [];
+  return value
+    .split(',')
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+}
+
+export function isTesterDeviceId(deviceId: string): boolean {
+  if (!deviceId) return false;
+  const allowed = parseEnvList(process.env.TESTER_DEVICE_IDS);
+  return allowed.includes(deviceId);
+}
