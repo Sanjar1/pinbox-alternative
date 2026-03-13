@@ -151,9 +151,11 @@ export default function PublicRatingClient({ store }: { store: StoreWithLinks })
     formData.set('comment', `[ratings] service:${ratings[0]};quality:${ratings[1]};prices:${ratings[2]};lang:${lang}`);
 
     const key = 'qr-device-id';
+    const testerParam = new URLSearchParams(window.location.search).get('testerDeviceId')?.trim() ?? '';
+    const testerDeviceId = /^[a-zA-Z0-9_-]{8,120}$/.test(testerParam) ? testerParam : '';
     const existing = window.localStorage.getItem(key);
-    const deviceId = existing || (window.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`);
-    if (!existing) window.localStorage.setItem(key, deviceId);
+    const deviceId = testerDeviceId || existing || (window.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`);
+    if (!existing || testerDeviceId) window.localStorage.setItem(key, deviceId);
     formData.set('deviceId', deviceId);
 
     const result = await submitFeedback(formData);
