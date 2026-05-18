@@ -46,3 +46,7 @@ dev.db
 # local deployment/debug temp dirs
 /.tmp_prisma_runtime_test/
 /.tmp_runner_sim/
+
+# generated test artifacts and scripts output (not needed for Railway build)
+/test-output/
+/data/generated-store-import.csv
