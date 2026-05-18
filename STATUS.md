@@ -1,39 +1,33 @@
 # Status
 
-**Updated:** 2026-03-13
+**Updated:** 2026-05-18
 
 ## Current Phase
 
-`Production stabilization on Railway + UX/copy polish for QR voting flow`
+`Production complete: all 41 A5 poster QR links verified 200 in production`
 
-## Session Snapshot (2026-03-13)
+## Approved Print Source
 
-- Updated live voting question copy in Uzbek and Russian for grammatical clarity.
-- Updated primary QR poster copy:
-  - `Как вам у нас?` -> `Оставьте ваш отзыв`
-  - supporting line -> `Ваше мнение важно для нас.`
-- Synced same QR copy in poster generation script and generated HTML artifact.
-- Corrected Uzbek product phrase to `Маҳсулот янги ва сифатлими?`.
-- Commit pushed: `fd566ed` (`fix: correct voting and QR poster copy`).
-- Railway deployment completed successfully: `beba68a3-efce-44e6-9b93-8b369fbb8ae7`.
-- Updated Railway redeploy documentation (`RAILWAY_CHEATSHEET.md`, `DEPLOY_CLI_GUIDE.md`) for CLI-only reproducible deploys.
-- Verified production pages:
-  - `/poster/523da2` contains updated QR poster text.
-  - `/523da2` contains updated UZ + RU voting questions (RU verified after language toggle).
+- Active print batch: `posters/A5-PRINT-READY-2026-05-17` (`41` HTML posters).
+- All 41 posters have unique slugs → unique stores → unique DB records.
 
-## What Works
+## What Is Done
 
-1. Railway production deployment pipeline (Dockerfile path) is healthy.
-2. QR poster route renders final requested Russian copy.
-3. Voting route renders corrected UZ and RU question text.
-4. Direct map-card URL enforcement is active (no random search redirects).
+- **41/41 QR poster links return HTTP 200** in production (confirmed 2026-05-18).
+- Glotok Юнусабад (`/4c5350`) and Глоток Панельный (`/e96943`) are fully separate stores from Лавка Юнусабад (`/ac16ce`) and Лавка Панельный (`/34945c`).
+- 14 test votes cleared from production DB.
+- `repair-a5-links` admin endpoint deployed and executed successfully.
+- Brand theming system live (`kaas` / `glotok` / `ruba`) with per-brand voting page colours.
+- `Store.archivedAt` soft-delete column added (migration applied via entrypoint on deploy).
+- Admin + analytics + reports API endpoints deployed with `REPORTS_API_KEY` auth.
+- Railway deploy from `app/` CLI now works reliably (gitignore fixed for 47MB test-output).
+- `REPORTS_API_KEY=pinbox-reports-2026-secure` set in Railway production variables.
 
-## What Is Blocked
+## Current Blockers
 
-1. Some stores may still have missing/non-direct map links in DB, so platform buttons can be hidden until direct card URLs are saved.
+None. M4 milestone is complete.
 
-## Next Actions
+## Immediate Next Step
 
-1. Review and normalize remaining store map URLs in admin (Google/Yandex/2GIS direct card links).
-2. Regenerate/print final QR posters for pilot stores from production route.
-3. Keep deployment docs synced whenever Railway CLI commands or service settings change.
+- Enable Telegram daily report scheduler when vote volume is sufficient (M5).
+- Remove temporary `scripts/tmp-*.cjs` helper scripts.

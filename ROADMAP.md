@@ -1,60 +1,38 @@
-# Roadmap
+﻿# Roadmap
 
-## Current Milestone: M3 - QR Feedback Pilot Launch Readiness
+## Current Milestone: M5 - Reporting Activation
 
-**Goal:** Launch the customer QR/private-feedback flow while public map coverage is still being completed incrementally.
+**Goal:** Enable Telegram daily reports once vote volume is sufficient. Monitor first real-world vote data.
 
 **Key tasks:**
-- Finalize public QR page UX and text quality
-- Generate branded printable QR posters for launch stores
-- Keep private feedback operational even for disconnected stores
-- Connect missing Google/Yandex/2GIS review links incrementally after launch
-- Continue Google batch upload/verification in parallel where useful
+- Enable `Pinbox-Telegram-Daily-Report` scheduled task when votes accumulate
+- Confirm nightly Railway redeploy stability
+- Remove temp diagnostic scripts
 
 ## Completed Milestones
 
-- **M0 - Product Definition** (2026-02-06)
-  Scope, decisions, compliance stance, delivery model defined.
+- **M4 - QR Production Completion** ✅ (2026-05-18)
+  - 41/41 A5 poster QR links return HTTP 200 in production
+  - All 41 stores have unique slugs and DB records
+  - Test votes cleared, Glotok stores split correctly
 
-- **M1 - Security Foundation** (2026-02-07)
-  Auth/session, tenant isolation, input validation, audit logging.
+## Completed Milestones
 
-- **M2.0 - Unified Sync Scaffold** (2026-02-10)
-  Data model migrated, discovery UI working, connector interface defined.
-
-- **M2.1 - Scaffold Verification** (2026-02-10)
-  Independent verification of implementation, lint/build stabilization, store import from Telegram.
-
-- **M2.2 - No-Google Pivot** (2026-02-17)
-  Strategy shifted away from Google dependency.
-
-- **M2.3 - Single-Platform Focus** (2026-02-25)
-  Active scope narrowed from multi-platform to Yandex-only delivery.
-
-- **M2.4 - QR Feedback Pilot Hardening** (2026-03-08)
-  Public feedback flow upgraded, anti-abuse checks added, branded poster generation started.
+- **M0 - Product Definition**
+- **M1 - Security Foundation**
+- **M2 - Sync/Connector Scaffold (historical)**
+- **M3 - QR Feedback Pilot Launch Readiness**
 
 ## Upcoming Milestones
 
-- **M4 - Map Link Completion**
-  Connect remaining stores to public review destinations without blocking QR launch.
+- **M5 - Reporting Activation**
+  Enable daily Telegram reports once vote volume is sufficient.
 
-- **M5 - Diff + Approval Pipeline (Yandex)**
-  Build per-field diff UI and approval execution flow.
-
-- **M6 - Yandex Sync Execution**
-  Controlled-account update flow, retry/backoff, failure state handling.
-
-- **M7 - Federated Yandex Operations**
-  For non-controlled stores, generate operator tasks and verification checklists.
-
-- **M8 - Rollback + Operations Hardening**
-  Snapshot-based rollback, alerts, dead-letter handling.
-
-- **M9 - Pilot Expansion**
-  Expand operator-run pilot after QR launch and public link coverage stabilize.
+- **M6 - Data Quality Operations**
+  Keep store/slug inventory synchronized to avoid placeholder regressions.
 
 ## Deferred/Archived Tracks
 
+- Yandex integration track (archived)
 - Google integration track (archived)
 - 2GIS integration track (archived)
