@@ -1,4 +1,4 @@
-﻿import PublicRatingClient from '@/app/[slug]/client';
+import PublicRatingClient from '@/app/[slug]/client';
 import { BRANDS, getVotingTitle } from '@/lib/brands';
 
 type BrandKey = 'kaas' | 'glotok' | 'ruba';
@@ -11,7 +11,7 @@ const previewStoreNames: Record<BrandKey, string> = {
   ruba: 'Ruba \u0423\u0440\u0438\u043a\u0437\u043e\u0440',
 };
 
-export default async function VotingPreview({
+export default async function VotingBrandPreviewPage({
   searchParams,
 }: {
   searchParams: Promise<{ brand?: string }>;

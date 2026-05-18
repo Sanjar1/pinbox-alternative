@@ -1,8 +1,9 @@
 'use server';
 
 import { prisma } from '@/lib/db';
-import { requireCurrentUser } from '@/lib/auth';
+import { requireCurrentUser, requireOwner } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 import type { ActionState } from '@/lib/action-state';
 import { Platform, ConnectorMode } from '@/lib/connectors/types';
 import { GoogleConnectorReal } from '@/lib/connectors/impl/google-real';
@@ -143,4 +144,41 @@ export async function syncStoreToPlatforms(prevState: ActionState, formData: For
 
     revalidatePath(`/admin/stores/${storeId}`);
     return { success: `Sync initiated: ${results.join(', ')}` };
+}
+
+export async function archiveStore(_: ActionState, formData: FormData): Promise<ActionState> {
+  const user = await requireOwner();
+  const storeId = formData.get('storeId') as string;
+
+  const store = await prisma.store.findFirst({
+    where: { id: storeId, tenantId: user.tenantId },
+  });
+  if (!store) return { error: 'Store not found' };
+
+  await prisma.store.update({
+    where: { id: storeId },
+    data: { archivedAt: new Date() },
+  });
+
+  revalidatePath('/admin/stores');
+  redirect('/admin/stores');
+}
+
+export async function unarchiveStore(_: ActionState, formData: FormData): Promise<ActionState> {
+  const user = await requireOwner();
+  const storeId = formData.get('storeId') as string;
+
+  const store = await prisma.store.findFirst({
+    where: { id: storeId, tenantId: user.tenantId },
+  });
+  if (!store) return { error: 'Store not found' };
+
+  await prisma.store.update({
+    where: { id: storeId },
+    data: { archivedAt: null },
+  });
+
+  revalidatePath(`/admin/stores/${storeId}`);
+  revalidatePath('/admin/stores');
+  return { success: 'Store restored successfully' };
 }

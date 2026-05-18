@@ -1,12 +1,10 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { submitFeedback } from './actions';
-import type { Store, PlatformLocationLink } from '@prisma/client';
-import { isDirectPlatformLocationUrl } from '@/lib/validation';
-import { getStoreLinkOverrides } from '@/lib/store-link-overrides';
+import type { Store } from '@prisma/client';
+import type { BrandConfig } from '@/lib/brands';
 
-type StoreWithLinks = Store & { locationLinks: PlatformLocationLink[] };
 type Language = 'uz' | 'ru';
 type Phase = 'voting' | 'post-vote' | 'done';
 
@@ -18,123 +16,44 @@ const questions: Record<Language, { label: string; sub: string }[]> = {
   ],
   ru: [
     { label: 'Сервис', sub: 'Хорошо ли вас обслужил продавец?' },
-    { label: 'Продукт', sub: 'Был ли продукт свежим и качественным?' },
-    { label: 'Цена', sub: 'Насколько привлекательна для вас цена относительно других торговых точек?' },
+    { label: 'Качество продукта', sub: 'Был ли продукт свежим и качественным?' },
+    { label: 'Цены', sub: 'Насколько привлекательна для вас цена относительно других торговых точек?' },
   ],
 };
 
 const copy: Record<Language, {
-  selectLang: string;
   submitVote: string;
   allRequired: string;
-  makePublic: string;
   privateFeedback: string;
   commentPlaceholder: string;
   sendComment: string;
   thankYou: string;
   thankYouSub: string;
-  errorGeneric: string;
   errorRatings: string;
 }> = {
   uz: {
-    selectLang: 'Тилни танланг',
     submitVote: 'Баҳо бериш',
     allRequired: 'Барча саволларга жавоб беринг',
-    makePublic: 'Фикрингизни оммага маълум қилинг:',
     privateFeedback: 'Нима яхши эмас эди?',
     commentPlaceholder: 'Батафсил ёзинг...',
     sendComment: 'Юбориш',
     thankYou: 'Раҳмат!',
     thankYouSub: 'Хабарингиз қабул қилинди.',
-    errorGeneric: 'Хатолик юз берди. Қайта уриниб кўринг.',
     errorRatings: 'Илтимос, барча саволларга баҳо беринг.',
   },
   ru: {
-    selectLang: 'Выберите язык',
     submitVote: 'Отправить оценку',
     allRequired: 'Оцените все категории',
-    makePublic: 'Сделайте ваш голос публичным:',
     privateFeedback: 'Что пошло не так?',
     commentPlaceholder: 'Опишите подробно...',
     sendComment: 'Отправить',
     thankYou: 'Спасибо!',
     thankYouSub: 'Ваше сообщение получено.',
-    errorGeneric: 'Произошла ошибка. Попробуйте ещё раз.',
     errorRatings: 'Пожалуйста, оцените все категории.',
   },
 };
 
-const platforms: Record<string, { label: string; bg: string; icon: string }> = {
-  GOOGLE: {
-    label: 'Google Maps',
-    bg: '#1A73E8',
-    icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#fff"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#fff" opacity=".7"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#fff" opacity=".5"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#fff" opacity=".6"/></svg>`,
-  },
-  YANDEX: {
-    label: 'Яндекс Карты',
-    bg: '#FC3F1D',
-    icon: `<svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(255,255,255,0.2)"/><path d="M13.32 7.666h-.924c-1.694 0-2.585.858-2.585 2.123 0 1.43.616 2.1 1.881 2.98l1.045.715-3.003 4.516H7.49l2.695-3.955c-1.55-1.111-2.42-2.19-2.42-4.025 0-2.31 1.595-3.85 4.378-3.85h3.267V18h-2.09V7.666z" fill="#fff"/></svg>`,
-  },
-  TWOGIS: {
-    label: '2ГИС',
-    bg: '#1BA53E',
-    icon: `<svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(255,255,255,0.2)"/><text x="12" y="16.5" text-anchor="middle" fill="white" font-size="8" font-weight="bold" font-family="sans-serif">2GIS</text></svg>`,
-  },
-};
-
-function toReviewUrl(platform: string, rawUrl: string): string {
-  const url = rawUrl.trim();
-  if (!url) return rawUrl;
-
-  try {
-    const parsed = new URL(url);
-
-    if (platform === 'YANDEX') {
-      const m = parsed.pathname.match(/\/(?:maps\/)?org\/(\d+)/i);
-      if (m) {
-        return `${parsed.origin}/maps/org/${m[1]}/reviews/`;
-      }
-      return rawUrl;
-    }
-
-    if (platform === 'TWOGIS') {
-      if (/\/firm\//i.test(parsed.pathname)) {
-        const cleanPath = parsed.pathname.replace(/\/+$/, '');
-        return `${parsed.origin}${cleanPath}/tab/reviews`;
-      }
-      return rawUrl;
-    }
-
-    if (platform === 'GOOGLE') {
-      const placeId = parsed.searchParams.get('q')?.replace(/^place_id:/i, '')
-        || parsed.searchParams.get('query_place_id')
-        || parsed.searchParams.get('place_id');
-
-      if (placeId) {
-        return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(placeId)}`;
-      }
-
-      if (/g\.page$/i.test(parsed.hostname) || /^g\.page$/i.test(parsed.hostname.replace(/^www\./i, ''))) {
-        const cleanPath = parsed.pathname.replace(/\/+$/, '');
-        return `${parsed.origin}${cleanPath}/review`;
-      }
-
-      return rawUrl;
-    }
-  } catch {
-    return rawUrl;
-  }
-
-  return rawUrl;
-}
-
-function StarRow({
-  value,
-  onChange,
-}: {
-  value: number;
-  onChange: (v: number) => void;
-}) {
+function StarRow({ value, onChange, activeColor }: { value: number; onChange: (v: number) => void; activeColor: string }) {
   const [hover, setHover] = useState(0);
   return (
     <div style={{ display: 'flex', gap: 6 }}>
@@ -146,12 +65,12 @@ function StarRow({
           onMouseEnter={() => setHover(s)}
           onMouseLeave={() => setHover(0)}
           style={{
-            fontSize: 32,
+            fontSize: 40,
             lineHeight: 1,
             background: 'none',
             border: 'none',
             cursor: 'pointer',
-            color: s <= (hover || value) ? '#C8861A' : '#D8CBA8',
+            color: s <= (hover || value) ? activeColor : '#E5E7EB',
             transition: 'color 0.15s',
             padding: 0,
           }}
@@ -163,7 +82,7 @@ function StarRow({
   );
 }
 
-export default function PublicRatingClient({ store }: { store: StoreWithLinks }) {
+export default function PublicRatingClient({ store, brand, title }: { store: Store; brand: BrandConfig; title?: string }) {
   const [lang, setLang] = useState<Language>('uz');
   const [ratings, setRatings] = useState([0, 0, 0]);
   const [phase, setPhase] = useState<Phase>('voting');
@@ -175,64 +94,33 @@ export default function PublicRatingClient({ store }: { store: StoreWithLinks })
 
   const t = copy[lang];
   const allRated = ratings.every((r) => r > 0);
-  const platformOrder: Record<string, number> = { YANDEX: 0, TWOGIS: 1, GOOGLE: 2 };
-  const directDbLinks = store.locationLinks.filter((l) => {
-    if (!l.url || l.url.length === 0) return false;
-    if (l.platform !== 'GOOGLE' && l.platform !== 'YANDEX' && l.platform !== 'TWOGIS') return false;
-    return isDirectPlatformLocationUrl(l.platform, l.url);
-  });
-
-  const override = getStoreLinkOverrides(store.name);
-  const dbByPlatform = new Map(directDbLinks.map((link) => [link.platform, link]));
-  const publicLinks = (['YANDEX', 'TWOGIS', 'GOOGLE'] as const)
-    .map((platform) => {
-      const dbLink = dbByPlatform.get(platform);
-      if (dbLink) return dbLink;
-
-      const fallbackUrl = override?.[platform];
-      if (!fallbackUrl) return null;
-
-      return {
-        id: `fallback-${store.id}-${platform}`,
-        platform,
-        url: fallbackUrl,
-      } as Pick<PlatformLocationLink, 'id' | 'platform' | 'url'>;
-    })
-    .filter((link): link is Pick<PlatformLocationLink, 'id' | 'platform' | 'url'> => Boolean(link))
-    .sort((a, b) => (platformOrder[a.platform] ?? 99) - (platformOrder[b.platform] ?? 99));
+  const primary = brand.votingPrimary ?? brand.primary;
+  const cardBackground = brand.votingLight ?? brand.light;
+  const cardBorder = brand.votingBorder ?? '#E5E7EB';
+  const pageTitle = title ?? brand.sub;
 
   async function handleSubmitVote() {
-    if (!allRated) {
-      setError(t.errorRatings);
-      return;
-    }
-
+    if (!allRated) { setError(t.errorRatings); return; }
     setError('');
     setLoading(true);
 
     const avg = Math.round(ratings.reduce((a, b) => a + b, 0) / 3);
-
     const formData = new FormData();
     formData.set('storeId', store.id);
     formData.set('rating', avg.toString());
     formData.set('comment', `[ratings] service:${ratings[0]};quality:${ratings[1]};prices:${ratings[2]};lang:${lang}`);
 
     const key = 'qr-device-id';
-    const testerParam = new URLSearchParams(window.location.search).get('testerDeviceId')?.trim() ?? '';
+    const testerParam = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('testerDeviceId')?.trim() ?? '' : '';
     const testerDeviceId = /^[a-zA-Z0-9_-]{8,120}$/.test(testerParam) ? testerParam : '';
-    const existing = window.localStorage.getItem(key);
-    const deviceId = testerDeviceId || existing || (window.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`);
-    if (!existing || testerDeviceId) window.localStorage.setItem(key, deviceId);
+    const existing = typeof window !== 'undefined' ? window.localStorage.getItem(key) : null;
+    const deviceId = testerDeviceId || existing || (typeof window !== 'undefined' ? (window.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`) : '');
+    if (typeof window !== 'undefined' && (!existing || testerDeviceId)) window.localStorage.setItem(key, deviceId);
     formData.set('deviceId', deviceId);
 
     const result = await submitFeedback(formData);
     setLoading(false);
-
-    if (result.error) {
-      setError(result.error);
-      return;
-    }
-
+    if (result.error) { setError(result.error); return; }
     setAvgRating(avg);
     setPhase('post-vote');
   }
@@ -240,90 +128,35 @@ export default function PublicRatingClient({ store }: { store: StoreWithLinks })
   async function handleSendComment() {
     if (!comment.trim()) return;
     setLoading(true);
-
     const formData = new FormData();
     formData.set('storeId', store.id);
     formData.set('rating', avgRating.toString());
     formData.set('comment', comment.trim());
-
-    const key = 'qr-device-id';
-    const deviceId = window.localStorage.getItem(key) ?? '';
+    const deviceId = typeof window !== 'undefined' ? window.localStorage.getItem('qr-device-id') ?? '' : '';
     formData.set('deviceId', deviceId + '-comment');
-
     await submitFeedback(formData);
     setLoading(false);
     setCommentSent(true);
     setPhase('done');
   }
 
-  // ── DONE ──
-  if (phase === 'done') {
-    return (
-      <div style={{ textAlign: 'center', padding: '48px 0' }}>
-        <div style={{ fontSize: 48, marginBottom: 16 }}>✓</div>
-        <p style={{ fontSize: 20, fontWeight: 600, color: '#1A3A2A' }}>{t.thankYou}</p>
-        <p style={{ fontSize: 14, color: '#8A7A5A', marginTop: 8 }}>{t.thankYouSub}</p>
-      </div>
-    );
-  }
+  const thankYouScreen = (
+    <div style={{ textAlign: 'center', padding: '48px 0' }}>
+      <div style={{ fontSize: 64, marginBottom: 24, color: primary }}>✓</div>
+      <p style={{ fontSize: 24, fontWeight: 800, color: brand.dark }}>{t.thankYou}</p>
+      <p style={{ fontSize: 16, color: '#6B7280', marginTop: 12 }}>{t.thankYouSub}</p>
+    </div>
+  );
 
-  // ── POST-VOTE ──
+  if (phase === 'done') return thankYouScreen;
+
   if (phase === 'post-vote') {
-    if (avgRating >= 4) {
-      return (
-        <div style={{ padding: '8px 0' }}>
-          <p style={{ fontWeight: 600, fontSize: 16, marginBottom: 20, color: '#1A3A2A' }}>
-            {t.makePublic}
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {publicLinks.length > 0 ? publicLinks.map((link) => {
-              const p = platforms[link.platform];
-              return (
-                <a
-                  key={link.id}
-                  href={toReviewUrl(link.platform, link.url!)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 12,
-                    padding: '14px 20px',
-                    borderRadius: 6,
-                    background: p?.bg || '#555',
-                    color: '#fff',
-                    fontWeight: 600,
-                    fontSize: 15,
-                    textDecoration: 'none',
-                  }}
-                >
-                  {p && <span dangerouslySetInnerHTML={{ __html: p.icon }} />}
-                  {p?.label || link.platform}
-                  <span style={{ marginLeft: 'auto', opacity: 0.7 }}>→</span>
-                </a>
-              );
-            }) : (
-              <p style={{ color: '#A09070', fontSize: 14 }}>Ссылки пока не настроены.</p>
-            )}
-          </div>
-        </div>
-      );
-    }
-
-    // Low score → comment form
-    if (commentSent) {
-      return (
-        <div style={{ textAlign: 'center', padding: '48px 0' }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>✓</div>
-          <p style={{ fontSize: 20, fontWeight: 600, color: '#1A3A2A' }}>{t.thankYou}</p>
-          <p style={{ fontSize: 14, color: '#8A7A5A', marginTop: 8 }}>{t.thankYouSub}</p>
-        </div>
-      );
-    }
+    if (avgRating >= 4) return thankYouScreen;
+    if (commentSent) return thankYouScreen;
 
     return (
-      <div style={{ padding: '8px 0' }}>
-        <p style={{ fontWeight: 600, fontSize: 16, marginBottom: 16, color: '#2A1810' }}>
+      <div style={{ padding: '8px 0', textAlign: 'left' }}>
+        <p style={{ fontWeight: 700, fontSize: 18, marginBottom: 16, color: brand.dark }}>
           {t.privateFeedback}
         </p>
         <textarea
@@ -333,32 +166,33 @@ export default function PublicRatingClient({ store }: { store: StoreWithLinks })
           placeholder={t.commentPlaceholder}
           style={{
             width: '100%',
-            padding: 12,
-            border: '1.5px solid #EFE0B8',
-            borderRadius: 4,
-            fontSize: 15,
+            padding: 16,
+            border: '2px solid #E5E7EB',
+            borderRadius: 12,
+            fontSize: 16,
             fontFamily: 'inherit',
             resize: 'none',
             boxSizing: 'border-box',
+            outline: 'none',
           }}
         />
-        {error && <p style={{ color: '#B85C38', fontSize: 13, marginTop: 6 }}>{error}</p>}
+        {error && <p style={{ color: '#EF4444', fontSize: 14, marginTop: 8 }}>{error}</p>}
         <button
           type="button"
           onClick={handleSendComment}
           disabled={!comment.trim() || loading}
           style={{
-            marginTop: 12,
+            marginTop: 16,
             width: '100%',
             padding: '14px',
-            background: comment.trim() ? '#B85C38' : '#D8CBA8',
+            background: comment.trim() ? primary : '#D1D5DB',
             color: '#fff',
             border: 'none',
-            borderRadius: 4,
-            fontWeight: 600,
-            fontSize: 14,
+            borderRadius: 12,
+            fontWeight: 700,
+            fontSize: 16,
             cursor: comment.trim() ? 'pointer' : 'not-allowed',
-            letterSpacing: '0.05em',
+            transition: 'background 0.2s',
           }}
         >
           {loading ? '...' : t.sendComment}
@@ -367,61 +201,78 @@ export default function PublicRatingClient({ store }: { store: StoreWithLinks })
     );
   }
 
-  // ── VOTING ──
   return (
-    <div>
-      {/* Language toggle */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 24, justifyContent: 'center' }}>
+    <div style={{ fontFamily: "'Noto Sans', 'Inter', sans-serif", margin: -24 }}>
+      <div
+        style={{
+          background: primary,
+          color: '#fff',
+          padding: '62px 24px 30px',
+          borderRadius: '16px 16px 0 0',
+          textAlign: 'center',
+        }}
+      >
+        <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 30, letterSpacing: 6, lineHeight: 1, marginBottom: 20 }}>
+          ★ ★ ★ ★ ★
+        </div>
+        <h1 style={{ margin: 0, fontSize: 23, lineHeight: 1.15, fontWeight: 800, letterSpacing: 0 }}>
+          {pageTitle}
+        </h1>
+      </div>
+
+      <div style={{ padding: '22px 24px 28px' }}>
+      <div style={{ display: 'flex', gap: 12, marginBottom: 28, justifyContent: 'center' }}>
         {(['uz', 'ru'] as Language[]).map((l) => (
           <button
             key={l}
             type="button"
             onClick={() => setLang(l)}
             style={{
-              padding: '6px 18px',
-              borderRadius: 20,
-              border: '1.5px solid',
-              borderColor: lang === l ? '#C8861A' : '#D8CBA8',
-              background: lang === l ? '#C8861A' : 'transparent',
-              color: lang === l ? '#fff' : '#8A7A5A',
-              fontWeight: 600,
-              fontSize: 13,
+              padding: '8px 24px',
+              borderRadius: 24,
+              border: '2px solid',
+              borderColor: lang === l ? primary : '#E5E7EB',
+              background: lang === l ? primary : 'white',
+              color: lang === l ? 'white' : '#6B7280',
+              fontWeight: 700,
+              fontSize: 14,
               cursor: 'pointer',
+              transition: 'all 0.2s',
             }}
           >
-            {l === 'uz' ? 'УЗ' : 'РУ'}
+            {l === 'uz' ? "O'ZB" : 'РУС'}
           </button>
         ))}
       </div>
 
-      {/* Questions */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 28 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 18, marginBottom: 28 }}>
         {questions[lang].map((q, i) => (
           <div
             key={i}
             style={{
-              padding: '16px 18px',
-              background: '#FFFDF5',
-              border: '1.5px solid',
-              borderColor: ratings[i] > 0 ? '#C8861A' : '#EFE0B8',
-              borderRadius: 4,
+              padding: '20px',
+              background: cardBackground,
+              border: '2px solid',
+              borderColor: ratings[i] > 0 ? primary : cardBorder,
+              borderRadius: 14,
               textAlign: 'left',
+              transition: 'border-color 0.2s',
             }}
           >
-            <p style={{ fontWeight: 700, fontSize: 15, margin: '0 0 2px', color: '#2A1810' }}>
-              {q.label}
-            </p>
-            <p style={{ fontSize: 13, color: '#8A7A5A', margin: '0 0 10px' }}>{q.sub}</p>
-            <StarRow value={ratings[i]} onChange={(v) => {
-              const next = [...ratings];
-              next[i] = v;
-              setRatings(next);
-            }} />
+            <p style={{ fontWeight: 800, fontSize: 18, margin: '0 0 4px', color: brand.dark, fontFamily: "'Noto Sans', 'Inter', sans-serif" }}>{q.label}</p>
+            <p style={{ fontSize: 14, color: '#4B5563', margin: '0 0 16px', lineHeight: 1.4, fontWeight: 600, fontFamily: "'Noto Sans', 'Inter', sans-serif" }}>{q.sub}</p>
+            <StarRow 
+              value={ratings[i]} 
+              activeColor={primary}
+              onChange={(v) => {
+                const next = [...ratings]; next[i] = v; setRatings(next);
+              }} 
+            />
           </div>
         ))}
       </div>
 
-      {error && <p style={{ color: '#B85C38', fontSize: 13, marginBottom: 10 }}>{error}</p>}
+      {error && <p style={{ color: '#EF4444', fontSize: 14, marginBottom: 16 }}>{error}</p>}
 
       <button
         type="button"
@@ -429,26 +280,29 @@ export default function PublicRatingClient({ store }: { store: StoreWithLinks })
         disabled={!allRated || loading}
         style={{
           width: '100%',
-          padding: '16px',
-          background: allRated ? '#1A3A2A' : '#D8CBA8',
+          padding: '20px',
+          background: allRated ? primary : '#D1D5DB',
           color: '#fff',
           border: 'none',
-          borderRadius: 4,
-          fontWeight: 700,
-          fontSize: 14,
+          borderRadius: 16,
+          fontWeight: 800,
+          fontSize: 16,
           cursor: allRated ? 'pointer' : 'not-allowed',
-          letterSpacing: '0.08em',
+          letterSpacing: '0.05em',
           textTransform: 'uppercase',
+          transition: 'background 0.2s',
         }}
       >
         {loading ? '...' : t.submitVote}
       </button>
 
       {!allRated && (
-        <p style={{ textAlign: 'center', marginTop: 10, fontSize: 12, color: '#A09070' }}>
+        <p style={{ textAlign: 'center', marginTop: 16, fontSize: 14, color: '#9CA3AF' }}>
           {t.allRequired}
         </p>
       )}
+      </div>
     </div>
   );
 }
+

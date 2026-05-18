@@ -1,6 +1,6 @@
 'use client';
 
-import { updateStoreMasterProfile, syncStoreToPlatforms } from './actions';
+import { updateStoreMasterProfile, syncStoreToPlatforms, archiveStore, unarchiveStore } from './actions';
 import { useActionState } from 'react';
 import type { ActionState } from '@/lib/action-state';
 import type { Store, StoreMasterProfile, PlatformLocationLink } from '@prisma/client';
@@ -103,17 +103,46 @@ export default function EditStoreClient({ store }: { store: StoreWithDetails }) 
         <div className="bg-white p-8 rounded shadow">
            <h2 className="text-xl font-bold mb-4">Sync Actions</h2>
            <div className="space-y-4">
-              <a 
+              <a
                 href={`/admin/stores/${store.id}/discovery`}
                 className="block w-full text-center bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
               >
                   Open Discovery & Linking
               </a>
-              
+
               <SyncForm storeId={store.id} />
            </div>
         </div>
+
+        <ArchiveForm storeId={store.id} isArchived={!!store.archivedAt} />
       </div>
+    </div>
+  );
+}
+
+function ArchiveForm({ storeId, isArchived }: { storeId: string; isArchived: boolean }) {
+  const action = isArchived ? unarchiveStore : archiveStore;
+  const [state, formAction] = useActionState<ActionState, FormData>(action, {});
+
+  return (
+    <div className="bg-white p-8 rounded shadow border border-red-100">
+      <h2 className="text-xl font-bold mb-2 text-red-700">{isArchived ? 'Restore Store' : 'Archive Store'}</h2>
+      <p className="text-sm text-gray-500 mb-4">
+        {isArchived
+          ? 'Restoring will make this store visible and its QR code active again.'
+          : 'Archiving hides the store from all lists. The QR code will show "closed" instead of 404 — so printed posters are never broken.'}
+      </p>
+      <form action={formAction}>
+        <input type="hidden" name="storeId" value={storeId} />
+        <button
+          type="submit"
+          className={`w-full py-2 rounded text-white ${isArchived ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}
+        >
+          {isArchived ? 'Restore Store' : 'Archive Store'}
+        </button>
+        {state?.error && <p className="text-red-500 mt-2 text-sm">{state.error}</p>}
+        {state?.success && <p className="text-green-600 mt-2 text-sm">{state.success}</p>}
+      </form>
     </div>
   );
 }
