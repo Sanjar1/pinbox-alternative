@@ -1,14 +1,14 @@
 # TODO
 
-**Updated:** 2026-05-21 (afternoon)
+**Updated:** 2026-05-21 (end of session)
 
 ## Priority 0 — Same-day shipping
 - [x] Activate the 08:00 Tashkent daily Telegram report — **done via GitHub Actions** (`0 3 * * *` UTC, `.github/workflows/daily-telegram-report.yml`). Run #1 green.
 - [x] Freeze the 41 printed QR slugs (DB write guard + backup + docs).
 - [x] Write analyst Power BI onboarding doc (`docs/ANALYST_POWER_BI_MESSAGE.md`) in Russian.
 - [x] Translate admin dashboard to Russian (code ready locally, typecheck passed).
-- [ ] Deploy the Russian dashboard translation: `cd app && railway up --service web`.
-- [ ] Owner runs the 4-step Railway runbook in `docs/ANALYST_POWER_BI_MESSAGE.md` (generate public TCP domain + create `bi_readonly` user) and sends the message to the analyst.
+- [x] Deploy the Russian dashboard translation — **queued for tonight 23:05 Tashkent via `Pinbox-Railway-Night-Deploy` Windows Scheduled Task** (Railway free-tier peak-hours block prevents earlier deploy; task fires at 20:05 CEST, just after block lifts).
+- [x] Owner runs the 4-step Railway runbook in `docs/ANALYST_POWER_BI_MESSAGE.md` — **DONE: host/port `metro.proxy.rlwy.net:36355`, role `bi_readonly` created and verified (43 stores, 35 feedback rows; UPDATE denied), password held by owner (not in repo).**
 
 ## Priority 1 — Tomorrow morning verification
 - [ ] Confirm the automatic 08:00 Tashkent GitHub Actions run actually delivers to the managers Telegram group.

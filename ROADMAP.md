@@ -18,8 +18,8 @@
 - **QR slug freeze** (D-033): Prisma client extension blocks any update to printed slugs.
 
 **Outstanding before closing M5:**
-- Deploy the Russian dashboard translation.
-- Owner provisions `bi_readonly` and sends the message to the analyst.
+- Deploy the Russian dashboard translation — **queued for tonight 23:05 Tashkent via `Pinbox-Railway-Night-Deploy`**.
+- ~~Owner provisions `bi_readonly` and sends the message to the analyst.~~ **DONE** — `bi_readonly` role created and verified (`metro.proxy.rlwy.net:36355`), password held by owner.
 - Verify tomorrow morning's automatic 08:00 Tashkent run actually delivers.
 
 ## Completed Milestones

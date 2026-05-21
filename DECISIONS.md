@@ -1,11 +1,11 @@
 # Decisions Log
 
-## D-033: QR Slugs Are Frozen After 2026-05-17 Print Run
+## D-035: Power BI Analyst Access Goes Through Railway Public TCP + bi_readonly Role
 
 - Date: 2026-05-21
-- Decision: `QRCode.slug` is immutable in production. 41 A5 posters have been printed and distributed; any slug change breaks the physical QR code on a wall in a real store.
-- Reason: Reprinting and redistributing 41 posters costs hours of work and store visits. Trust-based discipline isn't enough — past sessions have shown silent slug changes via repair scripts.
-- Impact: `app/src/lib/db.ts` extends Prisma to throw on any `update`/`updateMany`/`upsert` that includes `slug` in the write payload. Backup of the frozen mapping is committed at `data/qr-links-frozen-2026-05-21.json`. Full rule: `docs/QR_SLUG_PROTECTION.md`.
+- Decision: External BI analyst access to production Postgres uses the Railway public TCP proxy (`metro.proxy.rlwy.net:36355`) and a dedicated `bi_readonly` Postgres role with SELECT-only privileges on the `public` schema. No separate read replica or new HTTP API surface was created.
+- Reason: Free-tier compatible and requires zero additional infrastructure. Power BI connects natively to Postgres, so no middleware is needed. Analyst gets direct SQL access enabling arbitrary joins and aggregations that an HTTP API would have to re-implement endpoint by endpoint. Revocation is a single SQL statement (`ALTER ROLE bi_readonly WITH NOLOGIN` or `DROP ROLE bi_readonly`), making access management simple.
+- Impact: `metro.proxy.rlwy.net:36355` is the production Postgres public endpoint. `bi_readonly` role exists and is verified in production. Rotation/revocation procedure is documented in `docs/ANALYST_POWER_BI_MESSAGE.md`. Password is held by owner only — not committed to any file in the repo.
 
 ## D-034: Cron For Daily Report Runs From GitHub Actions, Not Railway
 
@@ -13,6 +13,13 @@
 - Decision: The daily Telegram report fires via a GitHub Actions scheduled workflow (`.github/workflows/daily-telegram-report.yml`), not via Railway cron.
 - Reason: Railway free plan blocks new scheduled services ("Free plan resource provision limit exceeded"). GitHub Actions is free, sits next to the code, and includes manual-run + failure-email out of the box.
 - Impact: `REPORTS_API_KEY` GitHub secret added; workflow hits `POST /api/reports/daily` at 03:00 UTC = 08:00 Tashkent daily. Run #1 verified green on 2026-05-21.
+
+## D-033: QR Slugs Are Frozen After 2026-05-17 Print Run
+
+- Date: 2026-05-21
+- Decision: `QRCode.slug` is immutable in production. 41 A5 posters have been printed and distributed; any slug change breaks the physical QR code on a wall in a real store.
+- Reason: Reprinting and redistributing 41 posters costs hours of work and store visits. Trust-based discipline isn't enough — past sessions have shown silent slug changes via repair scripts.
+- Impact: `app/src/lib/db.ts` extends Prisma to throw on any `update`/`updateMany`/`upsert` that includes `slug` in the write payload. Backup of the frozen mapping is committed at `data/qr-links-frozen-2026-05-21.json`. Full rule: `docs/QR_SLUG_PROTECTION.md`.
 
 ## D-032: Vote Cooldown Is 35 Days Per Device Per Store
 

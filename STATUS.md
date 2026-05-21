@@ -1,6 +1,6 @@
 # Status
 
-**Updated:** 2026-05-21 (afternoon — post-session)
+**Updated:** 2026-05-21 (end of session)
 
 ## Current Phase
 
@@ -12,7 +12,7 @@
 - It is not a social media post publisher.
 - Customers scan a poster QR, vote 1–5 stars + optional comment, and the data lands in Postgres for the admin dashboard, the daily Telegram report, and external Power BI reporting.
 
-## What Is Done (as of 2026-05-21 afternoon)
+## What Is Done (as of 2026-05-21 end of session)
 
 ### Production cron — DONE today
 - GitHub Actions workflow `.github/workflows/daily-telegram-report.yml` fires `POST /api/reports/daily` at **03:00 UTC (08:00 Tashkent)** daily.
@@ -28,11 +28,13 @@
 - Full rule documented in `docs/QR_SLUG_PROTECTION.md`.
 - Project-level `CLAUDE.md`, `AGENTS.md`, `GEMINI.md` created so any AI tool sees the rule first.
 
-### Power BI analyst access — RUNBOOK READY
-- `docs/ANALYST_POWER_BI_MESSAGE.md` contains a 4-step Railway runbook + ready-to-send message in Russian for the analyst.
-- Analyst gets a `bi_readonly` Postgres role (SELECT only).
-- Owner generates the public TCP domain + password themselves (security best practice).
-- Analyst can use either direct Postgres or the existing HTTP analytics endpoints as fallback.
+### Power BI analyst access — FULLY PROVISIONED
+- `docs/ANALYST_POWER_BI_MESSAGE.md` contains the ready-to-send message in Russian for the analyst.
+- Public TCP domain: `metro.proxy.rlwy.net:36355` (Railway Postgres public proxy, port 5432 internally).
+- `bi_readonly` Postgres role created with SELECT-only privileges on the `public` schema.
+- Verified live: `SELECT count(*) FROM "Store"` returns 43 rows; `SELECT count(*) FROM "Feedback"` returns 35 rows; UPDATE attempts denied with PostgreSQL `42501 permission denied for table Feedback`.
+- Connection values (host/port/db/user `bi_readonly` + password) handed to owner for sharing with analyst. **Password is NOT in any git-committed file — held by owner separately.**
+- Analyst can use direct Postgres in Power BI immediately.
 
 ### Existing infrastructure (from earlier sessions)
 - Production Railway deploy from `app/` is reliable.
@@ -49,9 +51,9 @@ None.
 
 ## Immediate Next Steps
 
-1. Deploy the Russian dashboard translation (`cd app && railway up --service web`) — code ready locally, typecheck passed.
-2. Owner does the 4-step Railway runbook in `docs/ANALYST_POWER_BI_MESSAGE.md` to generate the `bi_readonly` password + public TCP domain, then sends the message to the analyst.
-3. Verify tomorrow's 08:00 Tashkent automatic cron run actually delivers to the managers Telegram group.
+1. **Tonight 23:05 Tashkent (20:05 CEST):** Russian dashboard translation auto-deploys via Windows Scheduled Task `Pinbox-Railway-Night-Deploy`. Railway free-tier peak-hours block (8 AM–8 PM CEST) lifted just after 20:00, so the task threads the needle. No manual action needed.
+2. **Tomorrow morning:** Verify that the 08:00 Tashkent GitHub Actions cron actually delivered to the managers Telegram group. If green, close M5 in `ROADMAP.md`.
+3. **Analyst:** Connection values have been handed to the owner. Owner forwards to analyst; analyst connects Power BI to `metro.proxy.rlwy.net:36355` with the `bi_readonly` credentials.
 
 ## Verification Snapshot (2026-05-21 afternoon)
 

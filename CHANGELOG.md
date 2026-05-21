@@ -5,6 +5,12 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added (2026-05-21 — end of session)
+- `bi_readonly` Postgres role with SELECT-only privileges on the `public` schema, accessible via the Railway public TCP proxy at `metro.proxy.rlwy.net:36355`, for Power BI analyst direct database access.
+
+### Fixed (2026-05-21 — end of session)
+- `scripts/railway-night-deploy.ps1` now runs `railway up` from the `app/` subdirectory (was running from repo root, silently failing every night with exit code `2147946720`).
+
 ### Added (2026-05-21 — afternoon)
 - `.github/workflows/daily-telegram-report.yml` — GitHub Actions scheduled workflow that fires `POST /api/reports/daily` every day at 03:00 UTC (08:00 Tashkent). Replaces the blocked Railway cron approach.
 - `data/qr-links-frozen-2026-05-21.json` — versioned backup of all 41 printed slug → store mappings.

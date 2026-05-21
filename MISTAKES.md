@@ -1,5 +1,11 @@
 # Mistakes and Lessons Learned
 
+## 2026-05-21 (end of session) — Scheduled Railway deploy task ran from repo root, silently failing every night
+
+- **What happened:** `Pinbox-Railway-Night-Deploy` Windows Scheduled Task had been firing nightly but with exit code `2147946720` (= `0x80070960`, a generic failure). Investigation showed `scripts/railway-night-deploy.ps1` was doing `Push-Location $ProjectRoot` (the repo root) before calling `railway up`, so the CLI ran from the wrong directory. The deploy appeared to run but silently did nothing because no `railway.json` exists at repo root.
+- **Root cause:** When the nightly task was originally created, the lesson "Railway CLI deploy must run from `app/` subdir" was already recorded in this file (entry from 2026-05-18). However, that lesson was never propagated back to the script itself. The script continued using the wrong path while the lesson sat unused in this document.
+- **Lesson:** When recording a "must do X" lesson in MISTAKES.md, immediately audit every existing automation that touches the same thing. A lesson that does not update the relevant script, task, or runbook is half a lesson. Treat MISTAKES.md entries that describe CLI path/config requirements as triggers for a code search (`grep -r "railway up"`) to find all callers.
+
 ## 2026-05-21 (afternoon) — GitHub PAT lacked `workflow` scope, blocked workflow file pushes
 
 - **What happened:** Created `.github/workflows/daily-telegram-report.yml` locally, committed it, ran `git push`. GitHub rejected with `refusing to allow a Personal Access Token to create or update workflow ... without 'workflow' scope`.

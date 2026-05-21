@@ -1,5 +1,22 @@
 # Progress Log
 
+## 2026-05-21 (end of session) — Power BI access provisioned, nightly deploy fixed, Russian dashboard queued
+
+**Done:**
+- **Power BI analyst access fully provisioned and verified end-to-end.** Generated Railway Postgres public TCP domain `metro.proxy.rlwy.net:36355`. Created `bi_readonly` Postgres role with SELECT-only privileges on the `public` schema via a one-off Prisma script (script deleted after run). Verified live: `SELECT count(*) FROM "Store"` = 43 rows, `SELECT count(*) FROM "Feedback"` = 35 rows; UPDATE attempt returns PostgreSQL `42501 permission denied for table Feedback`. Connection values handed to owner; password is NOT in any git-committed file.
+- **Russian dashboard translation committed and queued for tonight's auto-deploy.** 15 user-facing English strings in `app/src/app/admin/page.tsx` translated to Russian; date locale switched from `en-GB` to `ru-RU` in three formatters; `npx tsc --noEmit` passes. Deploy queued via Windows Scheduled Task `Pinbox-Railway-Night-Deploy` at 23:05 Tashkent (20:05 CEST).
+- **Night-deploy script bug fixed.** `scripts/railway-night-deploy.ps1` was running `railway up` from repo root instead of `app/` subdir (Railway requires `railway.json` in CWD; root has none). Fixed: script now does `Push-Location (Join-Path $ProjectRoot 'app')` before invoking `railway up`.
+
+**Found:**
+- Railway free-tier peak-hours block (8 AM – 8 PM CEST = approximately 13:00 – 01:00 Tashkent next day) prevents manual `railway up` during those hours. Attempting deployment mid-afternoon was silently failing. The nightly Windows Scheduled Task at 23:05 Tashkent (= 20:05 CEST) fires just after the block lifts and is the correct deployment path on the free plan.
+
+**Next session:**
+- Verify that tomorrow's 08:00 Tashkent GitHub Actions cron actually delivered to the managers Telegram group.
+- Confirm Russian dashboard is live in production after the 23:05 deploy.
+- Analyst connects Power BI to `metro.proxy.rlwy.net:36355` with `bi_readonly` credentials and sends first dashboards.
+
+---
+
 ## 2026-05-21 (afternoon) — Cron Activation, QR Slug Freeze, Analyst Onboarding
 
 **Done:**
