@@ -1,30 +1,30 @@
-# Analyst Power BI Onboarding
+# Power BI: Подключение аналитика
 
-This file has two things:
+В этом файле:
 
-1. A 4-step Railway runbook you do once to get the connection values
-2. A ready-to-send message to your analyst with `[PLACEHOLDERS]` you replace with the real values from step 1
+1. **Шаги для тебя** (4 клика в Railway, ~3 минуты) — получить значения для подключения
+2. **Сообщение аналитику** — копируешь и отправляешь, заменив `[ПЛЕЙСХОЛДЕР]` на реальные значения
 
 ---
 
-## STEP 1 — Get the connection values from Railway (4 clicks, ~3 minutes)
+## ШАГ 1 — Получить данные подключения из Railway
 
-### 1.1 Generate the Postgres public TCP domain
+### 1.1 Сгенерировать публичный TCP-домен для Postgres
 
-1. Open https://railway.com/project/d1031303-c23f-44b6-9542-33ed8ddc8462
-2. Click the **Postgres-Pllz** service card.
-3. **Settings** tab → scroll to **Networking** → **TCP Proxy** → click **Generate Public TCP Domain**.
-4. Copy the host and port it shows you. Example format:
-   - Host: `monorail.proxy.rlwy.net`
-   - Port: `12345`  ← yours will be different
+1. Открой https://railway.com/project/d1031303-c23f-44b6-9542-33ed8ddc8462
+2. Кликни на сервис **Postgres-Pllz**.
+3. Вкладка **Settings** → пролистай до **Networking** → блок **TCP Proxy** → кнопка **Generate Public TCP Domain**.
+4. Скопируй хост и порт, например:
+   - Хост: `monorail.proxy.rlwy.net`
+   - Порт: `12345`  ← у тебя будет свой
 
-Save those — they go in the message as `[HOST]` and `[PORT]`.
+Сохрани их — они идут в сообщение как `[ХОСТ]` и `[ПОРТ]`.
 
-### 1.2 Create the `bi_readonly` user
+### 1.2 Создать пользователя `bi_readonly`
 
-1. Same service → **Database** tab (the custom UI) → **Query** sub-tab.
-2. Generate a strong password (16+ chars). One option: open your password manager and use its generator. Save it somewhere safe — you'll send it to the analyst by a different channel (NOT in the same Telegram message as the host/port). Example: `Xk9!mP2qLwQa83vN`
-3. Paste this SQL into the Query box, **replace `CHANGEME` with your password**, click **Run query**:
+1. Тот же сервис → вкладка **Database** (кастомный UI Railway) → подвкладка **Query**.
+2. Сгенерируй надёжный пароль (16+ символов). Открой 1Password / Bitwarden и нажми "сгенерировать". Пример: `Xk9!mP2qLwQa83vN`. Сохрани его — отправишь аналитику ОТДЕЛЬНЫМ каналом (НЕ в том же сообщении что хост/порт).
+3. Вставь этот SQL в поле Query, **замени `CHANGEME` на свой пароль**, нажми **Run query**:
 
 ```sql
 DO $$
@@ -43,41 +43,41 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO bi_readonly;
 REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON ALL TABLES IN SCHEMA public FROM bi_readonly;
 ```
 
-Expected result: no errors. Verify with a second query:
+Ожидается: ноль ошибок. Проверить можно так:
 ```sql
 SELECT rolname FROM pg_roles WHERE rolname = 'bi_readonly';
 ```
-Should return 1 row.
+Должно вернуть 1 строку.
 
-### 1.3 You now have all 4 values
+### 1.3 У тебя теперь есть все 5 значений
 
-| Placeholder | Value |
-|------------|-------|
-| `[HOST]`     | from step 1.1 |
-| `[PORT]`     | from step 1.1 |
-| `[USER]`     | `bi_readonly` (fixed) |
-| `[DATABASE]` | `railway` (fixed — Railway default) |
-| `[PASSWORD]` | what you set in step 1.2 (send to analyst via a SEPARATE channel from the rest) |
+| Плейсхолдер   | Значение |
+|---------------|----------|
+| `[ХОСТ]`      | из шага 1.1 |
+| `[ПОРТ]`      | из шага 1.1 |
+| `[ЛОГИН]`     | `bi_readonly` (фиксировано) |
+| `[БАЗА]`      | `railway` (фиксировано — стандарт Railway) |
+| `[ПАРОЛЬ]`    | то что ты задал в шаге 1.2 (отправляй аналитику ОТДЕЛЬНЫМ каналом) |
 
 ---
 
-## STEP 2 — The message to send your analyst
+## ШАГ 2 — Сообщение для аналитика
 
-Copy everything below the dashed line. Replace `[HOST]` and `[PORT]` with real values. **Send the password in a SEPARATE message or by phone — never in the same message as the host.**
+Скопируй всё ниже разделительной линии. Замени `[ХОСТ]` и `[ПОРТ]` на реальные значения. **Пароль отправь отдельным сообщением или голосом — никогда в одном сообщении с хостом.**
 
 ---
 
 Привет,
 
-Тебе нужен доступ к нашей базе данных для построения аналитики в Power BI. Все настроено, ниже все необходимые данные и шаги.
+Тебе нужен доступ к нашей базе данных для построения аналитики в Power BI. Всё настроено, ниже все необходимые данные и шаги.
 
 ## Параметры подключения
 
 | Параметр | Значение |
 |----------|----------|
 | Тип БД   | PostgreSQL |
-| Хост     | `[HOST]` |
-| Порт     | `[PORT]` |
+| Хост     | `[ХОСТ]` |
+| Порт     | `[ПОРТ]` |
 | База     | `railway` |
 | Логин    | `bi_readonly` |
 | Пароль   | *отправлю отдельно* |
@@ -86,16 +86,16 @@ Copy everything below the dashed line. Replace `[HOST]` and `[PORT]` with real v
 
 ## Подключение из Power BI Desktop
 
-1. Скачай **Power BI Desktop** (бесплатный) с https://powerbi.microsoft.com/desktop/ если еще не установлен.
+1. Скачай **Power BI Desktop** (бесплатный) с https://powerbi.microsoft.com/desktop/ если ещё не установлен.
 2. Открой Power BI Desktop → **Получить данные** → **Базы данных** → **База данных PostgreSQL**.
 3. В окне подключения введи:
-   - **Сервер:** `[HOST],[PORT]`
+   - **Сервер:** `[ХОСТ],[ПОРТ]`
      **Важно**: между хостом и портом — **запятая**, не двоеточие. Это особенность Power BI.
      Пример: `monorail.proxy.rlwy.net,12345`
    - **База данных:** `railway`
    - **Режим подключения данных:** Import (быстрее) или DirectQuery (live).
 4. Нажми **OK**.
-5. На следующем экране **Учетные данные** → вкладка **База данных**:
+5. На следующем экране **Учётные данные** → вкладка **База данных**:
    - Имя пользователя: `bi_readonly`
    - Пароль: *тот, что я пришлю отдельно*
 6. Power BI может предупредить про SSL — нажми **OK**, прокси Railway сам обрабатывает TLS.
@@ -107,11 +107,11 @@ Copy everything below the dashed line. Replace `[HOST]` and `[PORT]` with real v
 |---------|-----------|
 | `Store` | 41+ магазинов: `id`, `name`, `address`, `archivedAt` |
 | `Feedback` | Каждый голос: `rating` (1–5), `comment`, `createdAt`, `storeId`, `status` |
-| `QRCode` | QR-коды каждого магазина: `slug`, `scans` (счетчик), `storeId`. **Slug нельзя менять — он напечатан на постерах.** |
+| `QRCode` | QR-коды каждого магазина: `slug`, `scans` (счётчик), `storeId`. **Slug нельзя менять — он напечатан на постерах.** |
 | `MapReview` | Внешние отзывы с Яндекс/2ГИС: `source`, `rating`, `reviewText`, `storeId` |
 | `User` | Пользователи системы — не нужно для аналитики голосов |
 
-## Базовые отчеты, которые мы хотим видеть
+## Базовые отчёты, которые мы хотим видеть
 
 1. **Голосов по магазинам за период** — bar chart, `count(Feedback.id) by Store.name`, фильтр по `Feedback.createdAt`.
 2. **Средняя оценка по магазинам** — bar chart с горизонтальной линией среднего по сети.
@@ -122,34 +122,51 @@ Copy everything below the dashed line. Replace `[HOST]` and `[PORT]` with real v
 
 Все таймстемпы (`createdAt`) в UTC — для Ташкента добавь +5 часов в визуализациях.
 
+## Альтернатива: HTTP API (если прямое подключение к Postgres не работает)
+
+Если Power BI не подключается к Postgres напрямую — есть резервный путь через HTTP-эндпоинты:
+
+```
+GET https://web-production-370c1.up.railway.app/api/analytics/feedback
+GET https://web-production-370c1.up.railway.app/api/analytics/feedback?from=2026-05-01&to=2026-05-22
+GET https://web-production-370c1.up.railway.app/api/analytics/stores
+```
+
+Заголовок авторизации:
+```
+Authorization: Bearer pinbox-reports-2026-secure
+```
+
+В Power BI: **Получить данные** → **Веб** → вставь URL и в **Дополнительно** добавь HTTP-заголовок `Authorization` со значением `Bearer pinbox-reports-2026-secure`.
+
 ## Если что-то не работает
 
 - **Не подключается:** проверь что между хостом и портом запятая, не двоеточие.
 - **Permission denied:** значит дали неправильный логин — это `bi_readonly`, не `postgres`.
-- **Видишь системные таблицы Прим. `_prisma_migrations`:** игнорируй, они не нужны.
+- **Видишь системные таблицы например `_prisma_migrations`:** игнорируй, они не нужны.
 
 Жду первый дашборд!
 
 ---
 
-## STEP 3 — Send the password separately
+## ШАГ 3 — Пароль отправь отдельно
 
-Use a different channel than where you sent the rest of the message. Options:
-- Telegram voice message reading the password aloud
-- Phone call
-- 1Password / Bitwarden share link (best — auto-expires)
+Используй другой канал, не тот в котором отправил остальную часть сообщения. Варианты:
+- Голосовое сообщение в Telegram, читаешь пароль вслух
+- Звонок
+- 1Password / Bitwarden share-ссылка (лучший вариант — автоматически истекает)
 
-Never paste the password in the same chat as the host/port.
+Никогда не вставляй пароль в тот же чат где отправил хост/порт.
 
 ---
 
-## Rollback / lockout the analyst later
+## Отключить аналитика позже (если понадобится)
 
-To revoke access without deleting anything:
+Заблокировать вход без удаления роли:
 ```sql
 ALTER ROLE bi_readonly WITH NOLOGIN;
 ```
-To re-enable:
+Снова разрешить:
 ```sql
 ALTER ROLE bi_readonly WITH LOGIN;
 ```
