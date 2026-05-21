@@ -1,12 +1,49 @@
 import { PrismaClient } from '@prisma/client';
 
-const globalForPrisma = global as unknown as { prisma: PrismaClient };
+const globalForPrisma = global as unknown as { prisma: ReturnType<typeof makePrisma> };
 
-export const prisma =
-  globalForPrisma.prisma ||
-  new PrismaClient({
+// QR slugs were frozen on 2026-05-21 after 41 A5 posters were printed and
+// distributed. Changing any slug breaks the physical QR code on a real
+// poster, so we block writes that touch the slug column at the Prisma
+// client layer. See data/qr-links-frozen-2026-05-21.json and
+// docs/QR_SLUG_PROTECTION.md for the full rule.
+const QR_SLUG_FROZEN_ERROR =
+  'QRCode.slug is immutable (frozen 2026-05-21, 41 posters printed). ' +
+  'See docs/QR_SLUG_PROTECTION.md before changing.';
+
+function makePrisma() {
+  const base = new PrismaClient({
     log: process.env.NODE_ENV === 'development' ? ['query'] : ['error'],
   });
+
+  return base.$extends({
+    name: 'qr-slug-immutability',
+    query: {
+      qRCode: {
+        async update({ args, query }) {
+          if (args.data && 'slug' in args.data && args.data.slug !== undefined) {
+            throw new Error(QR_SLUG_FROZEN_ERROR);
+          }
+          return query(args);
+        },
+        async updateMany({ args, query }) {
+          if (args.data && 'slug' in args.data && args.data.slug !== undefined) {
+            throw new Error(QR_SLUG_FROZEN_ERROR);
+          }
+          return query(args);
+        },
+        async upsert({ args, query }) {
+          if (args.update && 'slug' in args.update && args.update.slug !== undefined) {
+            throw new Error(QR_SLUG_FROZEN_ERROR);
+          }
+          return query(args);
+        },
+      },
+    },
+  });
+}
+
+export const prisma = globalForPrisma.prisma || makePrisma();
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 

@@ -1,5 +1,39 @@
-﻿# Decisions Log
+# Decisions Log
 
+## D-033: QR Slugs Are Frozen After 2026-05-17 Print Run
+
+- Date: 2026-05-21
+- Decision: `QRCode.slug` is immutable in production. 41 A5 posters have been printed and distributed; any slug change breaks the physical QR code on a wall in a real store.
+- Reason: Reprinting and redistributing 41 posters costs hours of work and store visits. Trust-based discipline isn't enough — past sessions have shown silent slug changes via repair scripts.
+- Impact: `app/src/lib/db.ts` extends Prisma to throw on any `update`/`updateMany`/`upsert` that includes `slug` in the write payload. Backup of the frozen mapping is committed at `data/qr-links-frozen-2026-05-21.json`. Full rule: `docs/QR_SLUG_PROTECTION.md`.
+
+## D-034: Cron For Daily Report Runs From GitHub Actions, Not Railway
+
+- Date: 2026-05-21
+- Decision: The daily Telegram report fires via a GitHub Actions scheduled workflow (`.github/workflows/daily-telegram-report.yml`), not via Railway cron.
+- Reason: Railway free plan blocks new scheduled services ("Free plan resource provision limit exceeded"). GitHub Actions is free, sits next to the code, and includes manual-run + failure-email out of the box.
+- Impact: `REPORTS_API_KEY` GitHub secret added; workflow hits `POST /api/reports/daily` at 03:00 UTC = 08:00 Tashkent daily. Run #1 verified green on 2026-05-21.
+
+## D-032: Vote Cooldown Is 35 Days Per Device Per Store
+
+- Date: 2026-05-21
+- Decision: A customer device can submit one vote per store once every 35 days.
+- Reason: The previous 7-day window was too short for the desired feedback quality and repeat-vote control.
+- Impact: `app/src/app/[slug]/actions.ts` now checks the last 35 days and shows a 35-day message.
+
+## D-031: Morning Daily Report Uses Yesterday's Scores
+
+- Date: 2026-05-21
+- Decision: The daily Telegram report sent at 08:00 Tashkent must summarize the previous full Tashkent day, not the current partial day.
+- Reason: Morning reporting should cover completed yesterday performance and avoid partial same-day counts.
+- Impact: `getDailyRange()` now returns yesterday 00:00-24:00 Tashkent.
+
+## D-030: Railway Function Scheduler Is Blocked On Current Resource Plan
+
+- Date: 2026-05-21
+- Decision: Do not claim the 08:00 Telegram report is automated until a scheduler is actually provisioned and verified.
+- Reason: Creating Railway Function `daily-report-cron` failed with `Free plan resource provision limit exceeded`.
+- Impact: Manual report sending works; automatic schedule requires Railway resource upgrade or external scheduler.
 ## D-029: Railway CLI Deploy Must Run from `app/` Subdirectory
 
 - Date: 2026-05-18
@@ -17,7 +51,7 @@
 ## D-027: Repair Endpoint Is the Authoritative Way to Fix Glotok DB State
 
 - Date: 2026-05-18
-- Decision: Use `POST /api/admin/repair-a5-links` (Bearer auth) to create Глоток Юнусабад and Глоток Панельный stores and clear test feedback. The endpoint is idempotent — safe to re-run.
+- Decision: Use `POST /api/admin/repair-a5-links` (Bearer auth) to create ������ �������� and ������ ��������� stores and clear test feedback. The endpoint is idempotent � safe to re-run.
 - Reason: DB is on Railway's internal network; direct SQL access from local requires railway ssh with complex quoting. An HTTP endpoint is safer and auditable.
 - Impact: Test votes cleared (14 removed). Both Glotok stores now have own DB records and unique slugs.
 
