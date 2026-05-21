@@ -5,6 +5,36 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added (2026-05-21 — afternoon)
+- `.github/workflows/daily-telegram-report.yml` — GitHub Actions scheduled workflow that fires `POST /api/reports/daily` every day at 03:00 UTC (08:00 Tashkent). Replaces the blocked Railway cron approach.
+- `data/qr-links-frozen-2026-05-21.json` — versioned backup of all 41 printed slug → store mappings.
+- `docs/QR_SLUG_PROTECTION.md` — full rule, restore procedure, and exceptions policy for printed slugs.
+- `docs/ANALYST_POWER_BI_MESSAGE.md` — Russian-language Railway runbook + ready-to-send analyst onboarding message with 6 default Power BI report ideas.
+- `docs/superpowers/plans/2026-05-20-voting-dashboard-and-reports.md` and `docs/superpowers/plans/2026-05-21-github-actions-daily-report-cron.md` — implementation plans.
+- Project-level `CLAUDE.md`, `AGENTS.md`, `GEMINI.md` — surface the QR-freeze hard rule + project pointers to any AI tool on first read.
+
+### Changed (2026-05-21 — afternoon)
+- `app/src/lib/db.ts` — Prisma client now extends the base `PrismaClient` to reject any `update`/`updateMany`/`upsert` on `QRCode` that includes `slug` in the write payload. Deployed to Railway (exit code 0).
+- `app/src/app/admin/page.tsx` — admin dashboard translated to Russian (15 string replacements + date locale `en-GB` → `ru-RU` in three formatters). Typecheck passes; deploy pending.
+
+### Fixed (2026-05-21 — afternoon)
+- The 08:00 Tashkent automatic cron is no longer blocked. Worked around Railway free-plan resource limit by moving the scheduler to GitHub Actions (free, includes manual-trigger button and failure email).
+
+### Added (2026-05-21 — morning)
+- Light admin analytics dashboard with daily, weekly, monthly, and yearly period views.
+- `GET /api/analytics/stores` endpoint for store-level Power BI analytics.
+- Telegram production variables for daily report delivery.
+
+### Changed (2026-05-21 — morning)
+- Daily Telegram report now summarizes yesterday's full Tashkent day for the 08:00 morning report.
+- Daily Telegram report is Russian and includes every active store, including stores with `0` votes.
+- Device vote cooldown changed from once per 7 days to once per 35 days per store.
+- Railway Docker image now exposes port `8080` to match the runtime `PORT`.
+
+### Fixed (2026-05-21 — morning)
+- Production dashboard/reporting/API deploy verified on Railway.
+- Missed daily Telegram report sent manually and returned `{"ok":true,"sent":true}`.
+
 ### Added (2026-05-18)
 - `POST /api/admin/repair-a5-links` endpoint: idempotent repair for Глоток Юнусабад/Панельный slugs and optional full feedback clear.
 - `GET/POST /api/admin/qr-check` diagnostic endpoint (list all QR codes/stores + run archivedAt migration).
