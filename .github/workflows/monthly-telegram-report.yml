@@ -1,0 +1,32 @@
+name: Monthly Telegram Report
+
+on:
+  schedule:
+    # 1st of month 03:00 UTC = 1st 08:00 Tashkent (UTC+5). Covers previous calendar month.
+    - cron: '0 3 1 * *'
+  # Also allows manual trigger from the GitHub Actions UI ("Run workflow" button).
+  workflow_dispatch:
+
+# Prevent overlapping runs.
+concurrency:
+  group: monthly-telegram-report
+  cancel-in-progress: false
+
+jobs:
+  send-report:
+    name: Send Monthly Telegram Report
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: POST /api/reports/monthly
+        run: |
+          echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] starting POST /api/reports/monthly"
+          curl --fail-with-body -sS \
+            --retry 3 --retry-delay 30 --retry-all-errors \
+            --max-time 60 \
+            -X POST \
+            -H "Authorization: Bearer ${{ secrets.REPORTS_API_KEY }}" \
+            https://web-production-370c1.up.railway.app/api/reports/monthly
+          echo
+          echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] done"
