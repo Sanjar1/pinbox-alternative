@@ -2,12 +2,13 @@
 
 import { prisma } from '@/lib/db';
 import { toCleanString, validateFeedbackInput } from '@/lib/validation';
-import { sendFeedbackAlert } from '@/lib/notifications';
+import { scheduleAlert, flushAlert } from '@/lib/feedback-alert-buffer';
 import { writeAuditLog } from '@/lib/audit';
 import { cookies, headers } from 'next/headers';
 import { getClientIp, getOrCreateDeviceId, isTesterDeviceId, sha256 } from '@/lib/feedback-protection';
 
 export async function submitFeedback(formData: FormData): Promise<{ error?: string; success?: string }> {
+  const submittedAt = new Date();
   const storeId = toCleanString(formData.get('storeId'));
   const rating = Number.parseInt(toCleanString(formData.get('rating')), 10);
   const comment = toCleanString(formData.get('comment'));
@@ -73,7 +74,7 @@ export async function submitFeedback(formData: FormData): Promise<{ error?: stri
   let suspicious = false;
 
   if (!antiAbuseDisabled && !testerBypass) {
-    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const oneWeekAgo = new Date(Date.now() - 35 * 24 * 60 * 60 * 1000);
     const weeklyDeviceVotes = await prisma.feedback.count({
       where: {
         storeId: store.id,
@@ -82,7 +83,7 @@ export async function submitFeedback(formData: FormData): Promise<{ error?: stri
       },
     });
     if (weeklyDeviceVotes >= 1) {
-      return { error: 'You can submit one vote per 7 days from this device.' };
+      return { error: 'You can submit one vote per 35 days from this device.' };
     }
 
     if (ipHash) {
@@ -139,12 +140,21 @@ export async function submitFeedback(formData: FormData): Promise<{ error?: stri
   });
 
   if (rating <= 3) {
-    await sendFeedbackAlert({
+    const isVoteCall = comment.startsWith('[ratings]');
+    const baseDeviceId = isVoteCall ? clientDeviceId : clientDeviceId.replace(/-comment$/, '');
+    const sessionKey = `${store.id}:${baseDeviceId}`;
+    const payload = {
       storeName: store.name,
       rating,
       comment,
       contact,
-    });
+      submittedAt,
+    };
+    if (isVoteCall) {
+      scheduleAlert(sessionKey, payload);
+    } else {
+      flushAlert(sessionKey, payload);
+    }
   }
 
   return { success: 'ok' };
