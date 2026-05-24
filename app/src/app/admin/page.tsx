@@ -1,6 +1,9 @@
 import { prisma } from '@/lib/db';
 import { requireCurrentUser } from '@/lib/auth';
 import { storeWhereForUser } from '@/lib/store-access';
+import { VOTE_ROW_FILTER, COMMENT_ROW_FILTER } from '@/lib/feedback-filters';
+import { buildTrendSeries } from '@/lib/dashboard-trends';
+import { MetricCardsWithTrends } from './metric-cards-with-trends';
 
 type DashboardPeriod = 'daily' | 'weekly' | 'monthly' | 'yearly';
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -95,6 +98,7 @@ export default async function AdminDashboard({
   const user = await requireCurrentUser();
   const storeWhere = storeWhereForUser(user);
   const feedbackPeriodWhere = { createdAt: { gte: range.start, lt: range.end } };
+  const voteCountWhere = { ...feedbackPeriodWhere, ...VOTE_ROW_FILTER };
 
   const stores = await prisma.store.findMany({
     where: storeWhere,
@@ -103,7 +107,7 @@ export default async function AdminDashboard({
       name: true,
       qrCodes: { select: { scans: true } },
       feedbacks: {
-        where: feedbackPeriodWhere,
+        where: voteCountWhere,
         select: { rating: true, createdAt: true },
       },
     },
@@ -114,6 +118,7 @@ export default async function AdminDashboard({
     where: {
       store: storeWhere,
       ...feedbackPeriodWhere,
+      ...COMMENT_ROW_FILTER,
     },
     select: {
       id: true,
@@ -141,6 +146,7 @@ export default async function AdminDashboard({
         0,
       ) / totalVotes;
   const zeroVoteStores = stores.filter((store) => store.feedbacks.length === 0).length;
+  const trends = buildTrendSeries(period, range.start, range.end, stores);
 
   const storeRows = stores
     .map((store) => {
@@ -204,13 +210,15 @@ export default async function AdminDashboard({
         </div>
       </header>
 
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        <MetricCard label="Всего магазинов" value={String(totalStores)} note="Активные магазины в данном разрезе" />
-        <MetricCard label={`${periodLabels[period]} — голосов`} value={String(totalVotes)} note="Голосов получено за период" />
-        <MetricCard label="Средняя оценка" value={totalVotes === 0 ? '-' : avgRating.toFixed(1)} note="За выбранный период" />
-        <MetricCard label="Магазины без голосов" value={String(zeroVoteStores)} note="Видны в таблице ниже" />
-        <MetricCard label="Сканов QR" value={String(totalScans)} note="Всего за всё время (история сканов не датируется)" />
-      </section>
+      <MetricCardsWithTrends
+        periodLabel={periodLabels[period]}
+        totalStores={totalStores}
+        totalVotes={totalVotes}
+        avgRating={avgRating}
+        zeroVoteStores={zeroVoteStores}
+        totalScans={totalScans}
+        trends={trends}
+      />
 
       <section className="rounded-3xl border border-slate-200 bg-white shadow-sm">
         <div className="border-b border-slate-100 p-6">
@@ -302,24 +310,6 @@ export default async function AdminDashboard({
           </div>
         )}
       </section>
-    </div>
-  );
-}
-
-function MetricCard({
-  label,
-  value,
-  note,
-}: {
-  label: string;
-  value: string;
-  note: string;
-}) {
-  return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-      <p className="text-sm font-semibold text-slate-500">{label}</p>
-      <p className="mt-3 text-3xl font-bold text-slate-950">{value}</p>
-      <p className="mt-2 text-xs text-slate-400">{note}</p>
     </div>
   );
 }
