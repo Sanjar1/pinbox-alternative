@@ -1,0 +1,32 @@
+name: Weekly Telegram Report
+
+on:
+  schedule:
+    # Mondays 03:00 UTC = Mondays 08:00 Tashkent (UTC+5). Covers previous Mon-Sun.
+    - cron: '0 3 * * 1'
+  # Also allows manual trigger from the GitHub Actions UI ("Run workflow" button).
+  workflow_dispatch:
+
+# Prevent overlapping runs.
+concurrency:
+  group: weekly-telegram-report
+  cancel-in-progress: false
+
+jobs:
+  send-report:
+    name: Send Weekly Telegram Report
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: POST /api/reports/weekly
+        run: |
+          echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] starting POST /api/reports/weekly"
+          curl --fail-with-body -sS \
+            --retry 3 --retry-delay 30 --retry-all-errors \
+            --max-time 60 \
+            -X POST \
+            -H "Authorization: Bearer ${{ secrets.REPORTS_API_KEY }}" \
+            https://web-production-370c1.up.railway.app/api/reports/weekly
+          echo
+          echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] done"
