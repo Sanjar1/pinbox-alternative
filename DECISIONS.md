@@ -1,5 +1,26 @@
 # Decisions Log
 
+## D-038: Don't Fix `-comment` deviceId Double-Counting Bug This Session
+
+- Date: 2026-05-24
+- Decision: The pre-existing bug where `deviceId + "-comment"` creates a second Feedback DB row per customer visit is tracked but not fixed today.
+- Reason: Scope discipline. Today's task was the alert template rewrite. The fix touches the rate-limiter in `actions.ts` which has higher blast radius. The bug predates today's work and doesn't affect the new alert template.
+- Impact: Analytics may over-count low-rating sessions. The 35-day anti-abuse check is bypassed for comment-only submissions. Fix tracked in TODO.
+
+## D-037: Late Comment (>30s After Vote) Gets a Follow-Up Message, Not an Edit
+
+- Date: 2026-05-24
+- Decision: If a customer types a free-text comment more than 30 seconds after their vote (i.e., after the debounce timer has already fired and sent the vote-only alert), the comment is sent as a separate short follow-up message via `buildFollowUpCommentMessage`. The original alert is NOT edited.
+- Reason: Simpler implementation — no need to track Telegram `message_id` for 5+ minutes. Managers see the comment immediately in context. Tradeoff: late-comment messages appear visually detached from the original alert, but current visit volume makes this acceptable.
+- Impact: `app/src/lib/notifications.ts` has `buildFollowUpCommentMessage`. Reconsider (switch to edit-original) if the managers group becomes noisy.
+
+## D-036: Brand Display Name in Customer-Facing Alerts Is «KAAS Сырная Лавка»
+
+- Date: 2026-05-24
+- Decision: The string «KAAS Сырная Лавка» (with «» quotes) is used as the brand name in all new Telegram alert templates and Telegram report messages.
+- Reason: Owner requested the "KAAS" prefix to differentiate from competitors who also use "Сырная Лавка". The repo-wide brand name change is NOT in scope — only alert/notification messages use the new form for now.
+- Impact: `app/src/lib/notifications.ts` hardcodes this spelling. Any new Telegram copy must use this form. Revisit when a broader brand rename is planned.
+
 ## D-035: Power BI Analyst Access Goes Through Railway Public TCP + bi_readonly Role
 
 - Date: 2026-05-21

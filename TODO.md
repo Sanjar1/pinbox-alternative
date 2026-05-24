@@ -1,38 +1,37 @@
 # TODO
 
-**Updated:** 2026-05-21 (end of session)
+**Updated:** 2026-05-24
 
-## Priority 0 — Same-day shipping
-- [x] Activate the 08:00 Tashkent daily Telegram report — **done via GitHub Actions** (`0 3 * * *` UTC, `.github/workflows/daily-telegram-report.yml`). Run #1 green.
-- [x] Freeze the 41 printed QR slugs (DB write guard + backup + docs).
-- [x] Write analyst Power BI onboarding doc (`docs/ANALYST_POWER_BI_MESSAGE.md`) in Russian.
-- [x] Translate admin dashboard to Russian (code ready locally, typecheck passed).
-- [x] Deploy the Russian dashboard translation — **queued for tonight 23:05 Tashkent via `Pinbox-Railway-Night-Deploy` Windows Scheduled Task** (Railway free-tier peak-hours block prevents earlier deploy; task fires at 20:05 CEST, just after block lifts).
-- [x] Owner runs the 4-step Railway runbook in `docs/ANALYST_POWER_BI_MESSAGE.md` — **DONE: host/port `metro.proxy.rlwy.net:36355`, role `bi_readonly` created and verified (43 stores, 35 feedback rows; UPDATE denied), password held by owner (not in repo).**
+## Priority 0 — Verify tonight's deploy (no manual action until 23:05 Tashkent)
+- [ ] After `Pinbox-Railway-Night-Deploy` fires at 23:05 Tashkent: scan any A5 poster QR → leave 1–2/5 rating → type a comment → confirm ONE merged Russian-template Telegram message arrives in the managers group (not two English messages).
 
-## Priority 1 — Tomorrow morning verification
-- [ ] Confirm the automatic 08:00 Tashkent GitHub Actions run actually delivers to the managers Telegram group.
-- [ ] If green, mark M5 — Reporting Activation closed in `ROADMAP.md`. If red, inspect the workflow log (`curl --fail-with-body` will show the response body).
+## Priority 1 — Quick wins
+- [ ] Add `workflow` scope to PAT `telegram-ai-agent deploy` (requires github.com/settings/tokens → email sudo-mode). Blocks future workflow file edits from CLI.
+- [ ] Fix the `-comment` deviceId double-counting bug in `app/src/app/[slug]/client.tsx:136` + `app/src/app/[slug]/actions.ts`. Two Feedback rows per visit → analytics over-count low-rating sessions; 35-day anti-abuse check bypassed for comment submissions.
+- [ ] Confirm the automatic 08:00 Tashkent GitHub Actions daily cron is still delivering (last verified 2026-05-21 run #1).
+- [ ] If daily cron confirmed green for several days, mark M5 — Reporting Activation closed in `ROADMAP.md`.
 
-## Priority 2 — Cleanup
+## Priority 2 — Cleanup (carried from 2026-05-21)
 - [ ] Remove temporary helper scripts: `scripts/tmp-check-a5-qr.cjs`, `scripts/audit-a5-poster-links.cjs`, `scripts/tmp-extract-qr-links.cjs`, `scripts/tmp-fix-a5-placeholders.cjs`.
-- [ ] Delete the stray file literally named `console.log(JSON.stringify(row)))` in repo root (created by an accidental shell redirect).
-- [ ] Smoke-test a random handful of QR links after the dashboard translation deploys.
-- [ ] Add `* text=auto eol=lf` to `.gitattributes` to silence the CRLF/LF warnings on every commit.
+- [ ] Delete the stray file named `console.log(JSON.stringify(row)))` in repo root (created by an accidental shell redirect).
+- [ ] Smoke-test a random handful of QR links.
+- [ ] Add `* text=auto eol=lf` to `.gitattributes` to silence CRLF/LF warnings.
 
 ## Priority 3 — Optional hardening
-- [ ] Add Telegram failure-alert step to `.github/workflows/daily-telegram-report.yml` (optional Task 5 in `docs/superpowers/plans/2026-05-21-github-actions-daily-report-cron.md`). Posts to Telegram on workflow failure in addition to GitHub email.
+- [ ] Add Telegram failure-alert step to `.github/workflows/daily-telegram-report.yml` (posts to Telegram on workflow failure in addition to GitHub email).
 - [ ] Add expiration date to `bi_readonly` Postgres role (e.g. `VALID UNTIL '2026-08-21'`) so analyst access auto-expires after 3 months unless renewed.
 
 ## Stretch / future
-- [ ] Once vote volume is steady, add weekly + monthly automated reports (same GitHub Actions pattern, different cron + endpoint).
 - [ ] Add a Russian-language flag to the analyst-onboarding doc once English-speaking analysts join.
 
 ---
 
 ## Recently closed (see `PROGRESS.md` for the full story)
 
-- 2026-05-21 — GitHub Actions daily cron live.
+- 2026-05-24 — Weekly + monthly Telegram report GitHub Actions crons added.
+- 2026-05-24 — Low-rating Telegram alert rewritten to Russian/shaming-tone template.
+- 2026-05-24 — In-memory debounce buffer added (one alert per customer visit, not two).
+- 2026-05-21 — GitHub Actions daily cron live (run #1 green).
 - 2026-05-21 — QR slug freeze (D-033) deployed.
 - 2026-05-21 — Power BI runbook + Russian analyst message published.
 - 2026-05-21 — Admin dashboard Russian translation done locally.

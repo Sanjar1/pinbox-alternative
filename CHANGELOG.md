@@ -5,6 +5,15 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added (2026-05-24)
+- `.github/workflows/weekly-telegram-report.yml` — sends `POST /api/reports/weekly` every Monday at 08:00 Tashkent (03:00 UTC). Uses `REPORTS_API_KEY` secret + `workflow_dispatch` manual trigger.
+- `.github/workflows/monthly-telegram-report.yml` — sends `POST /api/reports/monthly` on the 1st of each month at 08:00 Tashkent (03:00 UTC). Same pattern.
+- `app/src/lib/feedback-alert-buffer.ts` — in-memory 30-second debounce buffer for low-rating Telegram alerts, keyed by `storeId:baseDeviceId`. Merges vote + follow-up comment into one alert; sends a short follow-up if comment arrives after the timer fires.
+
+### Changed (2026-05-24)
+- `app/src/lib/notifications.ts` — low-rating Telegram alert template completely rewritten: Russian language, shaming tone, per-question score breakdown (Сервис/Качество/Цены), Tashkent-formatted timestamp via `Intl.DateTimeFormat`, brand «KAAS Сырная Лавка», @sanjar676767 + @Alijon_87 mentions. Added `buildFollowUpCommentMessage` for late-comment follow-ups.
+- `app/src/app/[slug]/actions.ts` — low-rating alert is now routed through the debounce buffer (`feedback-alert-buffer.ts`) instead of direct send.
+
 ### Added (2026-05-21 — end of session)
 - `bi_readonly` Postgres role with SELECT-only privileges on the `public` schema, accessible via the Railway public TCP proxy at `metro.proxy.rlwy.net:36355`, for Power BI analyst direct database access.
 

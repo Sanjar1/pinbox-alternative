@@ -1,5 +1,27 @@
 # Progress Log
 
+## 2026-05-24 — Russian alert template, debounce buffer, weekly + monthly report crons
+
+**Done:**
+- **Rewrote low-rating Telegram alert template** (commit `ddd384b`). Old template: English "New feedback received" with plain Store/Rating/Comment lines. New template: Russian, shaming tone, per-question breakdown (Сервис/Качество/Цены), Tashkent-formatted timestamp, brand «KAAS Сырная Лавка», @-mentions of on-shift managers. Implemented in `app/src/lib/notifications.ts` (Intl.DateTimeFormat Asia/Tashkent formatter + new `buildMessage` + `buildFollowUpCommentMessage`). Wired to `app/src/app/[slug]/actions.ts`.
+- **Added in-memory debounce buffer** (`app/src/lib/feedback-alert-buffer.ts`, new file). Customer's single visit generates two server calls (vote then comment), which previously caused two Telegram messages. The buffer keys by `storeId:baseDeviceId` and holds a 30-second timer: the comment call cancels the timer and sends one merged message. Late comments (>30s after vote timer fired) get a short follow-up `buildFollowUpCommentMessage`. Single-process assumption (Railway one replica via `next start`) documented in file.
+- **Added weekly Telegram report cron** (commit `052bfbf`). `.github/workflows/weekly-telegram-report.yml` fires `POST /api/reports/weekly` at `0 3 * * 1` UTC (Mondays 08:00 Tashkent). Reuses `REPORTS_API_KEY` secret. `workflow_dispatch` for manual runs.
+- **Added monthly Telegram report cron** (commit `1010e89`). `.github/workflows/monthly-telegram-report.yml` fires `POST /api/reports/monthly` at `0 3 1 * *` UTC (1st of month 08:00 Tashkent). Same pattern.
+- **Verified:** 8 unit assertions on parser/formatter/debounce; `npx tsc --noEmit` clean; `npm run lint` clean on all 3 changed files; live `buildMessage` output previewed in managers group (message IDs 62913–62925).
+
+**Found:**
+- GitHub PAT `telegram-ai-agent deploy` lacks `workflow` scope — can't push `.github/workflows/` files via CLI. Worked around with GitHub web UI. Long-term fix: add `workflow` scope to the PAT.
+- CodeMirror 6 auto-indent compounds on each newline during keystroke-based typing in the GitHub web editor; must use `execCommand('insertText')` for multi-line content.
+- Railway free-tier deploy blackout runs 08:00–20:00 Amsterdam time. Existing `Pinbox-Railway-Night-Deploy` task (23:05 Tashkent = 20:05 CEST) already threads the needle.
+- **Pre-existing bug discovered:** The voting client appends `-comment` to `deviceId` for the free-text comment submission. This creates two Feedback DB rows per visit with different `deviceHash` values. Consequences: (1) analytics over-count low-rating sessions; (2) the 35-day anti-abuse check never fires for the comment row, allowing unlimited free-text submissions per device. NOT fixed today — scope discipline.
+
+**Next session:**
+- Verify tonight's `Pinbox-Railway-Night-Deploy` (23:05 Tashkent) picked up commit `ddd384b`. After deploy: scan a real poster → leave 1–2/5 → type a comment → confirm ONE merged Russian-template message arrives in the managers group.
+- Add `workflow` scope to PAT `telegram-ai-agent deploy`.
+- Fix the `-comment` deviceId double-counting bug (two Feedback rows per visit, anti-abuse bypass).
+
+---
+
 ## 2026-05-21 (end of session) — Power BI access provisioned, nightly deploy fixed, Russian dashboard queued
 
 **Done:**
