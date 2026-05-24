@@ -1,10 +1,10 @@
 # Status
 
-**Updated:** 2026-05-24 (end of second session)
+**Updated:** 2026-05-24 (end of third session)
 
 ## Current Phase
 
-`M5 — Reporting Activation — All alert templates deployed. Dashboard vote double-counting bug fixed (read-side filter). Awaiting tonight's automatic deploy.`
+`M5 — Reporting Activation — Simplified team login (password-only). Dashboard vote double-counting bug fixed. Both changes awaiting tonight's automatic deploy at 23:05 Tashkent.`
 
 ## Product Truth
 
@@ -12,9 +12,16 @@
 - Customers scan a poster QR, vote 1–5 stars + optional comment; data lands in Postgres for the admin dashboard, the daily/weekly/monthly Telegram reports, and external Power BI reporting.
 - Brand name in Telegram copy: **«KAAS Сырная Лавка»**.
 
-## What Is Done (as of 2026-05-24, session 2)
+## What Is Done (as of 2026-05-24, session 3)
 
-### Dashboard vote double-counting bug — FIXED today
+### Simplified team login — DONE today (ships at 23:05 Tashkent deploy)
+- **What changed:** Removed email-field from the login page. Now a single password field. Russian UI: header "Сырная Лавка — Команда", label "Пароль", button "Войти".
+- **Auth flow:** `app/src/app/login/actions.ts` accepts `password` only. Compares to `process.env.TEAM_PASSWORD`. On match, lazy-creates singleton `team@kaas.local` OWNER user (or finds existing one). Creates session as that shared user. Audit-logs LOGIN_SUCCESS / LOGIN_FAILED. All error messages in Russian.
+- **Env var:** `TEAM_PASSWORD=12345` set in Railway via `railway variables --set`. Verified present via `railway variables --service web --kv | grep TEAM_PASSWORD`. Initial write appeared to fail (peak-hours redeploy block) but the write itself succeeded.
+- **Tradeoffs accepted (D-040/D-041):** Trivial password on a public-internet URL; shared identity means audit log cannot distinguish individual team members; existing email-based users locked out. Change password anytime via Railway env var — no code change needed.
+- **Deploy:** Both login change and vote-count fix ship together at 23:05 Tashkent via `Pinbox-Railway-Night-Deploy`.
+
+### Dashboard vote double-counting bug — FIXED today (session 2)
 - **Root cause:** `app/src/app/[slug]/client.tsx` calls the server action twice per low-score session: first writes `{comment: "[ratings] service:X;quality:Y;prices:Z;..."}`, second writes the user's free-text comment with `deviceId + "-comment"` to bypass the 35-day anti-abuse check. Dashboard + daily report both count both rows.
 - **Verification:** Last 7 days: 232 rows → 230 vote rows (2 follow-ups correctly hidden). Юнусабад: 6 → 5 (the "Xama joy bardak" row was the comment follow-up). Метро Чиланзар: 6 → 5 (★3 "Сервис" follow-up).
 - **Fix:** NEW file `app/src/lib/feedback-filters.ts` exports `VOTE_ROW_FILTER` + `COMMENT_ROW_FILTER`. Dashboard counts use `VOTE_ROW_FILTER`; "Latest feedback" display uses `COMMENT_ROW_FILTER`. Daily + weekly + monthly reports all filter by votes only.
@@ -22,7 +29,7 @@
 - **Deploy:** Manual `railway up` blocked by free-tier peak hours. Existing Windows Scheduled Task `Pinbox-Railway-Night-Deploy` at 23:05 Tashkent will deploy automatically. Flagged `WakeToRun = False` as a risk if laptop sleeps.
 - `npx tsc --noEmit` exit 0; `npm run lint` clean.
 
-### From previous session (2026-05-24, session 1)
+### From session 2 (2026-05-24)
 - **Telegram alert template** — Low-rating alert rewritten to Russian/shaming-tone template + per-question scores + Tashkent timestamp + @mentions. Commit `ddd384b`.
 - **Debounce buffer** — `app/src/lib/feedback-alert-buffer.ts` merges two per-visit server calls into one alert. Late comments get a follow-up.
 - **Weekly + monthly crons** — `.github/workflows/weekly-telegram-report.yml` + `.github/workflows/monthly-telegram-report.yml`. Commits `052bfbf`, `1010e89`.
@@ -39,7 +46,7 @@
 
 ## Current Blockers
 
-None. Next Railway deploy via auto-task at 23:05 Tashkent will pick up the vote-count fix.
+None. Next Railway deploy via auto-task at 23:05 Tashkent will pick up both the vote-count fix and the simplified login.
 
 ## Known Pre-existing Issue (different from today's fix)
 
@@ -47,13 +54,12 @@ The `-comment` deviceId append in `app/src/app/[slug]/client.tsx:136` + `app/src
 
 ## Immediate Next Steps
 
-1. **Tonight 23:05 Tashkent:** `Pinbox-Railway-Night-Deploy` auto-fires. This deploys the vote-count fix.
-2. **After deploy:** Spot-check the dashboard and verify that vote counts match actual store visits (no more double-counting).
-3. **Next session:** Add `workflow` scope to PAT; optionally fix the two-rows-per-visit write pattern at the source.
+1. **Tonight 23:05 Tashkent:** `Pinbox-Railway-Night-Deploy` auto-fires. Deploys the vote-count fix + simplified login. Both `TEAM_PASSWORD` env var and code will be live after this.
+2. **After deploy:** (a) Open `/login` — verify single password field in Russian. Enter `12345` → should land on `/admin`. (b) Spot-check dashboard vote counts: Юнусабад and Метро Чиланзар should show correct lower counts.
+3. **Next session:** Add `workflow` scope to PAT; optionally fix the two-rows-per-visit write pattern at the source; consider rate-limiting `/login` POST against bot brute-force.
 
-## Verification Snapshot (2026-05-24, session 2)
+## Verification Snapshot (2026-05-24, session 3)
 
-- `npx tsc --noEmit`: exit 0 on all changed files.
-- `npm run lint`: clean on all changed files.
-- Production DB spot-checks: Юнусабад (11:58/11:59 incident) now shows 5 votes instead of 6. Метро Чиланзар now shows 5 instead of 6. Filter is working correctly.
-- Filter logic tested against sample Feedback rows with `comment.startsWith("[ratings] service:")` predicate.
+- `TEAM_PASSWORD` env var: confirmed present in Railway via `railway variables --service web --kv` after `railway variables --set` (write succeeded despite peak-hours redeploy block).
+- Login page: not yet verifiable against production (awaiting 23:05 deploy). Code reviewed: `login-form.tsx` has single password input; `actions.ts` reads `process.env.TEAM_PASSWORD`.
+- Vote-count fix (from session 2): `npx tsc --noEmit` exit 0; `npm run lint` clean; production DB spot-checks correct.

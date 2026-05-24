@@ -1,5 +1,12 @@
 # Mistakes and Lessons Learned
 
+## 2026-05-24 — `railway variables --set` write succeeds even when the auto-redeploy is blocked by peak hours
+
+- **What happened:** Ran `railway variables --set TEAM_PASSWORD=12345 --service web`. Command returned an error referencing "Free-tier deploys not available during peak hours." Looked like the entire operation failed. In reality only the auto-redeploy was blocked; the variable write had already succeeded before the redeploy step was attempted.
+- **Root cause:** `railway variables --set` is a two-step operation internally: (1) write the variable value to Railway's config store, (2) trigger a redeploy to pick up the new value. The free-tier peak-hours block (`europe-west4-drams3a`, 08:00–20:00 Amsterdam) only blocks step 2. Step 1 always succeeds. The CLI surfaces the step-2 error as if the whole command failed.
+- **Verification method:** `railway variables --service web --kv | grep TEAM_PASSWORD` immediately after — if the variable appears (even masked as `*******`), the write succeeded. The redeploy will happen at 23:05 Tashkent via the existing nightly task.
+- **Lesson:** When `railway variables --set` fails with a peak-hours error, always verify the write independently before assuming failure and retrying. Retrying will write the value again (idempotent), but wasted time. The variable is live in the store; only the service restart (to pick up the new env var) is pending.
+
 ## 2026-05-24 — Two-writer pattern masked by dedup at a different layer
 
 - **What happened:** The voting client writes two Feedback rows per customer visit (vote + free-text comment), both with different `deviceHash` values. The Telegram alert system deduped these two rows via `sessionKey` in `feedback-alert-buffer.ts`, so alerts were correct. However, the dashboard and daily/weekly/monthly reports both counted both rows, inflating vote counts silently for ~6 weeks before the bug was discovered.

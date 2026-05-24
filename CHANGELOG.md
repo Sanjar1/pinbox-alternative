@@ -5,6 +5,11 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Changed (2026-05-24 — session 3)
+- `app/src/app/login/login-form.tsx` — full rewrite. Email field removed. Single password input with Russian labels: header "Сырная Лавка — Команда", label "Пароль", button "Войти". `autoFocus` on the password field.
+- `app/src/app/login/actions.ts` — full rewrite. Accepts `password` only. Compares to `process.env.TEAM_PASSWORD` (Railway env var). On match, lazy-creates/finds singleton `team@kaas.local` OWNER user. Creates session. Audit-logs LOGIN_SUCCESS / LOGIN_FAILED. All error messages in Russian.
+- `TEAM_PASSWORD=12345` added to Railway web service env vars (set via `railway variables --set`; write confirmed via `--kv` grep).
+
 ### Fixed (2026-05-24 — session 2)
 - Dashboard and reports no longer double-count votes. Root cause: the voting client writes two Feedback rows per customer visit (vote + free-text comment with `-comment` deviceHash). Telegram alert dedup via `sessionKey` masked the issue, but dashboard/report queries counted both rows. Solution: `app/src/lib/feedback-filters.ts` exports `VOTE_ROW_FILTER` and `COMMENT_ROW_FILTER`; dashboard counts and all report queries now filter by votes only. Verified on production DB: last 7 days went from 232 rows → 230 vote rows; affected stores (Юнусабад, Метро Чиланзар) now show correct counts.
 
