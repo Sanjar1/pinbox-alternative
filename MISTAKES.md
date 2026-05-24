@@ -1,5 +1,12 @@
 # Mistakes and Lessons Learned
 
+## 2026-05-24 — Two-writer pattern masked by dedup at a different layer
+
+- **What happened:** The voting client writes two Feedback rows per customer visit (vote + free-text comment), both with different `deviceHash` values. The Telegram alert system deduped these two rows via `sessionKey` in `feedback-alert-buffer.ts`, so alerts were correct. However, the dashboard and daily/weekly/monthly reports both counted both rows, inflating vote counts silently for ~6 weeks before the bug was discovered.
+- **Root cause:** The two-rows-per-visit pattern was introduced in the write path (`client.tsx:136` + `actions.ts:85`). The Telegram alert dedup at the notification layer masked the symptom (alerts looked correct), making the bug invisible to the people who monitor Telegram messages. The dashboard/report aggregations silently inflated because no one monitors every dashboard number every day, and the over-count was small enough (2–3% per store) to avoid obvious alarm.
+- **Lesson:** When two code paths write to the same table for "one logical event," at least one read aggregation will eventually be wrong. Prefer: (1) write-time dedup (canonical row only), or (2) add a `kind` column to distinguish the rows, then filter at read time. Dedup at one notification layer while counts at a different layer are both reading the same table — they will diverge. The dedup that works for alerts won't work for analytics. In this case, the symptom was masked for weeks because one consumer (Telegram) was deduped while others (dashboard, reports) were not.
+- **How found:** User reported seeing 2 votes at 11:58/11:59 Tashkent but it was one customer. Spot-check of the DB revealed the pattern: every low-score session produced two rows with slightly different timestamps and different `deviceHash` values (the second appended `-comment` to the original `deviceId`).
+
 ## 2026-05-24 — GitHub PAT without `workflow` scope blocks workflow file pushes
 
 - **What happened:** Attempted to push `.github/workflows/weekly-telegram-report.yml` and `.github/workflows/monthly-telegram-report.yml` via CLI (Git over HTTPS). GitHub rejected: `refusing to allow a Personal Access Token to create or update workflow ... without 'workflow' scope`.

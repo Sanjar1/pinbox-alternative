@@ -5,14 +5,20 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
-### Added (2026-05-24)
+### Fixed (2026-05-24 — session 2)
+- Dashboard and reports no longer double-count votes. Root cause: the voting client writes two Feedback rows per customer visit (vote + free-text comment with `-comment` deviceHash). Telegram alert dedup via `sessionKey` masked the issue, but dashboard/report queries counted both rows. Solution: `app/src/lib/feedback-filters.ts` exports `VOTE_ROW_FILTER` and `COMMENT_ROW_FILTER`; dashboard counts and all report queries now filter by votes only. Verified on production DB: last 7 days went from 232 rows → 230 vote rows; affected stores (Юнусабад, Метро Чиланзар) now show correct counts.
+
+### Added (2026-05-24 — session 1)
 - `.github/workflows/weekly-telegram-report.yml` — sends `POST /api/reports/weekly` every Monday at 08:00 Tashkent (03:00 UTC). Uses `REPORTS_API_KEY` secret + `workflow_dispatch` manual trigger.
 - `.github/workflows/monthly-telegram-report.yml` — sends `POST /api/reports/monthly` on the 1st of each month at 08:00 Tashkent (03:00 UTC). Same pattern.
 - `app/src/lib/feedback-alert-buffer.ts` — in-memory 30-second debounce buffer for low-rating Telegram alerts, keyed by `storeId:baseDeviceId`. Merges vote + follow-up comment into one alert; sends a short follow-up if comment arrives after the timer fires.
+- `app/src/lib/feedback-filters.ts` — exports `VOTE_ROW_FILTER` and `COMMENT_ROW_FILTER` to distinguish vote rows from comment rows in queries.
 
-### Changed (2026-05-24)
+### Changed (2026-05-24 — session 1)
 - `app/src/lib/notifications.ts` — low-rating Telegram alert template completely rewritten: Russian language, shaming tone, per-question score breakdown (Сервис/Качество/Цены), Tashkent-formatted timestamp via `Intl.DateTimeFormat`, brand «KAAS Сырная Лавка», @sanjar676767 + @Alijon_87 mentions. Added `buildFollowUpCommentMessage` for late-comment follow-ups.
 - `app/src/app/[slug]/actions.ts` — low-rating alert is now routed through the debounce buffer (`feedback-alert-buffer.ts`) instead of direct send.
+- `app/src/app/admin/page.tsx` — counts and display now filter Feedback rows via `VOTE_ROW_FILTER` and `COMMENT_ROW_FILTER` to avoid double-counting.
+- `app/src/lib/report-builder.ts` — daily, weekly, and monthly report queries now filter by `VOTE_ROW_FILTER` to avoid double-counting.
 
 ### Added (2026-05-21 — end of session)
 - `bi_readonly` Postgres role with SELECT-only privileges on the `public` schema, accessible via the Railway public TCP proxy at `metro.proxy.rlwy.net:36355`, for Power BI analyst direct database access.

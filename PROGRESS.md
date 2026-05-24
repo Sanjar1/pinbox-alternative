@@ -1,6 +1,26 @@
 # Progress Log
 
-## 2026-05-24 — Russian alert template, debounce buffer, weekly + monthly report crons
+## 2026-05-24 (session 2) — Dashboard vote double-counting bug fixed
+
+**Done:**
+- **Investigated and fixed dashboard/report vote double-counting bug.** User reported: Юнусабад store at 11:58/11:59 showed 2 votes but was one customer. Root cause: `client.tsx` calls the server action twice per low-score session — first writes `{comment: "[ratings] service:X;quality:Y;prices:Z;..."}`, second writes the free-text comment with `deviceId + "-comment"` to bypass the 35-day check. Dashboard at `admin/page.tsx:136` counts both rows. Daily report + weekly + monthly also count both.
+- **Created `app/src/lib/feedback-filters.ts`** exporting `VOTE_ROW_FILTER` (`comment.startsWith("[ratings] service:")`) and `COMMENT_ROW_FILTER` (inverse). Dashboard counts use `VOTE_ROW_FILTER`; "Latest feedback" display uses `COMMENT_ROW_FILTER`. Daily + weekly + monthly report queries all filter by votes only.
+- **Verified against production DB** via `railway run` + Postgres public proxy. Last 7 days: 232 rows → 230 vote rows (2 comment rows correctly hidden). Юнусабад: 6 → 5 (the "Xama joy bardak" row confirmed as comment follow-up). Метро Чиланзар: 6 → 5 (★3 "Сервис" follow-up).
+- **Approach chosen:** Option C — read-side filter. Rationale from Opus subagent: no migration needed on a frozen production DB; corrects historical counts immediately; zero risk to the nightly cron. Better than Option A (write-time dedup, touches rate-limiter, higher risk) or Option B (schema migration, requires production downtime/backwards compat).
+- **Deploy:** Manual `railway up` blocked by free-tier 08:00–20:00 Amsterdam blackout. Confirmed Windows Scheduled Task `Pinbox-Railway-Night-Deploy` at 23:05 Tashkent will pick up the fix automatically tonight. Flagged `WakeToRun = False` as a risk.
+- **Verified:** `npx tsc --noEmit` exit 0; `npm run lint` clean.
+
+**Found:**
+- Lesson recorded in MISTAKES.md: two-writer pattern (`vote` row + `comment` row from the same visit) masked by Telegram alert dedup (`sessionKey`) while counts silently inflated. When two code paths write to the same table for "one event," at least one read aggregation will eventually be wrong.
+
+**Next session:**
+- Verify tonight's deploy (after 23:05 Tashkent) — dashboard vote counts should match store visits.
+- Add `workflow` scope to PAT.
+- Optional: fix the two-rows-per-visit pattern at the source (write-time dedup or a `kind` column).
+
+---
+
+## 2026-05-24 (session 1) — Russian alert template, debounce buffer, weekly + monthly report crons
 
 **Done:**
 - **Rewrote low-rating Telegram alert template** (commit `ddd384b`). Old template: English "New feedback received" with plain Store/Rating/Comment lines. New template: Russian, shaming tone, per-question breakdown (Сервис/Качество/Цены), Tashkent-formatted timestamp, brand «KAAS Сырная Лавка», @-mentions of on-shift managers. Implemented in `app/src/lib/notifications.ts` (Intl.DateTimeFormat Asia/Tashkent formatter + new `buildMessage` + `buildFollowUpCommentMessage`). Wired to `app/src/app/[slug]/actions.ts`.

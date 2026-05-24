@@ -6,8 +6,9 @@
 - [ ] After `Pinbox-Railway-Night-Deploy` fires at 23:05 Tashkent: scan any A5 poster QR → leave 1–2/5 rating → type a comment → confirm ONE merged Russian-template Telegram message arrives in the managers group (not two English messages).
 
 ## Priority 1 — Quick wins
+- [x] Fix the `-comment` deviceId double-counting bug (read-side filter approach, deployed pending 23:05 Tashkent auto-task).
 - [ ] Add `workflow` scope to PAT `telegram-ai-agent deploy` (requires github.com/settings/tokens → email sudo-mode). Blocks future workflow file edits from CLI.
-- [ ] Fix the `-comment` deviceId double-counting bug in `app/src/app/[slug]/client.tsx:136` + `app/src/app/[slug]/actions.ts`. Two Feedback rows per visit → analytics over-count low-rating sessions; 35-day anti-abuse check bypassed for comment submissions.
+- [ ] Verify tonight's auto-deploy (23:05 Tashkent) picked up the vote-count fix. Check dashboard: Юнусабад and Метро Чиланзар should show correct counts.
 - [ ] Confirm the automatic 08:00 Tashkent GitHub Actions daily cron is still delivering (last verified 2026-05-21 run #1).
 - [ ] If daily cron confirmed green for several days, mark M5 — Reporting Activation closed in `ROADMAP.md`.
 

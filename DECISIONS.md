@@ -1,5 +1,13 @@
 # Decisions Log
 
+## D-039: Vote Double-Counting Fix Uses Read-Side Filter, Not Write-Side Dedup or Migration
+
+- Date: 2026-05-24
+- Decision: The dashboard/report vote double-counting issue (two Feedback rows per customer visit) is fixed via a read-side filter in `app/src/lib/feedback-filters.ts`, not by removing duplicate writes at source or migrating the schema.
+- Reason: Three options were considered: (A) write-time dedup, (B) schema migration + backfill, (C) read-side filter. Opus subagent (debating with Sonnet) chose (C) because: (1) zero risk to production DB tied to frozen QR posters; (2) corrects historical counts immediately without any migration; (3) simple and reversible; (4) fixes both the dashboard and daily/weekly/monthly reports in one place. Options (A) and (B) had higher blast radius (touches the rate-limiter in `actions.ts`, requires downtime/backfill).
+- Impact: `app/src/lib/feedback-filters.ts` is now the canonical place that distinguishes vote rows from comment rows. Dashboard, daily report, weekly report, and monthly report all import `VOTE_ROW_FILTER`. The `-comment` deviceId append pattern still exists in the write path but is now correctly hidden from all counts. This is acceptable until a future refactor switches to write-time dedup or adds a `kind` column.
+- Trade-off: The two-rows-per-visit pattern remains a design smell (see lesson in MISTAKES.md). Revisit for a cleaner solution (write-side dedup or schema) if the write pattern becomes a blocker elsewhere.
+
 ## D-038: Don't Fix `-comment` deviceId Double-Counting Bug This Session
 
 - Date: 2026-05-24
