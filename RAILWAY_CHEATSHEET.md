@@ -1,7 +1,15 @@
 # Railway CLI Cheatsheet (Pinbox Alternative)
 
-**Last Updated:** 2026-05-18  
+**Last Updated:** 2026-05-29  
 **Goal:** any AI/dev can redeploy this project from terminal only.
+
+## ⭐ READ FIRST (2026-05-29) — how this project actually deploys now
+
+- **Primary (reliable): GitHub Actions.** `.github/workflows/nightly-railway-deploy.yml` runs `railway up --service web --ci` at 18:05 UTC (23:05 Tashkent) from a cloud runner. Needs repo secret `RAILWAY_TOKEN` (Railway → project pinbox → Settings → Tokens, scope `production`). Manual run: GitHub → Actions → "Nightly Railway Deploy" → Run workflow (off-peak only).
+- **Backup: local Windows task** `Pinbox-Railway-Night-Deploy` → `scripts/railway-night-deploy.ps1` at 23:05 Tashkent. Hardened to retry + Telegram-alert on failure; re-register with `powershell -File scripts/register-night-deploy-task.ps1`.
+- **PEAK-HOURS BLOCK:** free-tier deploys to EU West (`europe-west4`) are refused 08:00–20:00 Amsterdam — the dashboard Deploy button, `railway up`, and auto-deploys all bounce. Deploy after 20:00 Amsterdam (≈ after 23:00 Tashkent summer / 00:00 winter). Winter DST: bump the workflow cron to `5 19 * * *`.
+- **`railway up` crashes at "Indexing…" on the laptop** (Rust OOM under memory pressure) — this silently killed the nightly deploy 05-24→05-29. If it crashes locally, use the GitHub Actions run or the dashboard Deploy button (off-peak) instead.
+- Emergency manual deploy: Railway dashboard → service `web` → **Deploy** (server-side, no local memory) — off-peak only.
 
 ## 0) Project Assumptions
 

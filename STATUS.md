@@ -1,10 +1,22 @@
 # Status
 
-**Updated:** 2026-05-24 (end of third session)
+**Updated:** 2026-05-29 (session 4 — deploy reliability)
 
 ## Current Phase
 
-`M5 — Reporting Activation — Simplified team login (password-only). Dashboard vote double-counting bug fixed. Both changes awaiting tonight's automatic deploy at 23:05 Tashkent.`
+`M5 — Reporting Activation — Deploy pipeline repaired. The nightly auto-deploy had been silently failing since 2026-05-24, so NONE of the 05-24 work (new Telegram template, simplified login, vote-count fix, dashboard trend charts) ever reached production — the live site has been running 05-23 code for ~6 days. Fixed both deploy paths; everything lands at the first off-peak deploy (23:05 Tashkent 2026-05-29).`
+
+## What Is Done (2026-05-29, session 4 — deploy reliability)
+
+### Root cause found: nightly deploy silently dead since 05-24
+- The 23:05 Windows task ran `railway up`, which **crashed at "Indexing…"** (Rust out-of-memory) every night from 05-24 onward — it never uploaded. Logs proved it: `logs/railway-night-deploy-2026-05-23*.log` = full success; 05-24/26/27/28 = stop at "Indexing…". Some nights (05-19/20/25) had no log at all — the task was set `DisallowStartIfOnBatteries=true` + no `WakeToRun`, so it skipped on battery/sleep.
+- The old script had **no failure detection, no retry, no alert** → 6 days of stale production with nobody noticing.
+
+### Fix — two reliable deploy paths
+- **NEW cloud path:** `.github/workflows/nightly-railway-deploy.yml` — GitHub Actions runs `railway up --service web --ci` at 18:05 UTC (23:05 Tashkent, off-peak) from a cloud runner. No laptop, no local-memory crash. Needs repo secret `RAILWAY_TOKEN` (production-scoped Railway project token) — **added & verified 2026-05-29**. This is now the reliable primary.
+- **Hardened local task (backup):** `scripts/railway-night-deploy.ps1` now detects upload success vs the Indexing crash, retries once, and sends a Telegram alert on final failure (UTF-8 logs). Task re-registered (`scripts/pinbox-night-deploy-task.xml` + `register-night-deploy-task.ps1`) with `DisallowStartIfOnBatteries=false` + `WakeToRun=true` — verified live via `schtasks`.
+- **Peak-hours fact (confirmed on dashboard):** free-tier deploys to EU West are blocked 08:00–20:00 Amsterdam; the dashboard "Deploy" button bounces during that window. Off-peak in Tashkent ≈ after 23:00 (summer) / 00:00 (winter).
+- **Pending verification:** first off-peak run (23:05 Tashkent 2026-05-29) should land all pending commits and switch the bot to the «Мы подвели клиента» template. Scheduled to verify run-green + live behavior.
 
 ## Product Truth
 
@@ -42,11 +54,11 @@
 - **Power BI access:** `bi_readonly` role at `metro.proxy.rlwy.net:36355` (SELECT-only on `public` schema), provisioned and verified.
 - **Vote cooldown:** 35 days per device per store.
 - **41/41 A5 poster QR links:** HTTP 200 in production (verified 2026-05-18).
-- **Deploy path:** `Pinbox-Railway-Night-Deploy` Windows Scheduled Task → `cd app && railway up --service web` at 23:05 Tashkent.
+- **Deploy path (UPDATED 2026-05-29):** primary = GitHub Actions `nightly-railway-deploy.yml` (cloud, 18:05 UTC/23:05 Tashkent, needs `RAILWAY_TOKEN` secret); backup = hardened `Pinbox-Railway-Night-Deploy` Windows task (now runs on battery + wakes from sleep). Both deploy off-peak to dodge the free-tier peak-hours block. Local `railway up` can crash at "Indexing…" under machine memory pressure — prefer the cloud path or the dashboard Deploy button (off-peak).
 
 ## Current Blockers
 
-None. Next Railway deploy via auto-task at 23:05 Tashkent will pick up both the vote-count fix and the simplified login.
+- **Production is ~6 days stale** until the first successful off-peak deploy. The 23:05 Tashkent 2026-05-29 run (cloud + local) should clear it, deploying the template, login, vote-count fix, and dashboard trends together. Verification pending.
 
 ## Known Pre-existing Issue (different from today's fix)
 

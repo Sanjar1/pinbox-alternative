@@ -5,6 +5,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added (2026-05-29 — session 4)
+- `.github/workflows/nightly-railway-deploy.yml` — cloud nightly Railway deploy. Runs `railway up --service web --ci` at 18:05 UTC (23:05 Tashkent, off-peak) from a GitHub Actions runner; `workflow_dispatch` manual trigger. Requires repo secret `RAILWAY_TOKEN` (production-scoped Railway project token, added 2026-05-29). Now the reliable primary deploy path.
+- `scripts/pinbox-night-deploy-task.xml` + `scripts/register-night-deploy-task.ps1` — versioned definition + installer for the local Windows deploy task, with battery + `WakeToRun` settings fixed.
+
+### Fixed (2026-05-29 — session 4)
+- Nightly deploy no longer silently fails. `scripts/railway-night-deploy.ps1` rewritten to detect the "Indexing…" crash, retry once, and send a Telegram alert on final failure (UTF-8 logs instead of UTF-16). Root cause of the 6-day stall: local `railway up` crashed at Indexing (memory) every night since 05-24 with no detection/alert, and the Windows task skipped nights on battery/sleep (`DisallowStartIfOnBatteries=true`, no `WakeToRun`) — both fixed.
+
 ### Changed (2026-05-24 — session 3)
 - `app/src/app/login/login-form.tsx` — full rewrite. Email field removed. Single password input with Russian labels: header "Сырная Лавка — Команда", label "Пароль", button "Войти". `autoFocus` on the password field.
 - `app/src/app/login/actions.ts` — full rewrite. Accepts `password` only. Compares to `process.env.TEAM_PASSWORD` (Railway env var). On match, lazy-creates/finds singleton `team@kaas.local` OWNER user. Creates session. Audit-logs LOGIN_SUCCESS / LOGIN_FAILED. All error messages in Russian.

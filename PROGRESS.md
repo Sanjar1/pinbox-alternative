@@ -1,5 +1,29 @@
 # Progress Log
 
+## 2026-05-29 (session 4) — Diagnosed & repaired the broken nightly deploy
+
+**Context:** User reported the bot sent the OLD raw "New feedback received" messages today instead of the approved «Мы подвели клиента» template, and asked whether it was because nothing was deployed.
+
+**Done:**
+- **Diagnosed why the 05-24 template (and all later work) never went live.** The live deployment is `railway up · 6 days ago via CLI` (~05-23) — confirmed on the Railway dashboard. The nightly 23:05 `railway up` has crashed at "Indexing…" (Rust OOM) every night since 05-24; logs prove it (`logs/railway-night-deploy-2026-05-23*.log` succeeds with Uploading + Build Logs URL; 05-24/26/27/28 stop at "Indexing…"). Some nights had no log at all — task skipped on battery/sleep.
+- **Confirmed the peak-hours block on-screen.** Railway dashboard shows free-tier deploys to `europe-west4-drams3a` blocked 08:00–20:00 Amsterdam. The dashboard Deploy button bounced when clicked during peak.
+- **Confirmed the `web` service IS GitHub-connected** ("branch connected to production → changes auto-deployed"), but the project's own cheatsheet (05-18) already notes GitHub auto-deploy is unreliable — hence the local nightly task.
+- **Set up reliable cloud deploy:** `.github/workflows/nightly-railway-deploy.yml` runs `railway up --service web --ci` at 18:05 UTC (23:05 Tashkent) from a cloud runner. Created Railway production project token, added it as repo secret `RAILWAY_TOKEN` (via browser; token moved by clipboard, never transcribed). Verified the workflow is registered in Actions with the `workflow_dispatch` button.
+- **Hardened the local backup task:** rewrote `scripts/railway-night-deploy.ps1` (detect Indexing crash → retry once → Telegram alert on failure; UTF-8 logs). Re-registered the Windows task from `scripts/pinbox-night-deploy-task.xml` via `scripts/register-night-deploy-task.ps1` with `DisallowStartIfOnBatteries=false` + `WakeToRun=true`. Verified live settings via `schtasks /query`.
+- Committed on branch `chore/nightly-deploy-reliability`, fast-forward-merged to `main`, pushed (`d8af121`). Updated CLI 4.31→4.65 along the way (still crashed at Indexing under session memory load, so the cloud path is the real fix).
+
+**Found:**
+- `railway up` on this laptop crashes at "Indexing…" with a Rust memory-allocation error under load — independent of `node_modules` and project size; the allocation shrank as the indexed tree shrank but still failed even at ~126 MB, pointing at local memory pressure. The cloud runner sidesteps it entirely. Lessons recorded in MISTAKES.md.
+- `schtasks.exe` works where the `Get-/Register-ScheduledTask` CIM cmdlets hang on this machine — but git-bash mangles `/query`-style flags into paths unless `MSYS_NO_PATHCONV=1` is set.
+
+**Next session:**
+- **Verify the 23:05 Tashkent 2026-05-29 deploy** went green (GitHub Actions run + fresh Railway deployment replacing the 6-day-old one) and that the live bot now emits the «Мы подвели клиента» template. (Auto-verification scheduled.)
+- Confirm the other stuck 05-24 work also went live: single-password login UI at `/login`, corrected dashboard vote counts, dashboard trend charts.
+- Consider moving the daily/weekly/monthly + deploy crons fully off the laptop (they already are for reports; deploy now is too).
+- Winter-DST note: 18:05 UTC is inside Amsterdam peak in winter — bump the workflow cron to `5 19 * * *` around November.
+
+---
+
 ## 2026-05-24 (session 3) — Simplified team login, TEAM_PASSWORD env var set
 
 **Done:**

@@ -1,5 +1,13 @@
 # Decisions Log
 
+## D-042: Nightly Deploy Moves to GitHub Actions (Cloud) as Primary; Local Windows Task Becomes a Hardened Backup
+
+- Date: 2026-05-29
+- Decision: The reliable nightly Railway deploy now runs in GitHub Actions (`.github/workflows/nightly-railway-deploy.yml`, `railway up --service web --ci` at 18:05 UTC), authenticated by a production-scoped Railway project token in the `RAILWAY_TOKEN` repo secret. The local `Pinbox-Railway-Night-Deploy` Windows task is kept as a backup but hardened (retry + Telegram failure alert; runs on battery; `WakeToRun=true`).
+- Reason: The local `railway up` had been crashing at "Indexing…" (Rust OOM) since 2026-05-24, silently, with no alert — leaving production ~6 days stale. A cloud runner has ample memory and no dependence on the laptop being awake/plugged-in, removing both failure modes. GitHub Actions infra already exists here (daily/weekly/monthly report crons).
+- Impact: New secret `RAILWAY_TOKEN` must exist for the workflow to run (added 2026-05-29). Deploys still must fire off-peak (free-tier EU West block 08:00–20:00 Amsterdam) — 18:05 UTC = 23:05 Tashkent clears it in summer; revisit for winter DST (bump to 19:05 UTC). The local task no longer silently fails: it alerts Telegram if it can't upload.
+- Trade-off: Two deploy mechanisms running nightly (cloud + local) could both fire — harmless (Railway just builds the same commit twice at worst). Token is a long-lived credential stored in GitHub secrets; rotate if exposed.
+
 ## D-041: `TEAM_PASSWORD` Env Var Is the Source of Truth for Auth; Singleton team@kaas.local User
 
 - Date: 2026-05-24
