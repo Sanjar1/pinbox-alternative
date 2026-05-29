@@ -1,0 +1,47 @@
+name: Nightly Railway Deploy
+
+# Deploys the latest `main` to the Railway `web` service every night, from a
+# cloud runner — so it no longer depends on the laptop being awake or the local
+# `railway up` surviving the "Indexing..." step.
+#
+# TIMING / PEAK-HOURS:
+#   Railway free-tier deploys to EU West (europe-west4) are BLOCKED during peak
+#   hours: 08:00–20:00 Europe/Amsterdam. The deploy must fire AFTER 20:00
+#   Amsterdam. GitHub cron is always UTC and does NOT follow DST, so:
+#     - Summer (CEST, UTC+2): 20:00 Amsterdam = 18:00 UTC
+#     - Winter (CET,  UTC+1): 20:00 Amsterdam = 19:00 UTC
+#   We run at 18:05 UTC = 23:05 Tashkent (matches the local task and clears peak
+#   in summer). NOTE: in winter this is 19:05 Amsterdam — still inside peak — so
+#   if you see "peak hours" failures around November, bump this to '5 19 * * *'.
+on:
+  schedule:
+    - cron: '5 18 * * *'
+  # Manual trigger from the Actions UI ("Run workflow"). Use this to deploy on
+  # demand (it will still be refused by Railway if you click it during peak).
+  workflow_dispatch:
+
+concurrency:
+  group: nightly-railway-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy web service to Railway
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy app/ to Railway (service=web, env=production)
+        working-directory: app
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] starting railway up (service=web)"
+          railway up --service web --ci
+          echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] railway up finished"

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <RegistrationInfo>
+    <Author>BLUEHPLAPTOP\99893</Author>
+    <URI>\Pinbox-Railway-Night-Deploy</URI>
+    <Description>Nightly Railway deploy of the pinbox 'web' service at 23:05 Tashkent (just after the free-tier peak-hours window 08:00-20:00 Amsterdam). Local fallback to the GitHub Actions "Nightly Railway Deploy" workflow. Runs scripts/railway-night-deploy.ps1 via C:\Users\99893\pinbox-night-deploy.cmd.</Description>
+  </RegistrationInfo>
+  <Principals>
+    <Principal id="Author">
+      <UserId>S-1-5-21-997794558-3705792317-3113239388-1001</UserId>
+      <LogonType>InteractiveToken</LogonType>
+    </Principal>
+  </Principals>
+  <Settings>
+    <!-- FIXED: previously DisallowStartIfOnBatteries/StopIfGoingOnBatteries were
+         true, so the deploy was skipped on battery. Now it runs on battery. -->
+    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
+    <!-- FIXED: WakeToRun added so the laptop wakes from sleep at 23:05. -->
+    <WakeToRun>true</WakeToRun>
+    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+    <ExecutionTimeLimit>PT30M</ExecutionTimeLimit>
+    <RestartOnFailure>
+      <Interval>PT5M</Interval>
+      <Count>2</Count>
+    </RestartOnFailure>
+    <IdleSettings>
+      <Duration>PT10M</Duration>
+      <WaitTimeout>PT1H</WaitTimeout>
+      <StopOnIdleEnd>false</StopOnIdleEnd>
+      <RestartOnIdle>false</RestartOnIdle>
+    </IdleSettings>
+  </Settings>
+  <Triggers>
+    <CalendarTrigger>
+      <StartBoundary>2026-05-17T23:05:00</StartBoundary>
+      <ScheduleByDay>
+        <DaysInterval>1</DaysInterval>
+      </ScheduleByDay>
+    </CalendarTrigger>
+  </Triggers>
+  <Actions Context="Author">
+    <Exec>
+      <Command>C:\Users\99893\pinbox-night-deploy.cmd</Command>
+    </Exec>
+  </Actions>
+</Task>
