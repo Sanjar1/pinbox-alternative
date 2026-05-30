@@ -3,38 +3,48 @@
 import { prisma } from '@/lib/db';
 import { createUserSession } from '@/lib/auth';
 import { writeAuditLog } from '@/lib/audit';
-import { verifyPassword, hashPassword } from '@/lib/password';
 import type { ActionState } from '@/lib/action-state';
 import { redirect } from 'next/navigation';
 
-export async function login(_: ActionState, formData: FormData): Promise<ActionState> {
-  const emailValue = formData.get('email');
-  const passwordValue = formData.get('password');
+const TEAM_USER_EMAIL = 'team@kaas.local';
 
-  const email = typeof emailValue === 'string' ? emailValue.trim().toLowerCase() : '';
+export async function login(_: ActionState, formData: FormData): Promise<ActionState> {
+  const passwordValue = formData.get('password');
   const password = typeof passwordValue === 'string' ? passwordValue : '';
 
-  if (!email || !password) {
-    return { error: 'Email and password are required' };
+  if (!password) {
+    return { error: 'Введите пароль' };
   }
 
-  const user = await prisma.user.findUnique({
-    where: { email },
-  });
+  const expected = process.env.TEAM_PASSWORD?.trim();
+  if (!expected) {
+    return { error: 'Сервер не настроен — обратитесь к администратору' };
+  }
 
-  if (!user || !verifyPassword(password, user.password)) {
+  if (password !== expected) {
     await writeAuditLog({
       action: 'AUTH_LOGIN_FAILED',
-      details: { email },
+      details: { email: TEAM_USER_EMAIL },
     });
-    return { error: 'Invalid credentials' };
+    return { error: 'Неверный пароль' };
   }
 
-  // Upgrade old plain-text seed users to hashed passwords at login.
-  if (!user.password.startsWith('scrypt$')) {
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { password: hashPassword(password) },
+  // Find or lazily create the single shared team user. Password column is
+  // unused for auth — TEAM_PASSWORD env var is the source of truth.
+  let user = await prisma.user.findUnique({ where: { email: TEAM_USER_EMAIL } });
+  if (!user) {
+    const owner = await prisma.user.findFirst({
+      where: { role: 'OWNER' },
+      orderBy: { createdAt: 'asc' },
+    });
+    const tenantId = owner?.tenantId ?? (await prisma.tenant.create({ data: { name: 'KAAS' } })).id;
+    user = await prisma.user.create({
+      data: {
+        email: TEAM_USER_EMAIL,
+        password: 'env-managed',
+        role: 'OWNER',
+        tenantId,
+      },
     });
   }
 
