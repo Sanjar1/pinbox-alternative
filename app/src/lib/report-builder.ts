@@ -1,6 +1,9 @@
-﻿import { prisma } from './db';
+import { prisma } from './db';
+import { VOTE_ROW_FILTER } from './feedback-filters';
 
 const TASHKENT_MS = 5 * 60 * 60 * 1000; // UTC+5
+const TELEGRAM_MESSAGE_LIMIT = 4096;
+const TELEGRAM_SAFE_LIMIT = 3900;
 
 function nowTashkent(): Date {
   return new Date(Date.now() + TASHKENT_MS);
@@ -10,15 +13,31 @@ function toUtc(tashkentDate: Date): Date {
   return new Date(tashkentDate.getTime() - TASHKENT_MS);
 }
 
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function truncateForTelegramLine(text: string): string {
+  if (text.length <= TELEGRAM_SAFE_LIMIT - 100) return text;
+  return text.slice(0, TELEGRAM_SAFE_LIMIT - 103) + '...';
+}
+
 type DateRange = { start: Date; end: Date; label: string };
 
 export function getDailyRange(): DateRange {
   const t = nowTashkent();
-  const startT = new Date(t);
-  startT.setUTCHours(0, 0, 0, 0);
-  const day = t.getUTCDate();
-  const month = t.toLocaleString('ru-RU', { month: 'long', timeZone: 'UTC' });
-  return { start: toUtc(startT), end: new Date(), label: `${day} ${month} ${t.getUTCFullYear()}` };
+  const endT = new Date(t);
+  endT.setUTCHours(0, 0, 0, 0);
+
+  const startT = new Date(endT);
+  startT.setUTCDate(startT.getUTCDate() - 1);
+
+  const day = startT.getUTCDate();
+  const month = startT.toLocaleString('ru-RU', { month: 'long', timeZone: 'UTC' });
+  return { start: toUtc(startT), end: toUtc(endT), label: `${day} ${month} ${startT.getUTCFullYear()}` };
 }
 
 export function getWeeklyRange(): DateRange {
@@ -47,20 +66,115 @@ export function getMonthlyRange(): DateRange {
   return { start: toUtc(startT), end: toUtc(firstThisT), label };
 }
 
-export async function buildReportMessage(period: 'daily' | 'weekly' | 'monthly'): Promise<string> {
-  const range = period === 'daily' ? getDailyRange() : period === 'weekly' ? getWeeklyRange() : getMonthlyRange();
+async function buildDailyReportMessage(): Promise<string | string[]> {
+  const { start, end, label } = getDailyRange();
+
+  const [allStores, feedbacks] = await Promise.all([
+    prisma.store.findMany({
+      where: { archivedAt: null },
+      select: { id: true, name: true },
+    }),
+    prisma.feedback.findMany({
+      where: { createdAt: { gte: start, lt: end }, ...VOTE_ROW_FILTER },
+      include: { store: { select: { id: true } } },
+    }),
+  ]);
+
+  // Map feedbacks by store id
+  const feedbacksByStoreId = new Map<string, number[]>();
+  for (const fb of feedbacks) {
+    const sid = fb.store.id;
+    if (!feedbacksByStoreId.has(sid)) feedbacksByStoreId.set(sid, []);
+    feedbacksByStoreId.get(sid)!.push(fb.rating);
+  }
+
+  // Build rows for every active store
+  const rows = allStores.map((store) => {
+    const ratings = feedbacksByStoreId.get(store.id) ?? [];
+    const count = ratings.length;
+    const avg = count > 0 ? ratings.reduce((a, b) => a + b, 0) / count : 0;
+    return { name: store.name, count, avg };
+  });
+
+  // Sort: votes desc → avg desc → name asc
+  rows.sort((a, b) => {
+    if (b.count !== a.count) return b.count - a.count;
+    if (b.avg !== a.avg) return b.avg - a.avg;
+    return a.name.localeCompare(b.name);
+  });
+
+  const totalVotes = rows.reduce((sum, r) => sum + r.count, 0);
+  const storesWithVotes = rows.filter((r) => r.count > 0).length;
+  const storesWithZero = rows.length - storesWithVotes;
+  const avgRating =
+    totalVotes > 0
+      ? (rows.reduce((sum, r) => sum + r.avg * r.count, 0) / totalVotes).toFixed(1)
+      : 'нет';
+
+  const heading = `<b>Ежедневный отчет по QR-отзывам - ${escapeHtml(label)}</b>`;
+  const summary = [
+    '<b>Сводка:</b>',
+    `Всего отзывов сегодня: ${totalVotes}`,
+    `Средняя оценка: ${avgRating}`,
+    `Магазинов с отзывами: ${storesWithVotes}/${rows.length}`,
+    `Магазинов без отзывов: ${storesWithZero}`,
+  ].join('\n');
+
+  const storeLines = rows.map((row, i) => {
+    const safeName = escapeHtml(row.name);
+    if (row.count === 0) {
+      return `${i + 1}. ${safeName} - 0 отзывов`;
+    }
+    return `${i + 1}. ${safeName} - ${row.count} отзывов - средняя ${row.avg.toFixed(1)}`;
+  });
+
+  const storeHeader = '<b>Результаты по магазинам:</b>';
+  const storeSection = storeHeader + '\n' + storeLines.join('\n');
+  const fullMessage = [heading, '', summary, '', storeSection].join('\n');
+
+  if (fullMessage.length <= TELEGRAM_SAFE_LIMIT) {
+    return fullMessage;
+  }
+
+  const messages = [[heading, '', summary].join('\n')];
+  let current = storeHeader;
+
+  for (const line of storeLines) {
+    const safeLine = truncateForTelegramLine(line);
+    const next = `${current}\n${safeLine}`;
+    if (next.length > TELEGRAM_SAFE_LIMIT) {
+      if (current !== storeHeader) {
+        messages.push(current);
+      }
+      current = `${storeHeader}\n${safeLine}`;
+    } else {
+      current = next;
+    }
+  }
+
+  if (current !== storeHeader) {
+    messages.push(current);
+  }
+
+  return messages;
+}
+
+export async function buildReportMessage(period: 'daily' | 'weekly' | 'monthly'): Promise<string | string[]> {
+  if (period === 'daily') {
+    return buildDailyReportMessage();
+  }
+
+  const range = period === 'weekly' ? getWeeklyRange() : getMonthlyRange();
   const { start, end, label } = range;
 
   const feedbacks = await prisma.feedback.findMany({
-    where: { createdAt: { gte: start, lt: end } },
+    where: { createdAt: { gte: start, lt: end }, ...VOTE_ROW_FILTER },
     include: { store: { select: { name: true } } },
   });
 
-  const heading = period === 'daily'
-    ? `Отчет за сегодня - ${label}`
-    : period === 'weekly'
-      ? `Отчет за неделю - ${label}`
-      : `Отчет за ${label}`;
+  const heading = period === 'weekly'
+    ? `Отчет за неделю - ${label}`
+    : `Отчет за ${label}`;
 
   if (feedbacks.length === 0) {
     return `<b>${heading}</b>\n\nОтзывов за этот период не поступало.`;
@@ -73,7 +187,7 @@ export async function buildReportMessage(period: 'daily' | 'weekly' | 'monthly')
     byStore.get(name)!.push(feedback.rating);
   }
 
-  const rows = Array.from(byStore.entries())
+  const sortedRows = Array.from(byStore.entries())
     .map(([name, ratings]) => ({
       name,
       count: ratings.length,
@@ -85,11 +199,12 @@ export async function buildReportMessage(period: 'daily' | 'weekly' | 'monthly')
       return b.avg - a.avg;
     });
 
-  const totalReviews = rows.reduce((sum, row) => sum + row.count, 0);
+  const totalReviews = sortedRows.reduce((sum, row) => sum + row.count, 0);
   const nameWidth = 23;
 
-  const lines = rows.map((row) => {
-    const name = row.name.length > nameWidth ? row.name.slice(0, nameWidth - 1) + '...' : row.name.padEnd(nameWidth);
+  const lines = sortedRows.map((row) => {
+    const escapedName = escapeHtml(row.name);
+    const name = escapedName.length > nameWidth ? escapedName.slice(0, nameWidth - 1) + '...' : escapedName.padEnd(nameWidth);
     const count = String(row.count).padStart(5);
     const avg = `* ${row.avg.toFixed(1)}`;
     return `${name}${count}   ${avg}`;
@@ -97,25 +212,33 @@ export async function buildReportMessage(period: 'daily' | 'weekly' | 'monthly')
 
   const divider = '-'.repeat(nameWidth + 12);
   const header = `${'Магазин'.padEnd(nameWidth)}${'Шт.'.padStart(5)}   Рейтинг`;
-  const table = [header, divider, ...lines, divider, `Итого: ${totalReviews} отзывов по ${rows.length} магазинам`].join('\n');
+  const table = [header, divider, ...lines, divider, `Итого: ${totalReviews} отзывов по ${sortedRows.length} магазинам`].join('\n');
 
   return `<b>${heading}</b>\n\n<pre>${table}</pre>`;
 }
 
-export async function sendTelegramReport(message: string): Promise<void> {
+export async function sendTelegramReport(message: string | string[]): Promise<void> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
   if (!token || !chatId) throw new Error('TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not configured');
 
-  const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: 'HTML' }),
-  });
+  const messages = Array.isArray(message) ? message : [message];
 
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`Telegram error ${res.status}: ${body}`);
+  for (const msg of messages) {
+    if (msg.length > TELEGRAM_MESSAGE_LIMIT) {
+      throw new Error(`Telegram message too long: ${msg.length} characters`);
+    }
+
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text: msg, parse_mode: 'HTML' }),
+    });
+
+    if (!res.ok) {
+      const body = await res.text();
+      throw new Error(`Telegram error ${res.status}: ${body}`);
+    }
   }
 }
 
