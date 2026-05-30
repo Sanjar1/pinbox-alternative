@@ -1,7 +1,8 @@
 import { prisma } from '@/lib/db';
 import { requireCurrentUser } from '@/lib/auth';
 import { storeWhereForUser } from '@/lib/store-access';
-import { VOTE_ROW_FILTER, COMMENT_ROW_FILTER } from '@/lib/feedback-filters';
+import { VOTE_ROW_FILTER } from '@/lib/feedback-filters';
+import { parseRatingsBreakdown } from '@/lib/notifications';
 import { buildTrendSeries } from '@/lib/dashboard-trends';
 import { MetricCardsWithTrends } from './metric-cards-with-trends';
 
@@ -118,7 +119,7 @@ export default async function AdminDashboard({
     where: {
       store: storeWhere,
       ...feedbackPeriodWhere,
-      ...COMMENT_ROW_FILTER,
+      ...VOTE_ROW_FILTER,
     },
     select: {
       id: true,
@@ -293,9 +294,18 @@ export default async function AdminDashboard({
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-amber-600">Оценка {feedback.rating}/5</p>
-                  <p className="mt-1 text-sm text-slate-700">
-                    {feedback.comment || 'Комментария нет.'}
-                  </p>
+                  {(() => {
+                    const breakdown = parseRatingsBreakdown(feedback.comment ?? '');
+                    return breakdown ? (
+                      <p className="mt-1 text-sm text-slate-700">
+                        Сервис {breakdown.service}/5 · Качество {breakdown.quality}/5 · Цены {breakdown.prices}/5
+                      </p>
+                    ) : (
+                      <p className="mt-1 text-sm text-slate-700">
+                        {feedback.comment || 'Комментария нет.'}
+                      </p>
+                    );
+                  })()}
                   {feedback.contact && (
                     <p className="mt-2 text-xs text-slate-500">Контакт: {feedback.contact}</p>
                   )}
