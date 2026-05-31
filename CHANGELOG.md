@@ -5,6 +5,21 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed (2026-05-31 — session 5)
+- **Production build** — committed `app/src/lib/feedback-filters.ts` (was imported but never `git add`-ed) that broke every cloud `next build` with "Module not found". This unblocked all deploys.
+- **Daily Telegram report** — restored the detailed "Ежедневный отчет по QR-отзывам" format covering the previous full Tashkent day with summary + all 43 stores (`VOTE_ROW_FILTER` counts), replacing the old compact "Отчет за сегодня" table that covered today. (Was uncommitted working-tree code.)
+- **Admin dashboard "Последние голоса"** — now lists all votes via `VOTE_ROW_FILTER` with the Сервис/Качество/Цены breakdown, instead of `COMMENT_ROW_FILTER` (which hid pure-rating votes and showed "Голосов за этот период нет").
+- **CI security** — deploy workflow log step passes `github.*` context via `env` (not inline `${{ }}`) to avoid script injection.
+
+### Changed (2026-05-31 — session 5)
+- Nightly deploy cron `5 18 * * *` → `0 2 * * *` (02:00 UTC = 07:00 Tashkent), off-peak year-round, ~1h before the daily report.
+- Cloud deploy runs `railway up` from the **repo root** (Railway Root Directory = `app`); `app/railway.json` sets `dockerfilePath: "Dockerfile"`.
+- Committed all remaining live-but-uncommitted production source (analytics feedback/stores routes, store admin pages, google-real connector, platform-links, brands.runtime) so committed == deployed.
+
+### Added (2026-05-31 — session 5)
+- `app/src/app/api/analytics/stores/route.ts` — per-store analytics endpoint (was untracked, now committed).
+- Deploy workflow "Log trigger context" step (schedule vs manual, UTC + Tashkent time, SHA).
+
 ### Added (2026-05-29 — session 4)
 - `.github/workflows/nightly-railway-deploy.yml` — cloud nightly Railway deploy. Runs `railway up --service web --ci` at 18:05 UTC (23:05 Tashkent, off-peak) from a GitHub Actions runner; `workflow_dispatch` manual trigger. Requires repo secret `RAILWAY_TOKEN` (production-scoped Railway project token, added 2026-05-29). Now the reliable primary deploy path.
 - `scripts/pinbox-night-deploy-task.xml` + `scripts/register-night-deploy-task.ps1` — versioned definition + installer for the local Windows deploy task, with battery + `WakeToRun` settings fixed.

@@ -1,22 +1,28 @@
 # Status
 
-**Updated:** 2026-05-29 (session 4 — deploy reliability)
+**Updated:** 2026-05-31 (session 5 — deploy landed, reports/dashboard fixed, schedule moved)
 
 ## Current Phase
 
-`M5 — Reporting Activation — Deploy pipeline repaired. The nightly auto-deploy had been silently failing since 2026-05-24, so NONE of the 05-24 work (new Telegram template, simplified login, vote-count fix, dashboard trend charts) ever reached production — the live site has been running 05-23 code for ~6 days. Fixed both deploy paths; everything lands at the first off-peak deploy (23:05 Tashkent 2026-05-29).`
+`M5 — Reporting Activation — Cloud auto-deploy is WORKING and verified (scheduled GitHub Actions runs #5/#6 succeeded). The «Мы подвели клиента» template + single-password login are LIVE. Root cause of the long stall fully resolved: production had been running uncommitted working-tree code (old local railway up uploaded the working dir); the cloud deploy ships committed code only, so all live-but-uncommitted files are now committed (committed == deployed). Nightly deploy rescheduled to 07:00 Tashkent (02:00 UTC, off-peak year-round). Dashboard + daily-report fixes committed, ship on the next auto-deploy.`
 
-## What Is Done (2026-05-29, session 4 — deploy reliability)
+## What Is Done (2026-05-31, session 5)
 
-### Root cause found: nightly deploy silently dead since 05-24
-- The 23:05 Windows task ran `railway up`, which **crashed at "Indexing…"** (Rust out-of-memory) every night from 05-24 onward — it never uploaded. Logs proved it: `logs/railway-night-deploy-2026-05-23*.log` = full success; 05-24/26/27/28 = stop at "Indexing…". Some nights (05-19/20/25) had no log at all — the task was set `DisallowStartIfOnBatteries=true` + no `WakeToRun`, so it skipped on battery/sleep.
-- The old script had **no failure detection, no retry, no alert** → 6 days of stale production with nobody noticing.
+### Deploy actually landed + real root causes found
+- **Cloud deploy works & is verified:** GitHub Actions runs #5 and #6 were "Scheduled" (automatic) and succeeded (~1m25s full build+deploy). The login change is live (verified `/login` shows the single-password Russian UI).
+- **Real build blocker (why 6 days of failure):** `app/src/lib/feedback-filters.ts` was imported by `admin/page.tsx` + `report-builder.ts` but **never `git add`-ed** → every cloud build failed `next build` with "Module not found: '@/lib/feedback-filters'". Now committed.
+- **Build context fix:** Railway service **Root Directory = `app`**, so the cloud `railway up` must upload from the **repo root** (snapshot needs an `app/` subdir). Workflow updated to run from repo root. (App-relative `COPY` paths in the Dockerfile require context = `app/`.)
+- **Schedule moved to 07:00 Tashkent (02:00 UTC):** off-peak in every season (fixes old winter risk), ~1h before the 03:00 UTC daily report. Added trigger-context logging (security-hardened: context via `env`, not inline `${{ }}`).
 
-### Fix — two reliable deploy paths
-- **NEW cloud path:** `.github/workflows/nightly-railway-deploy.yml` — GitHub Actions runs `railway up --service web --ci` at 18:05 UTC (23:05 Tashkent, off-peak) from a cloud runner. No laptop, no local-memory crash. Needs repo secret `RAILWAY_TOKEN` (production-scoped Railway project token) — **added & verified 2026-05-29**. This is now the reliable primary.
-- **Hardened local task (backup):** `scripts/railway-night-deploy.ps1` now detects upload success vs the Indexing crash, retries once, and sends a Telegram alert on final failure (UTF-8 logs). Task re-registered (`scripts/pinbox-night-deploy-task.xml` + `register-night-deploy-task.ps1`) with `DisallowStartIfOnBatteries=false` + `WakeToRun=true` — verified live via `schtasks`.
-- **Peak-hours fact (confirmed on dashboard):** free-tier deploys to EU West are blocked 08:00–20:00 Amsterdam; the dashboard "Deploy" button bounces during that window. Off-peak in Tashkent ≈ after 23:00 (summer) / 00:00 (winter).
-- **Pending verification:** first off-peak run (23:05 Tashkent 2026-05-29) should land all pending commits and switch the bot to the «Мы подвели клиента» template. Scheduled to verify run-green + live behavior.
+### Reports + dashboard fixed (committed; ship next auto-deploy)
+- **Daily report regression fixed:** the deployed (committed) daily report was the old compact "Отчет за сегодня" table covering TODAY. The detailed "Ежедневный отчет по QR-отзывам" (previous full Tashkent day, summary + all 43 stores, `VOTE_ROW_FILTER` counts) was uncommitted working-tree code — now committed (`a14dbf5`).
+- **Dashboard "Последние голоса" fixed:** it used `COMMENT_ROW_FILTER` (only votes with a typed comment) so pure 5★ votes showed "Голосов за этот период нет". Switched to `VOTE_ROW_FILTER` + render the Сервис/Качество/Цены breakdown (`9a53319`).
+- **Verified NO vote data loss:** queried prod DB directly — votes record in real time (Чилонзор 21, Метро Чиланзар, Food city, Фергана on 05-30). It was a display issue, not loss.
+- **Committed all remaining live-but-uncommitted prod files** (`30659e9`): analytics feedback/stores routes, store admin pages, google-real connector, platform-links, brands.runtime. `tsc --noEmit` clean.
+
+### Earlier this session (2026-05-29, deploy reliability) — historical
+- Diagnosed the silent nightly-deploy failure (local `railway up` crashed at "Indexing…", Rust OOM ~2 GB the loaded laptop couldn't allocate). Built the cloud GitHub Actions deploy + `RAILWAY_TOKEN` secret; hardened the local Windows task (retry + Telegram alert; WakeToRun; runs on battery).
+- Peak-hours fact: free-tier EU West deploys blocked 08:00–20:00 Amsterdam.
 
 ## Product Truth
 

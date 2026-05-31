@@ -1,5 +1,26 @@
 # Decisions Log
 
+## D-045: Nightly Deploy Rescheduled to 02:00 UTC (07:00 Tashkent)
+
+- Date: 2026-05-31
+- Decision: The GitHub Actions nightly deploy cron is `0 2 * * *` (02:00 UTC = 07:00 Asia/Tashkent), replacing the earlier 18:05 UTC.
+- Reason: 02:00 UTC is off-peak in EVERY season (03:00/04:00 Amsterdam, well before the 08:00 peak), fixing the winter risk of the old 18:05 UTC time (which was inside peak in winter). It also runs ~1h before the 03:00 UTC daily Telegram report, so the morning report always runs on freshly-deployed code.
+- Impact: `.github/workflows/nightly-railway-deploy.yml`. Verified scheduled auto-deploy works (runs #5/#6 were "Scheduled" + succeeded). Added a trigger-context log step (event/time/SHA), with context passed via `env` to avoid GitHub Actions script injection.
+
+## D-044: Committed Code Is the Single Source of Truth (committed == deployed)
+
+- Date: 2026-05-31
+- Decision: All code that should run in production must be committed. We no longer rely on deploying uncommitted working-tree changes.
+- Reason: The old local `railway up` uploaded the working directory, so several never-committed files were silently live in production (daily report detailed format, vote-count filter, analytics routes, connectors, etc.). The cloud deploy builds only committed code, so switching to it reverted all of them — surfacing as the daily-report regression. Committing everything (commits `b70450f`, `9a53319`, `a14dbf5`, `30659e9`) makes committed == deployed and prevents silent drift.
+- Impact: Cloud/phone deploys are now trustworthy. Future change: commit before expecting it in production; never depend on working-tree-only state.
+
+## D-043: Cloud Deploy Uploads From the Repo Root (Railway Root Directory = "app")
+
+- Date: 2026-05-31
+- Decision: The GitHub Actions deploy runs `railway up --service web --ci` from the **repo root**, not from `app/`.
+- Reason: The Railway `web` service has Root Directory = `app`, so it expects the uploaded snapshot to contain an `app/` subdirectory and cd's into it for the build context. Uploading from `app/` produced a snapshot with no `app/` subdir → build failed "lstat .../snapshot-target-unpack/app: no such file or directory". The Dockerfile's `COPY` paths are app-relative, so the build context must resolve to `app/`. (The local Windows task historically worked from `app/` only because the CLI link points at the repo-root path; the cloud runner has no such link, so explicit repo-root upload is required.)
+- Impact: `.github/workflows/nightly-railway-deploy.yml` has no `working-directory: app`. `app/railway.json` also sets `dockerfilePath: "Dockerfile"`.
+
 ## D-042: Nightly Deploy Moves to GitHub Actions (Cloud) as Primary; Local Windows Task Becomes a Hardened Backup
 
 - Date: 2026-05-29

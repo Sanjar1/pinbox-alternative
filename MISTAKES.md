@@ -1,5 +1,18 @@
 # Mistakes and Lessons Learned
 
+## 2026-05-31 — Production was running UNCOMMITTED code; switching deploy method silently reverted live features
+
+- **What happened:** After moving deploys from local `railway up` to the cloud GitHub Actions runner, the daily Telegram report reverted to an old compact "Отчет за сегодня" format (covering today) instead of the detailed previous-day report. Investigation showed the detailed report — and several other live features — existed only as **uncommitted changes in the working tree**.
+- **Root cause:** `railway up` uploads the **working directory**, including uncommitted/untracked files. So work that was never `git add`-ed was silently live in production for weeks. The cloud runner builds **committed code only** (a fresh `git checkout`), so switching to it dropped every uncommitted improvement at once. A separate, compounding bug: `app/src/lib/feedback-filters.ts` was imported by committed code but itself never committed, so every cloud `next build` failed "Module not found" — the true reason 6 days of deploys failed (on top of the local memory crash).
+- **How found:** User reported the changed daily-report format. `git status` showed `report-builder.ts` (and ~6 more source files) as modified-but-uncommitted; `git show HEAD:` vs working tree confirmed the deployed daily report was the old compact one while the detailed format lived only in the working tree.
+- **Lesson:** Never let production depend on uncommitted working-tree state — it's invisible drift that vanishes the moment the deploy method changes. Commit everything that should run in prod (committed == deployed, D-044). When taking over a project that deploys via a working-tree uploader (`railway up`, `vercel` without git, rsync), audit `git status` FIRST and commit live-but-uncommitted files before changing anything. Also: a file imported by committed code but not itself committed breaks CI builds even when it works locally — `git add` new modules immediately.
+
+## 2026-05-31 — Railway "Root Directory" must match where `railway up` is run from
+
+- **What happened:** Cloud `railway up` from `app/` failed: "lstat .../snapshot-target-unpack/app: no such file or directory", and earlier "couldn't locate a dockerfile at path app/Dockerfile in code archive".
+- **Root cause:** The Railway service Root Directory = `app`, so Railway cd's into an `app/` subdir of the uploaded snapshot. Uploading from `app/` gives a snapshot whose root already IS `app/` (no nested `app/`). The local Windows task worked from `app/` only because the CLI's global link points at the repo-root path; the token-only cloud runner has no link, so it must upload from the repo root.
+- **Lesson:** With Railway Root Directory set to a subfolder, uploads must be rooted at the repo so that subfolder exists in the snapshot. Match the upload CWD to the service's Root Directory config (D-043).
+
 ## 2026-05-29 — Nightly deploy silently died for 6 days; no failure detection meant nobody noticed
 
 - **What happened:** The 05-24 work (new Telegram template, simplified login, vote-count fix, dashboard trends) was committed and pushed but never reached production. For ~6 days the live site ran 05-23 code and the bot kept sending the OLD raw "New feedback received" messages. The 23:05 nightly `railway up` had been crashing at "Indexing…" (Rust out-of-memory) every night since 05-24 — it never got to "Uploading…".

@@ -1,15 +1,17 @@
 # Railway CLI Cheatsheet (Pinbox Alternative)
 
-**Last Updated:** 2026-05-29  
-**Goal:** any AI/dev can redeploy this project from terminal only.
+**Last Updated:** 2026-05-31  
+**Goal:** any AI/dev can redeploy this project from terminal/phone.
 
-## ⭐ READ FIRST (2026-05-29) — how this project actually deploys now
+## ⭐ READ FIRST (2026-05-31) — how this project deploys now (CONFIRMED WORKING)
 
-- **Primary (reliable): GitHub Actions.** `.github/workflows/nightly-railway-deploy.yml` runs `railway up --service web --ci` at 18:05 UTC (23:05 Tashkent) from a cloud runner. Needs repo secret `RAILWAY_TOKEN` (Railway → project pinbox → Settings → Tokens, scope `production`). Manual run: GitHub → Actions → "Nightly Railway Deploy" → Run workflow (off-peak only).
-- **Backup: local Windows task** `Pinbox-Railway-Night-Deploy` → `scripts/railway-night-deploy.ps1` at 23:05 Tashkent. Hardened to retry + Telegram-alert on failure; re-register with `powershell -File scripts/register-night-deploy-task.ps1`.
-- **PEAK-HOURS BLOCK:** free-tier deploys to EU West (`europe-west4`) are refused 08:00–20:00 Amsterdam — the dashboard Deploy button, `railway up`, and auto-deploys all bounce. Deploy after 20:00 Amsterdam (≈ after 23:00 Tashkent summer / 00:00 winter). Winter DST: bump the workflow cron to `5 19 * * *`.
-- **`railway up` crashes at "Indexing…" on the laptop** (Rust OOM under memory pressure) — this silently killed the nightly deploy 05-24→05-29. If it crashes locally, use the GitHub Actions run or the dashboard Deploy button (off-peak) instead.
-- Emergency manual deploy: Railway dashboard → service `web` → **Deploy** (server-side, no local memory) — off-peak only.
+- **Primary = GitHub Actions cloud deploy (verified auto-firing).** `.github/workflows/nightly-railway-deploy.yml` runs `railway up --service web --ci` at **02:00 UTC = 07:00 Tashkent** (`cron: 0 2 * * *`), from a cloud runner. Scheduled runs confirmed succeeding. Needs repo secret `RAILWAY_TOKEN` (Railway → project pinbox → Settings → Tokens, scope `production`).
+- **Deploy on demand (incl. from a PHONE):** open `github.com/Sanjar1/pinbox-alternative/actions/workflows/nightly-railway-deploy.yml` in a browser → **Run workflow** → branch `main`. No laptop needed. (Off-peak only — see below.)
+- **CRITICAL — the workflow runs `railway up` from the REPO ROOT, not `app/`.** The Railway service Root Directory = `app`, so the upload snapshot must contain an `app/` subdir. Running from `app/` fails: "lstat …/snapshot-target-unpack/app: no such file or directory". (`app/railway.json` also sets `dockerfilePath: "Dockerfile"`.)
+- **committed == deployed.** The cloud build uses committed code only. Anything you want live must be `git push`-ed first. (The old local `railway up` uploaded the working tree, which silently shipped uncommitted files — don't rely on that.)
+- **PEAK-HOURS BLOCK:** free-tier deploys to EU West (`europe-west4`) are refused **08:00–20:00 Amsterdam** — dashboard Deploy, `railway up`, and auto-deploys all bounce. 02:00 UTC (07:00 Tashkent) is safely off-peak year-round. For manual deploys, go off-peak: after **23:00 Tashkent** (summer) / **00:00** (winter), or before ~11:00 Tashkent.
+- **Local `railway up` may crash at "Indexing…"** (Rust OOM ~2 GB on a loaded laptop) — prefer the cloud Run-workflow path. Backup local Windows task `Pinbox-Railway-Night-Deploy` still exists (hardened: retry + Telegram alert), but the cloud path is primary.
+- Emergency manual deploy: Railway dashboard → service `web` → **Deploy** (server-side) — off-peak only.
 
 ## 0) Project Assumptions
 

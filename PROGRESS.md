@@ -1,5 +1,26 @@
 # Progress Log
 
+## 2026-05-31 (session 5) — Deploy landed; reports/dashboard fixed; schedule moved to 07:00 Tashkent
+
+**Done:**
+- **Got the cloud deploy actually working and verified it.** Found the real build blocker: `app/src/lib/feedback-filters.ts` was imported by the dashboard + report-builder but never committed, so every `next build` failed "Module not found: '@/lib/feedback-filters'" (this, not just the memory crash, is why 6 days of deploys failed). Committed it (`b70450f`). Also fixed the build context: the Railway service Root Directory is `app`, so the cloud `railway up` must run from the **repo root** (snapshot needs an `app/` subdir) — updated the workflow (`c75e408`). Run #4 then built+deployed successfully.
+- **Verified the fixes live:** `/login` now shows the single-password Russian UI (proves the new code is live); `/api/health` → `{"ok":true}`. User deployed the login from their phone (Run workflow) — confirmed that phone/cloud deploy works end-to-end.
+- **Confirmed auto-deploy triggers automatically:** GitHub Actions runs #5 and #6 were "Scheduled" (not manual) and succeeded (~1m25s).
+- **Rescheduled nightly deploy to 07:00 Tashkent (02:00 UTC)** — off-peak year-round, ~1h before the 03:00 UTC daily report (`77792a9`). Added a "Log trigger context" step (schedule vs manual, time, SHA); hardened it against GitHub Actions script injection per security review (context via `env`) (`6a83870`).
+- **Fixed daily report regression:** deployed daily report was the old compact "Отчет за сегодня" table covering TODAY; the detailed previous-day format was uncommitted. Committed it (`a14dbf5`).
+- **Fixed dashboard "Последние голоса":** was filtered to comment-only rows (`COMMENT_ROW_FILTER`) so pure 5★ votes showed "нет"; switched to `VOTE_ROW_FILTER` + breakdown (`9a53319`).
+- **Verified no vote data loss** by querying the prod DB directly (votes record in real time; it was a display issue).
+- **Committed all remaining live-but-uncommitted prod source** (`30659e9`): analytics feedback/stores routes, store admin pages, google-real, platform-links, brands.runtime. `tsc --noEmit` clean throughout.
+
+**Found / lessons (see MISTAKES.md):**
+- Production had been running **uncommitted working-tree code** — the old local `railway up` uploaded the working folder, so improvements that were never committed were silently live. Switching to cloud deploys (committed code only) reverted them (the daily report was the visible symptom). Fixed by committing everything → committed == deployed.
+
+**Next session:**
+- After the 07:00 Tashkent auto-deploy: verify the daily report (08:00) is the detailed previous-day format and the dashboard "Последние голоса" lists all votes (Task #1).
+- Optional: move weekly/monthly off the compact table if a detailed format is wanted (they're scheduled correctly: Mon 08:00 / 1st 08:00 Tashkent).
+
+---
+
 ## 2026-05-29 (session 4) — Diagnosed & repaired the broken nightly deploy
 
 **Context:** User reported the bot sent the OLD raw "New feedback received" messages today instead of the approved «Мы подвели клиента» template, and asked whether it was because nothing was deployed.
