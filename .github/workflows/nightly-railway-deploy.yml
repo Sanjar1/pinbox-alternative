@@ -30,12 +30,16 @@ jobs:
 
     steps:
       - name: Log trigger context
+        env:
+          EVENT: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
         run: |
           echo "==== Nightly Railway Deploy ===="
-          echo "Triggered by : ${{ github.event_name }}   (schedule = automatic cron, workflow_dispatch = manual)"
+          echo "Triggered by : $EVENT   (schedule = automatic cron, workflow_dispatch = manual)"
           echo "Time (UTC)   : $(date -u +'%Y-%m-%d %H:%M:%S')"
           echo "Time (Tashkent): $(TZ=Asia/Tashkent date +'%Y-%m-%d %H:%M:%S' 2>/dev/null || date -u -d '+5 hours' +'%Y-%m-%d %H:%M:%S')"
-          echo "Branch / SHA : ${{ github.ref_name }} @ ${{ github.sha }}"
+          echo "Branch / SHA : $REF_NAME @ $SHA"
 
       - name: Checkout repo
         uses: actions/checkout@v4
