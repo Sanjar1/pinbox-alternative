@@ -6,16 +6,14 @@ name: Nightly Railway Deploy
 #
 # TIMING / PEAK-HOURS:
 #   Railway free-tier deploys to EU West (europe-west4) are BLOCKED during peak
-#   hours: 08:00–20:00 Europe/Amsterdam. The deploy must fire AFTER 20:00
-#   Amsterdam. GitHub cron is always UTC and does NOT follow DST, so:
-#     - Summer (CEST, UTC+2): 20:00 Amsterdam = 18:00 UTC
-#     - Winter (CET,  UTC+1): 20:00 Amsterdam = 19:00 UTC
-#   We run at 18:05 UTC = 23:05 Tashkent (matches the local task and clears peak
-#   in summer). NOTE: in winter this is 19:05 Amsterdam — still inside peak — so
-#   if you see "peak hours" failures around November, bump this to '5 19 * * *'.
+#   hours: 08:00–20:00 Europe/Amsterdam. GitHub cron is always UTC (no DST).
+#   We run at 02:00 UTC = 07:00 Asia/Tashkent = 03:00 (summer) / 04:00 (winter)
+#   Amsterdam — comfortably OFF-PEAK in every season, and ~1h before the 03:00
+#   UTC daily Telegram report so that report runs on freshly-deployed code.
+#   (Previously 18:05 UTC, which was inside peak in winter.)
 on:
   schedule:
-    - cron: '5 18 * * *'
+    - cron: '0 2 * * *'
   # Manual trigger from the Actions UI ("Run workflow"). Use this to deploy on
   # demand (it will still be refused by Railway if you click it during peak).
   workflow_dispatch:
@@ -31,6 +29,14 @@ jobs:
     timeout-minutes: 20
 
     steps:
+      - name: Log trigger context
+        run: |
+          echo "==== Nightly Railway Deploy ===="
+          echo "Triggered by : ${{ github.event_name }}   (schedule = automatic cron, workflow_dispatch = manual)"
+          echo "Time (UTC)   : $(date -u +'%Y-%m-%d %H:%M:%S')"
+          echo "Time (Tashkent): $(TZ=Asia/Tashkent date +'%Y-%m-%d %H:%M:%S' 2>/dev/null || date -u -d '+5 hours' +'%Y-%m-%d %H:%M:%S')"
+          echo "Branch / SHA : ${{ github.ref_name }} @ ${{ github.sha }}"
+
       - name: Checkout repo
         uses: actions/checkout@v4
 
