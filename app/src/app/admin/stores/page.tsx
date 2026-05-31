@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/db';
-import Link from 'next/link';
 import { requireCurrentUser } from '@/lib/auth';
 import { storeWhereForUser } from '@/lib/store-access';
 import StoresPageClient from './stores-page-client';

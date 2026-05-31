@@ -81,7 +81,7 @@ export class GoogleConnectorReal implements IConnector {
 
     if (!tokenRes.ok || !tokenData.access_token) {
       // Check for quota error
-      if (tokenRes.status === 429 || (tokenData as any)?.error?.includes?.('quota')) {
+      if (tokenRes.status === 429 || tokenData.error?.includes('quota')) {
         throw new Error('GBP_QUOTA_PENDING');
       }
       throw new Error(`Failed to get access token: ${tokenData.error || 'Unknown error'}`);
@@ -252,7 +252,7 @@ export class GoogleConnectorReal implements IConnector {
       if (data.address !== undefined) {
         updateMask.push('storefrontAddress.addressLines');
         if (!requestBody['storefrontAddress']) requestBody['storefrontAddress'] = {};
-        (requestBody['storefrontAddress'] as any).addressLines = [data.address];
+        (requestBody['storefrontAddress'] as { addressLines?: string[] }).addressLines = [data.address];
       }
       if (data.phone !== undefined) {
         updateMask.push('phoneNumbers');

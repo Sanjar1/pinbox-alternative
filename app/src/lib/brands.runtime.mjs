@@ -54,6 +54,8 @@ export function getBrandIdByStoreName(name) {
 }
 
 export function getStoreDisplayName(name, brandId) {
+  void brandId;
+
   const trimmed = (name || '').trim();
   if (!trimmed) return 'Store';
 

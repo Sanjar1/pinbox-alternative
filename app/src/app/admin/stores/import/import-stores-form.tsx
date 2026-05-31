@@ -58,7 +58,7 @@ export function ImportStoresForm() {
             </label>
           </div>
           <p className="text-xs text-gray-500 mt-2">
-            Use "Create &amp; Update" to add lat/lng to existing stores.
+            Use &quot;Create &amp; Update&quot; to add lat/lng to existing stores.
           </p>
         </div>
 

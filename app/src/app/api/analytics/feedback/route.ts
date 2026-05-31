@@ -49,8 +49,20 @@ export async function GET(req: Request) {
     },
   });
 
+  const rows = feedbacks.map((f) => ({
+    id: f.id,
+    storeId: f.store.id,
+    storeName: f.store.name,
+    rating: f.rating,
+    comment: f.comment,
+    contact: f.contact,
+    status: f.status,
+    createdAt: f.createdAt,
+  }));
+
   return NextResponse.json({
-    count: feedbacks.length,
-    items: feedbacks,
+    count: rows.length,
+    items: rows,
+    rows,
   });
 }
