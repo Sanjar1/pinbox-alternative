@@ -1,0 +1,4 @@
+# The dispatch script runs in an Alpine container; CRLF would break the shebang
+# (`/usr/bin/env bash\r: bad interpreter`). Force LF regardless of host OS.
+send-reports.sh text eol=lf
+Dockerfile text eol=lf

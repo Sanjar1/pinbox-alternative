@@ -5,6 +5,24 @@ const TASHKENT_MS = 5 * 60 * 60 * 1000; // UTC+5
 const TELEGRAM_MESSAGE_LIMIT = 4096;
 const TELEGRAM_SAFE_LIMIT = 3900;
 
+export type ReportCtx = { reqId: string; period: 'daily' | 'weekly' | 'monthly' };
+
+// Short correlation id so every log line of one report request can be grepped together.
+export function newReqId(): string {
+  return Math.random().toString(36).slice(2, 10);
+}
+
+// Single-line structured log. Every report log line carries tag:"reports" so it is
+// trivially greppable in Railway logs: `railway logs | grep '"tag":"reports"'`.
+export function reportLog(event: string, data: Record<string, unknown> = {}): void {
+  try {
+    console.log(JSON.stringify({ tag: 'reports', event, at: new Date().toISOString(), ...data }));
+  } catch {
+    // Logging must never throw and break a report. Fall back to a plain line.
+    console.log(`[reports] ${event}`);
+  }
+}
+
 function nowTashkent(): Date {
   return new Date(Date.now() + TASHKENT_MS);
 }
@@ -66,8 +84,14 @@ export function getMonthlyRange(): DateRange {
   return { start: toUtc(startT), end: toUtc(firstThisT), label };
 }
 
-async function buildDailyReportMessage(): Promise<string | string[]> {
+async function buildDailyReportMessage(ctx: ReportCtx): Promise<string | string[]> {
   const { start, end, label } = getDailyRange();
+  reportLog('range_computed', {
+    ...ctx,
+    start: start.toISOString(),
+    end: end.toISOString(),
+    label,
+  });
 
   const [allStores, feedbacks] = await Promise.all([
     prisma.store.findMany({
@@ -106,6 +130,15 @@ async function buildDailyReportMessage(): Promise<string | string[]> {
   const totalVotes = rows.reduce((sum, r) => sum + r.count, 0);
   const storesWithVotes = rows.filter((r) => r.count > 0).length;
   const storesWithZero = rows.length - storesWithVotes;
+
+  reportLog('data_fetched', {
+    ...ctx,
+    activeStores: allStores.length,
+    feedbackRows: feedbacks.length,
+    totalVotes,
+    storesWithVotes,
+    storesWithZero,
+  });
   const avgRating =
     totalVotes > 0
       ? (rows.reduce((sum, r) => sum + r.avg * r.count, 0) / totalVotes).toFixed(1)
@@ -159,25 +192,49 @@ async function buildDailyReportMessage(): Promise<string | string[]> {
   return messages;
 }
 
-export async function buildReportMessage(period: 'daily' | 'weekly' | 'monthly'): Promise<string | string[]> {
+function logMessageBuilt(ctx: ReportCtx, message: string | string[]): void {
+  const parts = Array.isArray(message) ? message : [message];
+  reportLog('message_built', {
+    ...ctx,
+    parts: parts.length,
+    chars: parts.map((p) => p.length),
+    totalChars: parts.reduce((sum, p) => sum + p.length, 0),
+  });
+}
+
+export async function buildReportMessage(
+  period: 'daily' | 'weekly' | 'monthly',
+  ctx: ReportCtx = { reqId: newReqId(), period: 'daily' },
+): Promise<string | string[]> {
   if (period === 'daily') {
-    return buildDailyReportMessage();
+    const message = await buildDailyReportMessage(ctx);
+    logMessageBuilt(ctx, message);
+    return message;
   }
 
   const range = period === 'weekly' ? getWeeklyRange() : getMonthlyRange();
   const { start, end, label } = range;
+  reportLog('range_computed', {
+    ...ctx,
+    start: start.toISOString(),
+    end: end.toISOString(),
+    label,
+  });
 
   const feedbacks = await prisma.feedback.findMany({
     where: { createdAt: { gte: start, lt: end }, ...VOTE_ROW_FILTER },
     include: { store: { select: { name: true } } },
   });
+  reportLog('data_fetched', { ...ctx, feedbackRows: feedbacks.length });
 
   const heading = period === 'weekly'
     ? `Отчет за неделю - ${label}`
     : `Отчет за ${label}`;
 
   if (feedbacks.length === 0) {
-    return `<b>${heading}</b>\n\nОтзывов за этот период не поступало.`;
+    const emptyMessage = `<b>${heading}</b>\n\nОтзывов за этот период не поступало.`;
+    logMessageBuilt(ctx, emptyMessage);
+    return emptyMessage;
   }
 
   const byStore = new Map<string, number[]>();
@@ -214,21 +271,36 @@ export async function buildReportMessage(period: 'daily' | 'weekly' | 'monthly')
   const header = `${'Магазин'.padEnd(nameWidth)}${'Шт.'.padStart(5)}   Рейтинг`;
   const table = [header, divider, ...lines, divider, `Итого: ${totalReviews} отзывов по ${sortedRows.length} магазинам`].join('\n');
 
-  return `<b>${heading}</b>\n\n<pre>${table}</pre>`;
+  const tableMessage = `<b>${heading}</b>\n\n<pre>${table}</pre>`;
+  logMessageBuilt(ctx, tableMessage);
+  return tableMessage;
 }
 
-export async function sendTelegramReport(message: string | string[]): Promise<void> {
+export async function sendTelegramReport(
+  message: string | string[],
+  ctx: ReportCtx = { reqId: newReqId(), period: 'daily' },
+): Promise<void> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
+  // Log presence (never values) so a misconfigured env is obvious in logs.
+  reportLog('telegram_config', {
+    ...ctx,
+    hasToken: Boolean(token),
+    hasChatId: Boolean(chatId),
+  });
   if (!token || !chatId) throw new Error('TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not configured');
 
   const messages = Array.isArray(message) ? message : [message];
+  reportLog('telegram_send_start', { ...ctx, parts: messages.length });
 
-  for (const msg of messages) {
+  for (let i = 0; i < messages.length; i++) {
+    const msg = messages[i];
     if (msg.length > TELEGRAM_MESSAGE_LIMIT) {
+      reportLog('telegram_part_too_long', { ...ctx, part: i + 1, chars: msg.length });
       throw new Error(`Telegram message too long: ${msg.length} characters`);
     }
 
+    reportLog('telegram_part_send', { ...ctx, part: i + 1, of: messages.length, chars: msg.length });
     const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -237,9 +309,13 @@ export async function sendTelegramReport(message: string | string[]): Promise<vo
 
     if (!res.ok) {
       const body = await res.text();
+      reportLog('telegram_part_error', { ...ctx, part: i + 1, status: res.status, body: body.slice(0, 500) });
       throw new Error(`Telegram error ${res.status}: ${body}`);
     }
+    reportLog('telegram_part_ok', { ...ctx, part: i + 1, status: res.status });
   }
+
+  reportLog('telegram_send_done', { ...ctx, parts: messages.length });
 }
 
 export function checkApiKey(req: Request): boolean {

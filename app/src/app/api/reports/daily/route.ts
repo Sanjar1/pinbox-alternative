@@ -1,16 +1,38 @@
 import { NextResponse } from 'next/server';
-import { buildReportMessage, sendTelegramReport, checkApiKey } from '@/lib/report-builder';
+import {
+  buildReportMessage,
+  sendTelegramReport,
+  checkApiKey,
+  reportLog,
+  newReqId,
+  type ReportCtx,
+} from '@/lib/report-builder';
 
 export async function POST(req: Request) {
-  if (!checkApiKey(req)) {
+  const ctx: ReportCtx = { reqId: newReqId(), period: 'daily' };
+  const startedAt = Date.now();
+  reportLog('request_received', { ...ctx, url: req.url });
+
+  const authed = checkApiKey(req);
+  reportLog('auth_checked', { ...ctx, authed });
+  if (!authed) {
+    reportLog('auth_failed', ctx);
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    const message = await buildReportMessage('daily');
-    await sendTelegramReport(message);
+    reportLog('build_start', ctx);
+    const message = await buildReportMessage('daily', ctx);
+    await sendTelegramReport(message, ctx);
+    reportLog('request_done', { ...ctx, ok: true, durationMs: Date.now() - startedAt });
     return NextResponse.json({ ok: true, sent: true });
   } catch (err) {
+    reportLog('request_error', {
+      ...ctx,
+      durationMs: Date.now() - startedAt,
+      error: String(err),
+      stack: err instanceof Error ? err.stack : undefined,
+    });
     console.error('daily-report-error', err);
     return NextResponse.json({ ok: false, error: String(err) }, { status: 500 });
   }
