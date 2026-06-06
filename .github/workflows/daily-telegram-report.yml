@@ -20,6 +20,18 @@ jobs:
     timeout-minutes: 5
 
     steps:
+      - name: POST /api/admin/sync-managers (best-effort)
+        continue-on-error: true
+        run: |
+          echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] sync managers"
+          curl --fail-with-body -sS \
+            --retry 2 --retry-delay 15 --retry-all-errors \
+            --max-time 60 \
+            -X POST \
+            -H "Authorization: Bearer ${{ secrets.REPORTS_API_KEY }}" \
+            https://web-production-370c1.up.railway.app/api/admin/sync-managers
+          echo
+
       - name: POST /api/reports/daily
         run: |
           echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] starting POST /api/reports/daily"
