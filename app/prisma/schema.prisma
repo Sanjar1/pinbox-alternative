@@ -50,6 +50,7 @@ model Store {
   changeSnapshots ChangeSnapshot[]
   
   archivedAt  DateTime?
+  territorialManager String?   // TM full name from the Менеджеры sheet; null = unassigned
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
