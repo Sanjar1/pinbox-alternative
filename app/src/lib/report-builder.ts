@@ -32,7 +32,6 @@ async function fetchStoreStats(start: Date, end: Date): Promise<StoreStat[]> {
 }
 
 const TELEGRAM_MESSAGE_LIMIT = 4096;
-const TELEGRAM_SAFE_LIMIT = 3900;
 
 export type ReportCtx = { reqId: string; period: 'daily' | 'weekly' | 'monthly' };
 
@@ -65,11 +64,6 @@ function escapeHtml(text: string): string {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
-}
-
-function truncateForTelegramLine(text: string): string {
-  if (text.length <= TELEGRAM_SAFE_LIMIT - 100) return text;
-  return text.slice(0, TELEGRAM_SAFE_LIMIT - 103) + '...';
 }
 
 type DateRange = { start: Date; end: Date; label: string };
