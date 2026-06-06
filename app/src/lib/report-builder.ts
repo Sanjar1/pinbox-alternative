@@ -1,7 +1,36 @@
 import { prisma } from './db';
 import { VOTE_ROW_FILTER } from './feedback-filters';
+import { formatGroupedReport, type StoreStat } from './report-format';
 
 const TASHKENT_MS = 5 * 60 * 60 * 1000; // UTC+5
+
+// Fetch every active store with its TM, plus its vote count/avg in [start,end).
+async function fetchStoreStats(start: Date, end: Date): Promise<StoreStat[]> {
+  const [stores, feedbacks] = await Promise.all([
+    prisma.store.findMany({
+      where: { archivedAt: null },
+      select: { id: true, name: true, territorialManager: true },
+    }),
+    prisma.feedback.findMany({
+      where: { createdAt: { gte: start, lt: end }, ...VOTE_ROW_FILTER },
+      select: { rating: true, storeId: true },
+    }),
+  ]);
+
+  const byStore = new Map<string, number[]>();
+  for (const fb of feedbacks) {
+    if (!byStore.has(fb.storeId)) byStore.set(fb.storeId, []);
+    byStore.get(fb.storeId)!.push(fb.rating);
+  }
+
+  return stores.map((s) => {
+    const ratings = byStore.get(s.id) ?? [];
+    const count = ratings.length;
+    const avg = count > 0 ? ratings.reduce((a, b) => a + b, 0) / count : 0;
+    return { name: s.name, tm: s.territorialManager, count, avg };
+  });
+}
+
 const TELEGRAM_MESSAGE_LIMIT = 4096;
 const TELEGRAM_SAFE_LIMIT = 3900;
 
@@ -86,110 +115,18 @@ export function getMonthlyRange(): DateRange {
 
 async function buildDailyReportMessage(ctx: ReportCtx): Promise<string | string[]> {
   const { start, end, label } = getDailyRange();
-  reportLog('range_computed', {
-    ...ctx,
-    start: start.toISOString(),
-    end: end.toISOString(),
-    label,
-  });
+  reportLog('range_computed', { ...ctx, start: start.toISOString(), end: end.toISOString(), label });
 
-  const [allStores, feedbacks] = await Promise.all([
-    prisma.store.findMany({
-      where: { archivedAt: null },
-      select: { id: true, name: true },
-    }),
-    prisma.feedback.findMany({
-      where: { createdAt: { gte: start, lt: end }, ...VOTE_ROW_FILTER },
-      include: { store: { select: { id: true } } },
-    }),
-  ]);
-
-  // Map feedbacks by store id
-  const feedbacksByStoreId = new Map<string, number[]>();
-  for (const fb of feedbacks) {
-    const sid = fb.store.id;
-    if (!feedbacksByStoreId.has(sid)) feedbacksByStoreId.set(sid, []);
-    feedbacksByStoreId.get(sid)!.push(fb.rating);
-  }
-
-  // Build rows for every active store
-  const rows = allStores.map((store) => {
-    const ratings = feedbacksByStoreId.get(store.id) ?? [];
-    const count = ratings.length;
-    const avg = count > 0 ? ratings.reduce((a, b) => a + b, 0) / count : 0;
-    return { name: store.name, count, avg };
-  });
-
-  // Sort: votes desc → avg desc → name asc
-  rows.sort((a, b) => {
-    if (b.count !== a.count) return b.count - a.count;
-    if (b.avg !== a.avg) return b.avg - a.avg;
-    return a.name.localeCompare(b.name);
-  });
-
-  const totalVotes = rows.reduce((sum, r) => sum + r.count, 0);
-  const storesWithVotes = rows.filter((r) => r.count > 0).length;
-  const storesWithZero = rows.length - storesWithVotes;
-
+  const stats = await fetchStoreStats(start, end);
+  const totalVotes = stats.reduce((n, s) => n + s.count, 0);
   reportLog('data_fetched', {
     ...ctx,
-    activeStores: allStores.length,
-    feedbackRows: feedbacks.length,
+    activeStores: stats.length,
     totalVotes,
-    storesWithVotes,
-    storesWithZero,
-  });
-  const avgRating =
-    totalVotes > 0
-      ? (rows.reduce((sum, r) => sum + r.avg * r.count, 0) / totalVotes).toFixed(1)
-      : 'нет';
-
-  const heading = `<b>Ежедневный отчет по QR-отзывам - ${escapeHtml(label)}</b>`;
-  const summary = [
-    '<b>Сводка:</b>',
-    `Всего отзывов сегодня: ${totalVotes}`,
-    `Средняя оценка: ${avgRating}`,
-    `Магазинов с отзывами: ${storesWithVotes}/${rows.length}`,
-    `Магазинов без отзывов: ${storesWithZero}`,
-  ].join('\n');
-
-  const storeLines = rows.map((row, i) => {
-    const safeName = escapeHtml(row.name);
-    if (row.count === 0) {
-      return `${i + 1}. ${safeName} - 0 отзывов`;
-    }
-    return `${i + 1}. ${safeName} - ${row.count} отзывов - средняя ${row.avg.toFixed(1)}`;
+    storesWithVotes: stats.filter((s) => s.count > 0).length,
   });
 
-  const storeHeader = '<b>Результаты по магазинам:</b>';
-  const storeSection = storeHeader + '\n' + storeLines.join('\n');
-  const fullMessage = [heading, '', summary, '', storeSection].join('\n');
-
-  if (fullMessage.length <= TELEGRAM_SAFE_LIMIT) {
-    return fullMessage;
-  }
-
-  const messages = [[heading, '', summary].join('\n')];
-  let current = storeHeader;
-
-  for (const line of storeLines) {
-    const safeLine = truncateForTelegramLine(line);
-    const next = `${current}\n${safeLine}`;
-    if (next.length > TELEGRAM_SAFE_LIMIT) {
-      if (current !== storeHeader) {
-        messages.push(current);
-      }
-      current = `${storeHeader}\n${safeLine}`;
-    } else {
-      current = next;
-    }
-  }
-
-  if (current !== storeHeader) {
-    messages.push(current);
-  }
-
-  return messages;
+  return formatGroupedReport('daily', label, stats);
 }
 
 function logMessageBuilt(ctx: ReportCtx, message: string | string[]): void {
@@ -212,14 +149,20 @@ export async function buildReportMessage(
     return message;
   }
 
-  const range = period === 'weekly' ? getWeeklyRange() : getMonthlyRange();
+  if (period === 'weekly') {
+    const { start, end, label } = getWeeklyRange();
+    reportLog('range_computed', { ...ctx, start: start.toISOString(), end: end.toISOString(), label });
+    const stats = await fetchStoreStats(start, end);
+    reportLog('data_fetched', { ...ctx, activeStores: stats.length, totalVotes: stats.reduce((n, s) => n + s.count, 0) });
+    const message = formatGroupedReport('weekly', label, stats);
+    logMessageBuilt(ctx, message);
+    return message;
+  }
+
+  // monthly (unchanged table format)
+  const range = getMonthlyRange();
   const { start, end, label } = range;
-  reportLog('range_computed', {
-    ...ctx,
-    start: start.toISOString(),
-    end: end.toISOString(),
-    label,
-  });
+  reportLog('range_computed', { ...ctx, start: start.toISOString(), end: end.toISOString(), label });
 
   const feedbacks = await prisma.feedback.findMany({
     where: { createdAt: { gte: start, lt: end }, ...VOTE_ROW_FILTER },
@@ -227,9 +170,7 @@ export async function buildReportMessage(
   });
   reportLog('data_fetched', { ...ctx, feedbackRows: feedbacks.length });
 
-  const heading = period === 'weekly'
-    ? `Отчет за неделю - ${label}`
-    : `Отчет за ${label}`;
+  const heading = `Отчет за ${label}`;
 
   if (feedbacks.length === 0) {
     const emptyMessage = `<b>${heading}</b>\n\nОтзывов за этот период не поступало.`;
