@@ -1,8 +1,11 @@
-# Pinbox Alternative — Project Instructions
+# Pinbox Alternative — Project Rules
 
-These rules are specific to this project and override generic defaults.
+> All workflow, skill routing, verification, and communication rules are inherited from the global CLAUDE.md.
+> This file contains ONLY rules specific to this project.
 
-## HARD RULE: QR slugs are frozen
+---
+
+## QR slugs are frozen (HARD RULE)
 
 **Never modify `QRCode.slug` in the production database.** 41 A5 posters were
 printed and distributed on 2026-05-17/18 — every slug below corresponds to a
@@ -33,7 +36,13 @@ If the report does not arrive one morning:
 2. If red — inspect the response body in the log (printed by `curl --fail-with-body`).
 3. If green but no message — check Railway logs for `/api/reports/daily`.
 
-## Deploy
+The report is grouped by territorial manager. The store→TM mapping is synced from
+a Google Sheet before each report via `POST /api/admin/sync-managers` (reuses the
+"Store managers task bot" service account; see `docs/MANAGER_SYNC_SETUP.md`).
+Mapping changes need only a sheet edit, no redeploy. Fallback snapshot:
+`app/data/manager-assignments.json`.
+
+## Deploy (Railway, NOT Vercel)
 
 Railway CLI from `app/` subdirectory: `cd app && railway up --service web`.
 Never deploy from the repo root — `railway.json` path is wrong there.
