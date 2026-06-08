@@ -1,5 +1,26 @@
 # Decisions Log
 
+## D-048: Reports Grouped by Territorial Manager, Synced From the Google Sheet
+
+- Date: 2026-06-08
+- Decision: The daily & weekly Telegram reports group stores by **territorial manager** (4 TMs). The store→TM mapping is the single source of truth in the "Менеджеры" tab of the manager Google Sheet, synced into a new nullable `Store.territorialManager` column by `POST /api/admin/sync-managers` (run as the first, `continue-on-error` step of the report workflows). Reads the sheet via the **reused `store-manager-tasks` service account** (it already had access) using env `GOOGLE_SERVICE_ACCOUNT_JSON`. Sync is **update-only** (never creates a store → never mints a QR slug). Fallback when the sheet is unreachable: committed `app/data/manager-assignments.json`.
+- Reason: managers wanted accountability per region without manual upkeep; a sheet edit must flow to the next report with no redeploy. Reusing the existing SA avoided new Google Cloud setup. Name matching uses normalize + a small alias table, hard-gated to 41/41 with a duplicate-target guard (the Глоток-Юнусабад/Юнусабад collision is the cautionary case). Pure logic (`manager-match.ts`, `report-format.ts`) is unit-tested off the DB.
+- Impact: `app/prisma/schema.prisma` (+migration), `manager-match.ts`, `manager-sync.ts`, `report-format.ts`, `report-builder.ts`, `sync-managers/route.ts`, both report workflows. Spec/plan in `docs/superpowers/{specs,plans}/2026-06-06-*`; setup in `docs/MANAGER_SYNC_SETUP.md`.
+
+## D-047: Unassigned Stores Count in Totals but Get No Manager Block
+
+- Date: 2026-06-08
+- Decision: Stores with no TM in the sheet (currently Катортол, Чилонзор Торговый) are counted in the global summary + Top-5 (denominator stays **43**) but are NOT given their own block or named in any TM section. A footer lists them only if they actually received reviews.
+- Reason: never silently drop a real review from the totals (honest math), while keeping the per-manager view clean. The 41-vs-43 gap is a quiet nudge to assign them in the sheet.
+- Impact: `report-format.ts` grouping logic; covered by the 5-June unit fixture.
+
+## D-046: Nightly Deploy Moved to 20:00 + 23:00 UTC (supersedes D-045)
+
+- Date: 2026-06-08
+- Decision: The GitHub Actions nightly deploy cron is now **`0 20 * * *` plus `0 23 * * *`** (two off-peak attempts), replacing the single `0 2 * * *` from D-045.
+- Reason: D-045's 02:00 UTC was meant to be off-peak, but GitHub fired the schedule ~4.5h late (~06:40 UTC), landing inside Railway's free-tier peak block (06:00–18:00 UTC summer) → the deploy was rejected for days and prod kept serving stale, pre-merge code. 20:00 UTC sits at the very start of off-peak with ~10h of GitHub-drift tolerance before peak resumes, and still lands before the 03:00 UTC report; 23:00 UTC is an independent backup in case a run is skipped.
+- Impact: `.github/workflows/nightly-railway-deploy.yml` (`8044eb9`, `e403343`). Lesson recorded in MISTAKES. On the free tier there is no way to deploy during peak — only off-peak or a paid plan removes the block.
+
 ## D-045: Nightly Deploy Rescheduled to 02:00 UTC (07:00 Tashkent)
 
 - Date: 2026-05-31

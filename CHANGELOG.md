@@ -5,6 +5,17 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added (2026-06-08 — session 6)
+- **Territorial-manager-grouped daily & weekly reports** — global summary + 🏆 Top-5, then a block per TM (4 managers) with a reviewed-stores table, a named `Молчат:` silent-store list, and one universal «…молчат — продавцы не просят оценить. Нет голоса = нет работы с клиентом.» line. (`report-format.ts`, wired in `report-builder.ts`.)
+- `Store.territorialManager` column (additive Prisma migration) + `app/data/manager-assignments.json` fallback seed (41 stores).
+- `app/src/lib/manager-match.ts` (pure, tested: normalize + alias, 41/41 match, duplicate-target guard) and `app/src/lib/manager-sync.ts` (reads the "Менеджеры" Google Sheet via the reused `store-manager-tasks` service account; update-only; sheet→DB).
+- `POST /api/admin/sync-managers` (REPORTS_API_KEY auth) — populates `territorialManager`; runs first (best-effort) in the daily/weekly report workflows.
+- `vitest` for pure-unit tests (13 tests). Spec/plan: `docs/superpowers/{specs,plans}/2026-06-06-tm-grouped-telegram-reports*`; setup: `docs/MANAGER_SYNC_SETUP.md`.
+
+### Changed (2026-06-08 — session 6)
+- Nightly deploy cron `0 2 * * *` → `0 20 * * *` + `0 23 * * *` (two off-peak attempts) — the 02:00 UTC schedule was drifting ~4.5h late into Railway's peak block and failing every deploy. (D-046)
+- Daily + weekly report builders now render the grouped format via the shared formatter; monthly report unchanged.
+
 ### Fixed (2026-05-31 — session 5)
 - **Production build** — committed `app/src/lib/feedback-filters.ts` (was imported but never `git add`-ed) that broke every cloud `next build` with "Module not found". This unblocked all deploys.
 - **Daily Telegram report** — restored the detailed "Ежедневный отчет по QR-отзывам" format covering the previous full Tashkent day with summary + all 43 stores (`VOTE_ROW_FILTER` counts), replacing the old compact "Отчет за сегодня" table that covered today. (Was uncommitted working-tree code.)

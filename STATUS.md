@@ -1,10 +1,23 @@
 # Status
 
-**Updated:** 2026-05-31 (session 5 — deploy landed, reports/dashboard fixed, schedule moved)
+**Updated:** 2026-06-08 (session 6 — TM-grouped reports built & merged; deploy timing fixed)
 
 ## Current Phase
 
-`M5 — Reporting Activation — Cloud auto-deploy is WORKING and verified (scheduled GitHub Actions runs #5/#6 succeeded). The «Мы подвели клиента» template + single-password login are LIVE. Root cause of the long stall fully resolved: production had been running uncommitted working-tree code (old local railway up uploaded the working dir); the cloud deploy ships committed code only, so all live-but-uncommitted files are now committed (committed == deployed). Nightly deploy rescheduled to 07:00 Tashkent (02:00 UTC, off-peak year-round). Dashboard + daily-report fixes committed, ship on the next auto-deploy.`
+`M5 — Reporting Activation — Territorial-manager-grouped daily/weekly reports are BUILT, fully unit-tested, and merged to main (12 commits), but NOT yet live: the nightly deploy had been silently peak-blocked for days (GitHub fired the 02:00 UTC cron ~4.5h late, into Railway's 06:00–18:00 UTC peak block), so prod still runs old pre-merge code (the /api/admin/sync-managers endpoint 404s). Fixed by moving the nightly deploy to 20:00 + 23:00 UTC (off-peak, GitHub-drift-tolerant). Awaiting tonight's automatic off-peak deploy; the new grouped report should first appear in the managers group at 08:00 Tashkent on the next day. Live verification (sync matched:41 + the grouped Telegram message) still pending.`
+
+## What Is Done (2026-06-08, session 6)
+
+### TM-grouped Telegram reports (built, merged to main, awaiting deploy)
+- **New report format:** daily + weekly reports now open with a global summary (denominator 43) + 🏆 Top-5, then one block per **territorial manager** (4 TMs) — each with a monospace table of that TM's stores that got reviews, a `Молчат: …` list of silent stores, and one universal line «{silent} из {total} магазинов молчат — продавцы не просят оценить. Нет голоса = нет работы с клиентом.». Monthly report unchanged.
+- **Manager mapping synced from Google Sheet:** new `Store.territorialManager` column (additive migration, slug guard untouched), populated by `POST /api/admin/sync-managers` which reads the "Менеджеры" tab of the manager Google Sheet via the **reused `store-manager-tasks` service account** (already had sheet access; env `GOOGLE_SERVICE_ACCOUNT_JSON` set on Railway). Update-only (never creates a store). Committed fallback: `app/data/manager-assignments.json` (41 stores). Sync runs as the first, `continue-on-error` step of the daily/weekly report workflows.
+- **Verified pre-deploy:** `next build` passes; tsc + ESLint clean; 13 vitest unit tests green — incl. **41/41 real stores match** (Глоток-Юнусабад/Юнусабад collision provably avoided) and the 5-June fixture reconciling to 60 / 12-of-43 / 31 silent. Rendered the exact message locally; matches the approved template.
+- **Spec + plan + Sonnet review** in `docs/superpowers/specs|plans/2026-06-06-tm-grouped-telegram-reports*`. Setup notes: `docs/MANAGER_SYNC_SETUP.md`.
+- **2 stores have no manager in the sheet** (Катортол, Чилонзор Торговый): they count in global totals but get no block (a quiet nudge to assign them).
+
+### Deploy timing bug fixed (the reason the above wasn't live)
+- Root cause (evidence via GitHub Actions API + Railway): the nightly deploy of our merge (`69ae6aa`) FAILED on Jun 7 & Jun 8 — the "Deploy to Railway" step failed in ~2s = Railway peak-hours rejection, because GitHub fired the `0 2 * * *` schedule at ~06:40 UTC (inside summer peak 06:00–18:00 UTC). Last success built old pre-merge code.
+- Fix (`8044eb9`, `e403343`): nightly deploy cron `0 2 * * *` → **`0 20 * * *` + `0 23 * * *`** (two off-peak attempts, ~10h of GitHub-drift tolerance before peak resumes, both land before the 03:00 UTC report). See MISTAKES (recurring lesson) + D-046.
 
 ## What Is Done (2026-05-31, session 5)
 

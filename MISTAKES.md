@@ -1,5 +1,12 @@
 # Mistakes and Lessons Learned
 
+## 2026-06-08 — A GitHub "off-peak" deploy cron drifted INTO Railway's peak block, silently blocking deploys for days
+
+- **What happened:** The TM-grouped report code was merged to `main`, but the new report never appeared and `/api/admin/sync-managers` returned 404 — production was still running OLD pre-merge code. The nightly deploy of our merge had FAILED on Jun 7 and Jun 8.
+- **Root cause:** The nightly deploy cron was `0 2 * * *` (02:00 UTC, chosen specifically to be off-peak). But GitHub Actions scheduled workflows are best-effort and were firing **~4.5 hours late (~06:40 UTC)**, which is inside Railway's free-tier peak-hours block (08:00–20:00 Amsterdam = 06:00–18:00 UTC in summer). The `railway up` step was rejected instantly (~2s failure). The one recent success happened to fire at 05:58 UTC (2 min before peak) and built the older commit. So every attempt to ship the new code bounced.
+- **How found:** Probed prod (`sync-managers` → 404 = old code; `origin/main` = our merge = correct). Then the GitHub Actions API (`…/actions/workflows/nightly-railway-deploy.yml/runs`) showed runs with the correct `head_sha` but `conclusion: failure`, and the job's "Deploy to Railway" step failing in ~2s — the signature of a Railway peak rejection (same message Railway gave when an env-var change tried to redeploy during peak).
+- **Lesson:** This is the SECOND time GitHub cron lateness pushed an "off-peak" job into a provider blackout (first seen 2026-06-01 for the reports). A scheduled cron's nominal time is NOT its run time — drift of several hours is normal. Any cron that must run inside a window must be scheduled **early in that window with hours of slack to the nearest boundary**, never near the edge. Fixed by moving the deploy to 20:00 + 23:00 UTC (D-046). When a deploy "succeeds" but behaves like old code, verify WHICH commit/route set is actually live (a build-time artifact like the route list, or a known-new endpoint) before assuming the deploy shipped your branch.
+
 ## 2026-05-31 — Production was running UNCOMMITTED code; switching deploy method silently reverted live features
 
 - **What happened:** After moving deploys from local `railway up` to the cloud GitHub Actions runner, the daily Telegram report reverted to an old compact "Отчет за сегодня" format (covering today) instead of the detailed previous-day report. Investigation showed the detailed report — and several other live features — existed only as **uncommitted changes in the working tree**.

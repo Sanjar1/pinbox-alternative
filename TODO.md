@@ -1,13 +1,12 @@
 # TODO
 
-**Updated:** 2026-05-24 (session 3)
+**Updated:** 2026-06-08 (session 6)
 
-## Priority 0 — Verify tonight's deploy (no manual action until 23:05 Tashkent)
-- [ ] After `Pinbox-Railway-Night-Deploy` fires at 23:05 Tashkent:
-  - Open `/login` → confirm single password field, Russian labels ("Сырная Лавка — Команда" / "Пароль" / "Войти").
-  - Enter `12345` → confirm redirect to `/admin` dashboard.
-  - Scan any A5 poster QR → leave 1–2/5 rating → type a comment → confirm ONE merged Russian-template Telegram message arrives in the managers group.
-  - Check dashboard: Юнусабад and Метро Чиланзар should show corrected lower vote counts.
+## Priority 0 — Verify the TM-grouped reports go live (after tonight's off-peak auto-deploy)
+- [ ] Confirm the nightly deploy ran off-peak (GitHub Actions "Nightly Railway Deploy" green; ~20:00 or 23:00 UTC) and `/api/admin/sync-managers` now returns 200 (not 404).
+- [ ] `POST /api/admin/sync-managers` → expect `{ok:true, used:"live", matched:41, unmatched:[], cleared:2}`. If `used:"fallback"`, the service account isn't reaching the sheet — check `GOOGLE_SERVICE_ACCOUNT_JSON` + sheet sharing.
+- [ ] Confirm the 08:00 Tashkent daily report in the managers group is the new grouped format (Top-5 + 4 manager blocks + `Молчат:` + universal line). Pull Railway logs `manager_sync_done matched:41` and `message_built` as proof.
+- [ ] (Optional) Assign Катортол + Чилонзор Торговый to a manager in the "Менеджеры" sheet so they appear in a block instead of only the totals.
 
 ## Priority 1 — Quick wins
 - [x] Fix the `-comment` deviceId double-counting bug (read-side filter approach, deployed pending 23:05 Tashkent auto-task).

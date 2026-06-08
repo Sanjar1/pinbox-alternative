@@ -1,5 +1,26 @@
 # Progress Log
 
+## 2026-06-08 (session 6) — TM-grouped reports built & merged; deploy peak-block diagnosed & fixed
+
+**Done:**
+- **Designed + built territorial-manager-grouped daily & weekly Telegram reports** (brainstorm → spec → Sonnet review → plan → subagent-driven TDD implementation, 12 commits merged to `main`). New format: global summary + Top-5, then a block per TM (4 managers) with a reviewed-stores table, named silent stores, and one universal «…молчат — продавцы не просят оценить…» line. Monthly left unchanged.
+- **Manager mapping is sheet-driven:** added nullable `Store.territorialManager` (additive migration), a pure tested matcher (`manager-match.ts`), a sync module (`manager-sync.ts`, update-only) reading the "Менеджеры" Google Sheet tab, and `POST /api/admin/sync-managers`. Reused the existing `store-manager-tasks` service account (already had sheet access) → set `GOOGLE_SERVICE_ACCOUNT_JSON` on Railway. Sync runs first (best-effort) in the daily/weekly workflows. Fallback seed: `app/data/manager-assignments.json`.
+- **Verified pre-deploy:** `next build` passes; tsc + ESLint clean; 13 vitest tests green — **41/41 real stores match** (Глоток collision guarded) and the 5-June fixture reconciles to 60 / 12-of-43 / 31 silent. Rendered the exact message locally — matches the approved template.
+- **Diagnosed why the new reports weren't appearing** (user reported "reports not as we wanted"): production was still running OLD pre-merge code — `/api/admin/sync-managers` → 404. GitHub Actions API showed the nightly deploy of our merge FAILED Jun 7 & Jun 8 (Deploy-to-Railway step failed in ~2s = Railway peak-hours rejection). The "02:00 UTC" cron was firing ~06:40 UTC, inside the 06:00–18:00 UTC summer peak block.
+- **Fixed the deploy timing:** moved nightly deploy to `0 20 * * *` + `0 23 * * *` (two off-peak attempts, GitHub-drift-tolerant), pushed to main (`8044eb9`, `e403343`). Validated the workflow YAML.
+
+**Found / lessons (see MISTAKES.md):**
+- A GitHub "off-peak" cron is NOT reliably off-peak — schedule drift of several hours can shove it into a provider's peak/blackout window. Place such crons early in the off-peak window with hours of slack, never near a boundary. (This recurred from the 2026-06-01 observation; now fixed at the deploy layer.)
+
+**Next session:**
+- After tonight's off-peak deploy: verify `/api/admin/sync-managers` returns `matched:41`, then confirm the 08:00 Tashkent daily report in the group is the new grouped format (pull Railway `manager_sync_done` + `message_built` logs). (Task #0)
+- Then tune wording/thresholds if the user wants, and consider the same grouping for monthly.
+
+**Pending user input / decisions:**
+- None blocking. Optional: assign Катортол + Чилонзор Торговый to a manager in the sheet so they appear in a TM block.
+
+---
+
 ## 2026-05-31 (session 5) — Deploy landed; reports/dashboard fixed; schedule moved to 07:00 Tashkent
 
 **Done:**
