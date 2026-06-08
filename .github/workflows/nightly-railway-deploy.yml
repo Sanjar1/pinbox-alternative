@@ -6,14 +6,23 @@ name: Nightly Railway Deploy
 #
 # TIMING / PEAK-HOURS:
 #   Railway free-tier deploys to EU West (europe-west4) are BLOCKED during peak
-#   hours: 08:00–20:00 Europe/Amsterdam. GitHub cron is always UTC (no DST).
-#   We run at 02:00 UTC = 07:00 Asia/Tashkent = 03:00 (summer) / 04:00 (winter)
-#   Amsterdam — comfortably OFF-PEAK in every season, and ~1h before the 03:00
-#   UTC daily Telegram report so that report runs on freshly-deployed code.
-#   (Previously 18:05 UTC, which was inside peak in winter.)
+#   hours: 08:00–20:00 Europe/Amsterdam = 06:00–18:00 UTC (summer) / 07:00–19:00
+#   UTC (winter). A deploy attempted in that window is rejected instantly.
+#
+#   GOTCHA (2026-06-08): GitHub does NOT run scheduled crons on time — under load
+#   they drift by HOURS. Our old '0 2 * * *' (02:00 UTC, meant to be off-peak)
+#   was actually firing ~06:40 UTC, landing INSIDE the summer peak window, so
+#   every nightly deploy was rejected and prod kept serving stale code.
+#
+#   FIX: fire at 20:00 UTC — the very start of the off-peak window (22:00
+#   Amsterdam summer / 21:00 winter). This gives ~10h of GitHub-delay tolerance
+#   before peak resumes at 06:00 UTC, and still lands well before the 03:00 UTC
+#   daily Telegram report, so that report runs on freshly-deployed code.
+#   If a deploy is ever urgent during peak, the only options are to wait for
+#   off-peak or upgrade the Railway plan (peak block is a free-tier limit).
 on:
   schedule:
-    - cron: '0 2 * * *'
+    - cron: '0 20 * * *'
   # Manual trigger from the Actions UI ("Run workflow"). Use this to deploy on
   # demand (it will still be refused by Railway if you click it during peak).
   workflow_dispatch:
