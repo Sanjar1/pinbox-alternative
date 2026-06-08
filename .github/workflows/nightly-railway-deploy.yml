@@ -22,7 +22,13 @@ name: Nightly Railway Deploy
 #   off-peak or upgrade the Railway plan (peak block is a free-tier limit).
 on:
   schedule:
+    # Two off-peak attempts for resilience against GitHub cron drift/skips.
+    # Both are off-peak year-round (summer peak 06:00–18:00 UTC, winter 07:00–19:00
+    # UTC). The 20:00 primary lands well before the 03:00 UTC daily report even
+    # with several hours of GitHub delay; the 23:00 backup catches nights the
+    # primary is skipped. Re-deploying the same commit is idempotent/harmless.
     - cron: '0 20 * * *'
+    - cron: '0 23 * * *'
   # Manual trigger from the Actions UI ("Run workflow"). Use this to deploy on
   # demand (it will still be refused by Railway if you click it during peak).
   workflow_dispatch:
