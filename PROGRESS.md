@@ -16,8 +16,12 @@
 - After tonight's off-peak deploy: verify `/api/admin/sync-managers` returns `matched:41`, then confirm the 08:00 Tashkent daily report in the group is the new grouped format (pull Railway `manager_sync_done` + `message_built` logs). (Task #0)
 - Then tune wording/thresholds if the user wants, and consider the same grouping for monthly.
 
+**Also (later in session):**
+- Pulled the nightly-deploy run history from the GitHub Actions API to check the user's hunch that deploys "weren't working well." Confirmed: **4 success / 10 failure overall**, and **7 of the last 8 nightly runs failed** — all the recent failures fired 06:35–07:06 UTC (inside peak); the historical successes fired ~19:39–20:36 UTC (off-peak), validating the move to 20:00/23:00 UTC. The single Jun 6 success fired 05:58 UTC (2 min before peak) and shipped old code.
+
 **Pending user input / decisions:**
-- None blocking. Optional: assign Катортол + Чилонзор Торговый to a manager in the sheet so they appear in a TM block.
+- **Railway free-tier vs paid:** decide whether to upgrade Railway (~$5/mo Hobby) to remove the peak-hours deploy block entirely (bulletproof) vs rely on the free-tier time fix + verify. The 7/8 recent-failure rate makes a case for upgrading.
+- Optional: assign Катортол + Чилонзор Торговый to a manager in the sheet so they appear in a TM block.
 
 ---
 

@@ -18,6 +18,7 @@
 ### Deploy timing bug fixed (the reason the above wasn't live)
 - Root cause (evidence via GitHub Actions API + Railway): the nightly deploy of our merge (`69ae6aa`) FAILED on Jun 7 & Jun 8 — the "Deploy to Railway" step failed in ~2s = Railway peak-hours rejection, because GitHub fired the `0 2 * * *` schedule at ~06:40 UTC (inside summer peak 06:00–18:00 UTC). Last success built old pre-merge code.
 - Fix (`8044eb9`, `e403343`): nightly deploy cron `0 2 * * *` → **`0 20 * * *` + `0 23 * * *`** (two off-peak attempts, ~10h of GitHub-drift tolerance before peak resumes, both land before the 03:00 UTC report). See MISTAKES (recurring lesson) + D-046.
+- **Quantified the reliability problem** (GitHub Actions run history): nightly deploy = 4 success / 10 failure overall, and **7 of the last 8 nightly runs FAILED** (Jun 1–8, all firing 06:35–07:06 UTC inside peak). The successful runs historically fired ~19:39–20:36 UTC — exactly the off-peak window the fix now targets. **OPEN DECISION (needs user):** stay on the free-tier fix (verify tomorrow) vs upgrade Railway (~$5/mo Hobby) to remove the peak block entirely and make deploys reliable at any time.
 
 ## What Is Done (2026-05-31, session 5)
 

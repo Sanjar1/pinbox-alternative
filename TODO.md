@@ -7,6 +7,7 @@
 - [ ] `POST /api/admin/sync-managers` → expect `{ok:true, used:"live", matched:41, unmatched:[], cleared:2}`. If `used:"fallback"`, the service account isn't reaching the sheet — check `GOOGLE_SERVICE_ACCOUNT_JSON` + sheet sharing.
 - [ ] Confirm the 08:00 Tashkent daily report in the managers group is the new grouped format (Top-5 + 4 manager blocks + `Молчат:` + universal line). Pull Railway logs `manager_sync_done matched:41` and `message_built` as proof.
 - [ ] (Optional) Assign Катортол + Чилонзор Торговый to a manager in the "Менеджеры" sheet so they appear in a block instead of only the totals.
+- [ ] **DECIDE: upgrade Railway to paid (~$5/mo Hobby) or stay free-tier?** Nightly deploy failed 7 of the last 8 nights (GitHub cron drifting into the free-tier peak block). The 20:00/23:00 UTC fix should resolve it on free tier, but upgrading removes the peak-hours block entirely and makes deploys reliable any time. Needs user's spend approval.
 
 ## Priority 1 — Quick wins
 - [x] Fix the `-comment` deviceId double-counting bug (read-side filter approach, deployed pending 23:05 Tashkent auto-task).
