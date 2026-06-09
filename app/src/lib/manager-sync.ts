@@ -6,7 +6,12 @@ import { reportLog, newReqId } from './report-builder';
 import { resolveAssignments, type SheetRow, type DbStore } from './manager-match';
 
 const SHEET_ID = '1N7Ysr2C8ivoXAbU0fZc07_aDFAvDhny-M5Zg2yxDgkw';
-const SHEET_GID = 1105476357;
+// Resolve the Менеджеры tab by title first. Its gid is NOT stable: the
+// spreadsheet was restructured and the old gid (1105476357) now points at an
+// unrelated "Audit_Categories" tab, which silently produced 0 manager matches.
+// Title survived the reorg; keep the current gid only as a fallback.
+const SHEET_TAB_TITLE = 'Менеджеры';
+const SHEET_GID = 1309841635;
 
 type SyncResult = {
   used: 'live' | 'fallback';
@@ -27,11 +32,15 @@ async function fetchSheetRows(): Promise<SheetRow[]> {
   // googleapis accepts a GoogleAuth instance directly as `auth`.
   const sheets = google.sheets({ version: 'v4', auth });
 
-  // Resolve the tab title for SHEET_GID (values.get needs a title, not a gid).
+  // Resolve the tab title (values.get needs a title, not a gid). Match by title
+  // first, then fall back to the known gid.
   const meta = await sheets.spreadsheets.get({ spreadsheetId: SHEET_ID });
-  const tab = (meta.data.sheets ?? []).find((s) => s.properties?.sheetId === SHEET_GID);
+  const allTabs = meta.data.sheets ?? [];
+  const tab =
+    allTabs.find((s) => s.properties?.title === SHEET_TAB_TITLE) ??
+    allTabs.find((s) => s.properties?.sheetId === SHEET_GID);
   const title = tab?.properties?.title;
-  if (!title) throw new Error(`Sheet tab gid ${SHEET_GID} not found`);
+  if (!title) throw new Error(`Sheet tab "${SHEET_TAB_TITLE}" (gid ${SHEET_GID}) not found`);
 
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: SHEET_ID,

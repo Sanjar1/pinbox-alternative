@@ -16,11 +16,13 @@ function byPerformance(a: StoreStat, b: StoreStat): number {
   return a.name.localeCompare(b.name, 'ru');
 }
 
-// One monospace row: "<name padded>  <count>  <avg>".
+// One monospace row: "<name padded>  <count>  <avg>". Stores with no reviews
+// show a 0 count and a "—" score so the whole TM roster is visible.
 const NAME_W = 18;
 function tableRow(s: StoreStat): string {
   const name = s.name.length > NAME_W ? s.name.slice(0, NAME_W - 1) + '…' : s.name.padEnd(NAME_W);
-  return `${escapeHtml(name)}${String(s.count).padStart(4)}   ${s.avg.toFixed(1)}`;
+  const score = s.count === 0 ? '—' : s.avg.toFixed(1);
+  return `${escapeHtml(name)}${String(s.count).padStart(4)}   ${score}`;
 }
 
 function weightedAvg(stores: StoreStat[]): number {
@@ -36,17 +38,15 @@ function universalLine(silent: number, total: number): string {
 
 function tmBlock(tm: string, stores: StoreStat[]): string {
   const total = stores.reduce((n, s) => n + s.count, 0);
-  const avg = weightedAvg(stores).toFixed(1);
+  const avg = total > 0 ? weightedAvg(stores).toFixed(1) : '—';
   const withReviews = stores.filter((s) => s.count > 0).sort(byPerformance);
   const silent = stores.filter((s) => s.count === 0).sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+  // Every store gets a row: reviewed stores first (by performance), then the
+  // silent ones (0 count, "—" score) so the full TM roster is always visible.
+  const ordered = [...withReviews, ...silent];
 
   const lines: string[] = [`👤 <b>${escapeHtml(tm)}</b> — ${total} отзывов · средняя ${avg}`];
-  if (withReviews.length > 0) {
-    lines.push('<pre>' + withReviews.map(tableRow).join('\n') + '</pre>');
-  }
-  if (silent.length > 0) {
-    lines.push('Молчат: ' + silent.map((s) => escapeHtml(s.name)).join(', '));
-  }
+  lines.push('<pre>' + ordered.map(tableRow).join('\n') + '</pre>');
   lines.push(universalLine(silent.length, stores.length));
   return lines.join('\n');
 }

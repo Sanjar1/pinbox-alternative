@@ -69,9 +69,12 @@ describe('formatGroupedReport (daily, 5 June)', () => {
     expect(text).toContain('Музаффаров Фазлиддин');
     expect(text).toContain('Юсупова Дурдона');
   });
-  it('lists silent stores (alphabetical) and the universal line per block', () => {
-    // formatter sorts silent stores by name (ru) for deterministic output
-    expect(text).toContain('Молчат: Бухара, Келес, Тансикбаев, Торговый Центр, Урикзор, Учтепа, Фарход, Янгиюль');
+  it('renders every silent store as its own 0 / — row, plus the universal line', () => {
+    // Silent stores now appear as explicit rows (0 count, "—" score), not a
+    // compressed "Молчат:" line.
+    expect(text).not.toContain('Молчат:');
+    expect(text).toMatch(/Бухара\s+0\s+—/);
+    expect(text).toMatch(/Янгиюль\s+0\s+—/);
     expect(text).toContain('8 из 11 магазинов молчат — продавцы не просят оценить. Нет голоса = нет работы с клиентом.');
   });
   it('does NOT give the unassigned stores a block, and (0 reviews) shows no footer', () => {
@@ -81,14 +84,13 @@ describe('formatGroupedReport (daily, 5 June)', () => {
 });
 
 describe('formatGroupedReport edge cases', () => {
-  it('fully covered block shows the ✅ line, no Молчат', () => {
+  it('fully covered block shows the ✅ line', () => {
     const out = formatGroupedReport('daily', 'x', [
       { name: 'A', tm: 'TM1', count: 2, avg: 5 },
       { name: 'B', tm: 'TM1', count: 1, avg: 4 },
     ]);
     const text = Array.isArray(out) ? out.join('\n') : out;
     expect(text).toContain('Все магазины с отзывами ✅');
-    expect(text).not.toContain('Молчат:');
   });
   it('fully empty day shows the Top-5 fallback line', () => {
     const out = formatGroupedReport('daily', 'x', [
