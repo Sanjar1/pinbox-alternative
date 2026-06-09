@@ -1,10 +1,28 @@
 # Status
 
-**Updated:** 2026-06-08 (session 6 — TM-grouped reports built & merged; deploy timing fixed)
+**Updated:** 2026-06-09 (session 7 — TM-grouped reports LIVE & verified; prod 500 outage fixed; report format updated)
 
 ## Current Phase
 
-`M5 — Reporting Activation — Territorial-manager-grouped daily/weekly reports are BUILT, fully unit-tested, and merged to main (12 commits), but NOT yet live: the nightly deploy had been silently peak-blocked for days (GitHub fired the 02:00 UTC cron ~4.5h late, into Railway's 06:00–18:00 UTC peak block), so prod still runs old pre-merge code (the /api/admin/sync-managers endpoint 404s). Fixed by moving the nightly deploy to 20:00 + 23:00 UTC (off-peak, GitHub-drift-tolerant). Awaiting tonight's automatic off-peak deploy; the new grouped report should first appear in the managers group at 08:00 Tashkent on the next day. Live verification (sync matched:41 + the grouped Telegram message) still pending.`
+`M5 — Reporting Activation — DONE & VERIFIED LIVE. The TM-grouped daily report is now firing correctly in the managers group. This session fixed three things end-to-end: (1) a production outage — ALL 41 QR voting pages + the daily report were returning HTTP 500 because the Store.territorialManager column was never pushed to the prod DB (prod is managed by prisma db push, not migrate deploy; migrations don't auto-apply); added the column directly → 41/41 posters back to 200; (2) the TM grouping was broken (manager-sync matched:0) because the hardcoded Менеджеры sheet gid had been silently reassigned to an unrelated tab — now resolved by tab TITLE → matched:41; (3) per user request, 0-review stores now show as explicit rows (0 / —) under each TM instead of a compact «Молчат:» line. Deployed via GitHub Actions workflow_dispatch (local railway up still OOMs); verified live: health 200, voting 200, sync matched:41, report confirmed in the group with the new format. OPEN: prod migration pipeline still doesn't auto-apply schema changes (next added column will repeat the outage) — needs a separate hardening pass; Railway free-tier-vs-paid decision still pending.`
+
+## What Is Done (2026-06-09, session 7)
+
+### Production outage fixed — all 41 QR posters + daily report were HTTP 500
+- **Symptom:** every printed-poster voting page (`/{slug}`) and the daily Telegram report returned HTTP 500; `/api/health` stayed green (it's a static `{ok:true}`, never touches the DB).
+- **Root cause (from Railway logs):** `PrismaClientKnownRequestError P2022 — column Store.territorialManager does not exist`. The TM code (commit `e5ec156`, 2026-06-06) shipped expecting the column, but prod never got it. **Prod has no `_prisma_migrations` table** → it's managed by `prisma db push`, NOT `migrate deploy`; the entrypoint's `prisma migrate deploy` is bypassed (service-level start command) and would P3019 anyway (`migration_lock.toml` says `sqlite` vs a `postgresql` schema). So migrations never auto-apply.
+- **Fix:** ran `ALTER TABLE "Store" ADD COLUMN IF NOT EXISTS "territorialManager" TEXT` directly against the prod DB (public proxy `metro.proxy.rlwy.net:36355`) via the runtime Prisma client. Additive/nullable, doesn't touch `QRCode.slug` → slug guard untripped. **Verified 41/41 posters back to HTTP 200.**
+
+### TM grouping fixed — manager-sync was matching 0 stores
+- **Root cause:** `SHEET_GID = 1105476357` (hardcoded) had been silently reassigned to an unrelated **"Audit_Categories"** tab when the spreadsheet was restructured; the «Менеджеры» tab is now gid `1309841635`. So sync read audit rows (col D = "Order", never "MANAGER") → `matched:0` → every store fell under «Без менеджера», and the nightly sync re-cleared TMs each morning.
+- **Fix (`89e9d2c`):** resolve the «Менеджеры» tab by **title** first (it survived the reorg), with the corrected gid as fallback. Validated against live data: **41/41 stores match across 4 TMs** (Абдухамитова 11, Хасанов 11, Музаффаров 9, Юсупова 9 + 1 alias).
+
+### Report format — 0-review stores now explicit rows (user request)
+- Every store now gets its own row under its TM, **including 0-review stores showing `0   —`**, replacing the compact «Молчат: …» line. Full TM roster always visible. The universal «N из M магазинов молчат…» line stays. (`report-format.ts`; unit tests updated, 8/8 green.)
+
+### Deploy + live verification
+- Deployed via **GitHub Actions `workflow_dispatch`** on `nightly-railway-deploy.yml` (REST dispatch — `gh` not installed; local `railway up` still OOMs at "Indexing…"). Deployment `37e5e1af` SUCCESS in ~2 min (landed 05:42 UTC, ~18 min before summer peak).
+- Gates all green: health 200, real voting slug 200, **live `sync-managers` → `matched:41`** (was 0), daily report sent and **confirmed in the group** (msg 63841) with the new TM-grouped / 0-row format.
 
 ## What Is Done (2026-06-08, session 6)
 

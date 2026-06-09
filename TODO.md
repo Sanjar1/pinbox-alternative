@@ -1,13 +1,18 @@
 # TODO
 
-**Updated:** 2026-06-08 (session 6)
+**Updated:** 2026-06-09 (session 7)
 
-## Priority 0 — Verify the TM-grouped reports go live (after tonight's off-peak auto-deploy)
-- [ ] Confirm the nightly deploy ran off-peak (GitHub Actions "Nightly Railway Deploy" green; ~20:00 or 23:00 UTC) and `/api/admin/sync-managers` now returns 200 (not 404).
-- [ ] `POST /api/admin/sync-managers` → expect `{ok:true, used:"live", matched:41, unmatched:[], cleared:2}`. If `used:"fallback"`, the service account isn't reaching the sheet — check `GOOGLE_SERVICE_ACCOUNT_JSON` + sheet sharing.
-- [ ] Confirm the 08:00 Tashkent daily report in the managers group is the new grouped format (Top-5 + 4 manager blocks + `Молчат:` + universal line). Pull Railway logs `manager_sync_done matched:41` and `message_built` as proof.
-- [ ] (Optional) Assign Катортол + Чилонзор Торговый to a manager in the "Менеджеры" sheet so they appear in a block instead of only the totals.
-- [ ] **DECIDE: upgrade Railway to paid (~$5/mo Hobby) or stay free-tier?** Nightly deploy failed 7 of the last 8 nights (GitHub cron drifting into the free-tier peak block). The 20:00/23:00 UTC fix should resolve it on free tier, but upgrading removes the peak-hours block entirely and makes deploys reliable any time. Needs user's spend approval.
+## Priority 0 — Harden the prod migration pipeline (so a new column can't 500 prod again)
+- [ ] **Make schema changes auto-apply on deploy.** Today's outage: `Store.territorialManager` shipped in code but was never in the prod DB → all 41 posters + the daily report 500'd (`P2022`). Prod has no `_prisma_migrations` table (db-push model); the entrypoint's `migrate deploy` is bypassed and would P3019 anyway (`migration_lock.toml` = `sqlite`). Carefully, in its own approved pass: set `migration_lock.toml` `sqlite`→`postgresql`, **baseline** `_prisma_migrations` against the already-db-push'd schema (`prisma migrate resolve --applied` per existing migration) so `migrate deploy` won't try to re-create existing tables, then confirm the entrypoint actually runs `migrate deploy`. Until then, **manually `prisma db push` any new column as part of its deploy.** (See memory `prod-db-migration-model`, MISTAKES 2026-06-09.)
+- [ ] **Make `/api/health` do a `SELECT 1`** so a data-layer outage turns the health check red (it stayed green through today's total 500 outage).
+- [ ] **DECIDE: upgrade Railway to paid (~$5/mo Hobby) or stay free-tier?** Nightly deploy was failing on free-tier peak drift; the 20:00/23:00 UTC fix should resolve it, but upgrading removes the peak block entirely. Needs user's spend approval.
+- [ ] (Optional) Assign Катортол + Чилонзор Торговый to a manager in the "Менеджеры" sheet so they appear in a TM block instead of only the totals.
+
+### Done this session (2026-06-09) — was Priority 0
+- [x] Prod outage fixed — `Store.territorialManager` column added to prod DB; 41/41 posters back to HTTP 200.
+- [x] `POST /api/admin/sync-managers` → `{matched:41, ...}` verified live (was 0; fixed the stale sheet-gid → resolve by title).
+- [x] Daily report confirmed in the managers group with the new grouped format + explicit 0-row stores per TM (msg 63841).
+- [x] TM-grouped reporting deployed & verified live → **M5 reporting activation closed in ROADMAP.**
 
 ## Priority 1 — Quick wins
 - [x] Fix the `-comment` deviceId double-counting bug (read-side filter approach, deployed pending 23:05 Tashkent auto-task).

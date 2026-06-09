@@ -5,6 +5,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed (2026-06-09 — session 7)
+- **Production outage** — all 41 QR poster voting pages and the daily Telegram report were returning HTTP 500 (`P2022: column Store.territorialManager does not exist`). The TM column was in the schema/code but never pushed to the prod DB (prod uses `prisma db push`, not `migrate deploy`). Added the column directly (`ALTER TABLE "Store" ADD COLUMN IF NOT EXISTS "territorialManager" TEXT`); 41/41 posters back to HTTP 200, daily report restored.
+- **TM report grouping** — `manager-sync` matched 0 stores (report collapsed to «Без менеджера») because the hardcoded «Менеджеры» sheet gid had been reassigned to an unrelated tab by a spreadsheet reorg. `manager-sync.ts` now resolves the tab by **title** (gid as fallback) → `matched:41`. (`89e9d2c`, D-049)
+
+### Changed (2026-06-09 — session 7)
+- Grouped report now lists **every store as its own row under its TM**, with 0-review stores shown as `0   —`, replacing the compact «Молчат: …» line. Updated unit tests. (`report-format.ts`, D-049)
+
 ### Added (2026-06-08 — session 6)
 - **Territorial-manager-grouped daily & weekly reports** — global summary + 🏆 Top-5, then a block per TM (4 managers) with a reviewed-stores table, a named `Молчат:` silent-store list, and one universal «…молчат — продавцы не просят оценить. Нет голоса = нет работы с клиентом.» line. (`report-format.ts`, wired in `report-builder.ts`.)
 - `Store.territorialManager` column (additive Prisma migration) + `app/data/manager-assignments.json` fallback seed (41 stores).

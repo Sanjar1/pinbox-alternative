@@ -2,6 +2,21 @@
 
 ## Common Issues
 
+### Every QR poster page returns HTTP 500 but `/api/health` is 200
+- **Symptom:** `/{slug}` voting pages (and the daily report) all 500; `/api/health` returns `{"ok":true}`.
+- **Cause:** A Prisma column the deployed code selects is missing from the prod DB. `/api/health` is static and never touches the DB, so it can't catch this. Most likely a new `schema.prisma` column was shipped but never pushed (prod uses `prisma db push`, migrations don't auto-apply — there's no `_prisma_migrations` table).
+- **Solution:** `railway logs` → look for `P2022 column ... does not exist`. Get the public DB URL: `railway variables --service Postgres-PlIz --kv | grep DATABASE_PUBLIC_URL`. Apply the missing column with a targeted additive `ALTER TABLE "..." ADD COLUMN IF NOT EXISTS "..." <type>` (or `DATABASE_URL=<public-url> npx prisma db push`). Re-curl a few frozen slugs to confirm 200. Never alter `QRCode.slug`. See memory `prod-db-migration-model`.
+
+### Daily report groups every store under «Без менеджера» (no TM blocks)
+- **Symptom:** report shows TM grouping but all stores land in the «Без менеджера» footer; `POST /api/admin/sync-managers` returns `{matched:0, unmatched:[]}`.
+- **Cause:** `manager-sync` is reading the wrong Google Sheet tab — a hardcoded gid was reassigned to a different tab by a spreadsheet reorg. With the fix in place it resolves by title `'Менеджеры'`, but a tab **rename** would break it again.
+- **Solution:** verify the «Менеджеры» tab still exists with columns A=store, D=`MANAGER`, E=ТМ name. If renamed, update `SHEET_TAB_TITLE`/`SHEET_GID` in `app/src/lib/manager-sync.ts`. A healthy sync returns `matched:41`. After fixing, re-run `POST /api/admin/sync-managers`, then `POST /api/reports/daily`.
+
+### Need to deploy on demand but local `railway up` OOMs
+- **Symptom:** `railway up` from `app/` dies at "Indexing…" with `memory allocation of N bytes failed`.
+- **Cause:** Known Railway CLI bug under local memory pressure (since 2026-05-24). Real deploys run on the clean GitHub Actions runner.
+- **Solution:** push your commit to `main`, then trigger the deploy workflow manually. `gh` isn't installed here, so dispatch via REST: get the token with `printf 'protocol=https\nhost=github.com\n\n' | git credential fill | grep ^password=`, then `curl -XPOST -H "Authorization: Bearer $TOKEN" .../actions/workflows/nightly-railway-deploy.yml/dispatches -d '{"ref":"main"}'` (204 = accepted). Only succeeds off-peak (before 06:00 UTC summer / 07:00 UTC winter, or after 18:00/19:00 UTC).
+
 ### A5 poster QR returns 404 for part of the batch
 - **Symptom:** Some posters open correctly, others return `404`.
 - **Cause:** Poster HTML still contains `VOTING_URL_PLACEHOLDER` or uses a slug that does not exist in production DB.

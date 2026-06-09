@@ -1,5 +1,26 @@
 # Progress Log
 
+## 2026-06-09 (session 7) — Prod 500 outage fixed; TM grouping fixed (wrong sheet tab); 0-row report format; deployed & verified live
+
+**Done:**
+- **Fixed a production outage** (user asked "check if deployed; if not, deploy"). Found prod was deployed but serving **HTTP 500 on all 41 QR poster pages and the daily report**, while `/api/health` stayed green. Railway logs → `P2022: column Store.territorialManager does not exist`. The TM code shipped expecting the column but **prod never got it**: there's no `_prisma_migrations` table → prod is managed by `prisma db push`, not `migrate deploy` (entrypoint's `migrate deploy` is bypassed and would P3019 anyway — `migration_lock.toml` says `sqlite`). Fixed with a direct additive `ALTER TABLE "Store" ADD COLUMN IF NOT EXISTS "territorialManager" TEXT` against the public DB proxy. **41/41 posters back to HTTP 200**; this also un-broke the daily report (same column).
+- **Fixed the TM grouping** (user: "this report not what I want — everything under Без менеджера"). manager-sync was `matched:0` because the hardcoded `SHEET_GID = 1105476357` had been silently reassigned to an unrelated **"Audit_Categories"** tab; the «Менеджеры» tab is now gid `1309841635`. Changed `manager-sync.ts` to resolve the tab by **title** (survived the reorg), gid as fallback. Validated live: **41/41 stores match across 4 TMs**.
+- **Changed the report format** (user: "stores with 0 points should be shown under TM subcategories" → chose explicit rows): every store now renders as its own row under its TM, 0-review ones showing `0   —`, replacing the compact «Молчат:» line. Updated unit tests (8/8 green); typecheck clean. Committed `89e9d2c`.
+- **Deployed** via GitHub Actions `workflow_dispatch` (REST dispatch — `gh` not installed; local `railway up` still OOMs). Deployment `37e5e1af` SUCCESS in ~2 min.
+- **Verified live end-to-end:** health 200, voting slug 200, `sync-managers` → `matched:41` (was 0), daily report sent and **confirmed in the managers group** (msg 63841) with the new TM-grouped / 0-row format — rendered the exact message locally beforehand against real June-8 data as proof.
+
+**Found / lessons (see MISTAKES.md):**
+- A green health check that doesn't touch the DB hides a total data-layer outage; health endpoints should exercise a trivial DB read.
+- Prod schema drift is silent and dangerous here: migrations don't auto-apply (db-push model), so any new Prisma column added in code 500s prod until pushed manually.
+- A hardcoded Google Sheet **gid is not stable** — a spreadsheet reorg reassigned it to a different tab and the sync failed silently (`matched:0`, no error). Resolve tabs by title.
+
+**Next session:**
+- **Harden the prod migration pipeline** so schema changes auto-apply (the next added column will otherwise repeat today's outage): baseline `_prisma_migrations` against the db-push'd schema + fix `migration_lock.toml` (`sqlite`→`postgresql`) + confirm the entrypoint actually runs `migrate deploy` — a careful, separately-approved change.
+- Make `/api/health` do a `SELECT 1` so an outage like this turns the health check red.
+- Still pending: Railway free-tier-vs-paid decision; optionally assign the 2 unassigned stores in the sheet.
+
+---
+
 ## 2026-06-08 (session 6) — TM-grouped reports built & merged; deploy peak-block diagnosed & fixed
 
 **Done:**

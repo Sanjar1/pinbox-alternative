@@ -1,5 +1,12 @@
 # Decisions Log
 
+## D-049: Resolve the «Менеджеры» Sheet Tab by Title; Show Every Store as a Row Under Its TM
+
+- Date: 2026-06-09
+- Decision: (1) `manager-sync.ts` resolves the manager tab by **title** (`'Менеджеры'`) first, falling back to the gid (`1309841635`), instead of trusting a hardcoded gid. (2) The grouped report renders **every store as its own row** under its TM — reviewed stores first (by performance), then 0-review stores showing `0   —` — replacing the compact «Молчат: …» name list. The universal «N из M магазинов молчат…» line stays.
+- Reason: the hardcoded gid `1105476357` had been silently reassigned to an unrelated "Audit_Categories" tab during a spreadsheet reorg → sync matched 0 stores and the report collapsed everything to «Без менеджера» (MISTAKES 2026-06-09). A title is what people preserve across reorgs. The owner explicitly asked that 0-point stores be visible per manager (accountability for silent stores), and chose explicit rows over the compact list so each store's score is shown.
+- Impact: `app/src/lib/manager-sync.ts` (title resolution), `app/src/lib/report-format.ts` (`tableRow` emits `—` for 0-count; `tmBlock` renders all stores as rows), `app/src/lib/report-format.test.ts` (asserts 0/— rows, no «Молчат:»). Verified live: `sync-managers` → `matched:41`; report confirmed in the group. Supersedes the «Молчат:»-line presentation from D-048 (the TM-grouping + sheet-sync core of D-048 stands).
+
 ## D-048: Reports Grouped by Territorial Manager, Synced From the Google Sheet
 
 - Date: 2026-06-08

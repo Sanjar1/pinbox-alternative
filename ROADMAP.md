@@ -1,8 +1,12 @@
 # Roadmap
 
-## Current Milestone: M5 — Reporting Activation
+## Current Milestone: M6 — Deploy/DB Pipeline Hardening (next)
 
-**Status:** Active — alert quality hardened (2026-05-24), weekly/monthly crons added. Closes after tonight's Railway deploy is verified delivering the new Russian alert template.
+**Status:** Active (opened 2026-06-09). M5 is closed (below). Focus: make schema migrations auto-apply on deploy (today a new Prisma column 500'd all 41 posters because prod is db-push-managed and migrations don't run), make `/api/health` exercise the DB, and decide Railway free-tier-vs-paid. See TODO Priority 0 and memory `prod-db-migration-model`.
+
+## Previous Milestone: M5 — Reporting Activation
+
+**Status:** ✅ DONE & VERIFIED LIVE (2026-06-09). TM-grouped daily report confirmed firing in the managers group with per-manager blocks and every store shown as a row (0-review stores as `0  —`); `sync-managers` → `matched:41` verified against prod.
 
 **Goal:** Reliable daily Telegram reports at 08:00 Tashkent with yesterday's store scores, plus self-service analytics access for the operations analyst, plus quality low-rating alerts.
 
