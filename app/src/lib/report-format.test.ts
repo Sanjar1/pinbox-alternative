@@ -77,9 +77,8 @@ describe('formatGroupedReport (daily, 5 June)', () => {
     expect(text).toMatch(/Янгиюль\s+0\s+—/);
     expect(text).toContain('8 из 11 магазинов молчат — продавцы не просят оценить. Нет голоса = нет работы с клиентом.');
   });
-  it('does NOT give the unassigned stores a block, and (0 reviews) shows no footer', () => {
-    expect(text).not.toContain('Катортол');
-    expect(text).not.toContain('Без менеджера');
+  it('unassigned silent stores stay visible in the "Без менеджера, молчат" footer', () => {
+    expect(text).toContain('Без менеджера, молчат: Катортол, Чилонзор Торговый');
   });
 });
 

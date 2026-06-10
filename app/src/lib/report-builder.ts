@@ -87,12 +87,17 @@ export function getWeeklyRange(): DateRange {
   todayT.setUTCHours(0, 0, 0, 0);
   const startT = new Date(todayT);
   startT.setUTCDate(startT.getUTCDate() - 7);
+  // Last covered day is yesterday (Tashkent); derive the label from real dates
+  // so month/year boundaries can't produce day "0" or the wrong year.
+  const endDayT = new Date(todayT.getTime() - 86400000);
   const sd = startT.getUTCDate();
-  const ed = todayT.getUTCDate() - 1;
+  const ed = endDayT.getUTCDate();
   const sm = startT.toLocaleString('ru-RU', { month: 'long', timeZone: 'UTC' });
-  const em = new Date(todayT.getTime() - 86400000).toLocaleString('ru-RU', { month: 'long', timeZone: 'UTC' });
-  const label = sm === em ? `${sd}-${ed} ${sm} ${t.getUTCFullYear()}` : `${sd} ${sm} - ${ed} ${em} ${t.getUTCFullYear()}`;
-  return { start: toUtc(startT), end: new Date(), label };
+  const em = endDayT.toLocaleString('ru-RU', { month: 'long', timeZone: 'UTC' });
+  const label = sm === em ? `${sd}-${ed} ${sm} ${endDayT.getUTCFullYear()}` : `${sd} ${sm} - ${ed} ${em} ${endDayT.getUTCFullYear()}`;
+  // End at Monday 00:00 Tashkent — using run time here would double-count
+  // Monday-morning votes into next week's report too.
+  return { start: toUtc(startT), end: toUtc(todayT), label };
 }
 
 export function getMonthlyRange(): DateRange {

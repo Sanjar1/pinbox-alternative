@@ -86,6 +86,17 @@ export async function syncManagers(reqId = newReqId()): Promise<SyncResult> {
     throw new Error(`manager-sync: duplicate store targets: ${duplicateTargets.join(', ')}`);
   }
 
+  // Sanity guard: a sheet reshuffle (gid reuse, column move) once yielded a
+  // "successful" sync with 0 matches, which would null out every store's TM
+  // below. Abort instead and keep the existing DB assignments.
+  const minExpected = Math.ceil(dbStores.length / 2);
+  if (dbStores.length > 0 && assignments.size < minExpected) {
+    throw new Error(
+      `manager-sync: only ${assignments.size}/${dbStores.length} active stores matched ` +
+      `(minimum ${minExpected}); aborting without changing assignments`,
+    );
+  }
+
   // Update-only: set territorialManager for every active store to its assigned TM
   // (or null if not in the mapping). NEVER create a store.
   let cleared = 0;

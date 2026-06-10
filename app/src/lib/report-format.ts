@@ -82,11 +82,24 @@ export function formatGroupedReport(period: Period, label: string, stores: Store
     .sort((a, b) => b.stores.reduce((n, s) => n + s.count, 0) - a.stores.reduce((n, s) => n + s.count, 0))
     .map((b) => tmBlock(b.tm, b.stores));
 
-  // Unassigned footer — only when those stores actually have reviews.
-  const unassigned = stores.filter((s) => !s.tm && s.count > 0);
-  const footer = unassigned.length > 0
-    ? `Без менеджера (${unassigned.map((s) => escapeHtml(s.name)).join(', ')}): ${unassigned.reduce((n, s) => n + s.count, 0)} отзывов`
-    : null;
+  // Unassigned footer — silent unassigned stores must stay visible too,
+  // otherwise a store with no TM and no votes vanishes from the report entirely.
+  const unassignedReviewed = stores.filter((s) => !s.tm && s.count > 0);
+  const unassignedSilent = stores
+    .filter((s) => !s.tm && s.count === 0)
+    .sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+  const footerLines: string[] = [];
+  if (unassignedReviewed.length > 0) {
+    footerLines.push(
+      `Без менеджера (${unassignedReviewed.map((s) => escapeHtml(s.name)).join(', ')}): ${unassignedReviewed.reduce((n, s) => n + s.count, 0)} отзывов`,
+    );
+  }
+  if (unassignedSilent.length > 0) {
+    footerLines.push(
+      `Без менеджера, молчат: ${unassignedSilent.map((s) => escapeHtml(s.name)).join(', ')}`,
+    );
+  }
+  const footer = footerLines.length > 0 ? footerLines.join('\n') : null;
 
   // Sections that must never be split mid-way.
   const sections = [[heading, '', summary, '', topSection].join('\n'), ...blocks];
