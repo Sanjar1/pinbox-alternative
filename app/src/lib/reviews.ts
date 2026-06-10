@@ -205,7 +205,9 @@ export function parseReviewCallbackData(data: string): { action: 'reply' | 'done
 export function isTelegramUserAllowed(userId: string | number): boolean {
   const allowed = parseAllowedUserIds();
   if (allowed.size === 0) {
-    return true;
+    // Fail closed: an empty/unset allow-list means nobody may manage reviews,
+    // not everybody.
+    return false;
   }
   return allowed.has(String(userId));
 }

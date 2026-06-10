@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { generateUniqueSlug } from '@/lib/qr';
 
-const ADMIN_KEY = 'pinbox-qr-diag-2026';
-
 const MISSING_STORES = [
   { name: 'Дубовый', address: '' },
   { name: 'Келес', address: '' },
@@ -14,8 +12,11 @@ const MISSING_STORES = [
 ];
 
 export async function POST(req: NextRequest) {
+  // Env-based key, fail closed: with ADMIN_DIAG_KEY unset this one-off route
+  // is disabled. The previous hardcoded literal was committed to git.
+  const expected = process.env.ADMIN_DIAG_KEY;
   const key = req.headers.get('x-admin-key') ?? req.nextUrl.searchParams.get('key');
-  if (key !== ADMIN_KEY) {
+  if (!expected || key !== expected) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

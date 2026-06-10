@@ -1,0 +1,19 @@
+# Never bake secrets or local artifacts into image layers.
+.env
+.env.*
+!.env.example
+dev.db
+node_modules
+.next
+test-output
+test-results
+.codex-temp
+.playwright-mcp
+*.log
+logs
+posters
+posters_archive
+scripts
+*.tsbuildinfo
+check-qr.mjs
+refresh_reviews_dashboard.mjs

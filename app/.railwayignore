@@ -1,0 +1,16 @@
+# Never upload local secrets with the deploy context.
+.env
+.env.*
+!.env.example
+dev.db
+*.tsbuildinfo
+node_modules/
+.next/
+test-output/
+test-results/
+.codex-temp/
+.playwright-mcp/
+*.log
+logs/
+posters/
+posters_archive/
