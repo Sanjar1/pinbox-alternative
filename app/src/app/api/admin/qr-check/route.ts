@@ -1,10 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
+// Diagnostic key comes from env and fails CLOSED: with ADMIN_DIAG_KEY unset,
+// these routes are disabled. The previous hardcoded literal was committed to
+// git and could not be rotated without a redeploy.
+function checkDiagKey(req: NextRequest): boolean {
+  const expected = process.env.ADMIN_DIAG_KEY;
+  if (!expected) return false;
+  const key = req.headers.get('x-admin-key') ?? req.nextUrl.searchParams.get('key');
+  return key === expected;
+}
+
 // One-time migration runner: adds archivedAt column to Store table
 export async function POST(req: NextRequest) {
-  const key = req.headers.get('x-admin-key') ?? req.nextUrl.searchParams.get('key');
-  if (key !== 'pinbox-qr-diag-2026') {
+  if (!checkDiagKey(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -17,8 +26,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  const key = req.headers.get('x-admin-key') ?? req.nextUrl.searchParams.get('key');
-  if (key !== 'pinbox-qr-diag-2026') {
+  if (!checkDiagKey(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

@@ -28,7 +28,9 @@ type TelegramUpdate = {
 function checkWebhookSecret(request: NextRequest): boolean {
   const configured = process.env.TELEGRAM_WEBHOOK_SECRET?.trim();
   if (!configured) {
-    return true;
+    // Fail closed: without a configured secret anyone could POST forged
+    // Telegram updates and drive review-state changes.
+    return false;
   }
   const incoming = request.headers.get('x-telegram-bot-api-secret-token')?.trim() ?? '';
   return incoming === configured;

@@ -35,9 +35,14 @@ jobs:
       - name: POST /api/reports/daily
         run: |
           echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] starting POST /api/reports/daily"
+          # No --retry-all-errors here: the endpoint is NOT idempotent (it sends
+          # Telegram messages before responding), so retrying an HTTP 5xx or a
+          # timeout after a partial send duplicates the report in the chat.
+          # --retry only re-attempts transient connection failures (no request sent).
+          # --max-time 180 covers Railway cold start + multi-part Telegram sends.
           curl --fail-with-body -sS \
-            --retry 3 --retry-delay 30 --retry-all-errors \
-            --max-time 60 \
+            --retry 3 --retry-delay 30 \
+            --max-time 180 \
             -X POST \
             -H "Authorization: Bearer ${{ secrets.REPORTS_API_KEY }}" \
             https://web-production-370c1.up.railway.app/api/reports/daily

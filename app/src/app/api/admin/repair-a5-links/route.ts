@@ -12,14 +12,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  let clearFeedback = true;
+  // Destructive operation must be opted into explicitly. An empty/invalid body
+  // previously defaulted to wiping the ENTIRE Feedback table.
+  let clearFeedback = false;
   try {
     const body = await req.json();
-    if (typeof body?.clearFeedback === 'boolean') {
-      clearFeedback = body.clearFeedback;
-    }
+    clearFeedback = body?.clearFeedback === true;
   } catch {
-    // Keep default when request body is empty or invalid JSON.
+    // Empty or invalid JSON body → never destructive.
   }
 
   const tenant = await prisma.store.findFirst({ select: { tenantId: true } });

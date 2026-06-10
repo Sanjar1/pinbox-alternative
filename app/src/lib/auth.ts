@@ -34,11 +34,14 @@ function toAuthUser(user: {
 }
 
 function noAuthModeEnabled(): boolean {
-  const value = process.env.DISABLE_AUTH_FOR_TESTING;
-  if (value) {
-    return ['1', 'true', 'yes', 'on'].includes(value.toLowerCase());
+  // Fail closed: the bypass needs an explicit opt-in AND a non-production
+  // build. Previously any non-production NODE_ENV silently disabled auth, and
+  // the flag alone could disable it even on the production host.
+  if (process.env.NODE_ENV === 'production') {
+    return false;
   }
-  return process.env.NODE_ENV !== 'production';
+  const value = process.env.DISABLE_AUTH_FOR_TESTING;
+  return !!value && ['1', 'true', 'yes', 'on'].includes(value.toLowerCase());
 }
 
 export function isAuthDisabledForTesting(): boolean {

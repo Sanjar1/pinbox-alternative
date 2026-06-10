@@ -19,7 +19,8 @@ type IngestRequestBody = {
 function isAuthorized(request: NextRequest): boolean {
   const configuredKey = process.env.REVIEWS_INGEST_API_KEY?.trim();
   if (!configuredKey) {
-    return true;
+    // Fail closed: with no key configured the endpoint is disabled, not open.
+    return false;
   }
 
   const authHeader = request.headers.get('authorization') ?? '';

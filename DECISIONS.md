@@ -68,9 +68,9 @@
 ## D-040: Auth Simplified to Single Shared Password; Email Login Removed
 
 - Date: 2026-05-24
-- Decision: The admin dashboard login was simplified to a single password field ("Пароль") — email field removed. Password value: `12345` stored as `TEAM_PASSWORD` env var in Railway.
+- Decision: The admin dashboard login was simplified to a single password field ("Пароль") — email field removed. Password value: `<redacted>` stored as `TEAM_PASSWORD` env var in Railway.
 - Reason: Trusted local team. Simpler UX, fewer login frictions. Owner explicitly chose this after two rounds of security pushback from the engineering side (offered safer password and IP-allowlist alternatives; owner overrode both).
-- Tradeoffs accepted: `12345` is trivially brute-forceable; dashboard is internet-facing at `web-production-370c1.up.railway.app/admin`. Risk mitigation: change password anytime by editing `TEAM_PASSWORD` in Railway dashboard and restarting the service — no code change needed. Rate-limiting `/login` is tracked as a medium-priority TODO.
+- Tradeoffs accepted: `<redacted>` is trivially brute-forceable; dashboard is internet-facing at `web-production-370c1.up.railway.app/admin`. Risk mitigation: change password anytime by editing `TEAM_PASSWORD` in Railway dashboard and restarting the service — no code change needed. Rate-limiting `/login` is tracked as a medium-priority TODO.
 - Impact: `app/src/app/login/login-form.tsx` and `app/src/app/login/actions.ts` fully rewritten. Any existing email-based admin users (created via old flow) are locked out — only the `team@kaas.local` singleton can log in after this deploy.
 
 ## D-039: Vote Double-Counting Fix Uses Read-Side Filter, Not Write-Side Dedup or Migration

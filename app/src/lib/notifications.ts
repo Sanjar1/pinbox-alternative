@@ -29,7 +29,8 @@ export function parseRatingsBreakdown(comment: string): Breakdown | null {
   const service = Number.parseInt(parts.service ?? '', 10);
   const quality = Number.parseInt(parts.quality ?? '', 10);
   const prices = Number.parseInt(parts.prices ?? '', 10);
-  if ([service, quality, prices].some((n) => !Number.isFinite(n))) return null;
+  // Values outside 1-5 mean a spoofed/typed "[ratings]" comment, not a real vote.
+  if ([service, quality, prices].some((n) => !Number.isFinite(n) || n < 1 || n > 5)) return null;
   return { service, quality, prices };
 }
 
@@ -100,16 +101,19 @@ async function sendTelegram(message: string): Promise<void> {
   const chatId = process.env.TELEGRAM_CHAT_ID;
 
   if (webhookUrl) {
-    await fetch(webhookUrl, {
+    const res = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: message }),
     });
+    if (!res.ok) {
+      throw new Error(`telegram webhook ${res.status}: ${(await res.text()).slice(0, 300)}`);
+    }
     return;
   }
 
   if (botToken && chatId) {
-    await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+    const res = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -117,6 +121,9 @@ async function sendTelegram(message: string): Promise<void> {
         text: message,
       }),
     });
+    if (!res.ok) {
+      throw new Error(`telegram sendMessage ${res.status}: ${(await res.text()).slice(0, 300)}`);
+    }
   }
 }
 
@@ -129,7 +136,7 @@ async function sendEmail(message: string): Promise<void> {
     return;
   }
 
-  await fetch('https://api.resend.com/emails', {
+  const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -142,22 +149,26 @@ async function sendEmail(message: string): Promise<void> {
       text: message,
     }),
   });
+  if (!res.ok) {
+    throw new Error(`resend ${res.status}: ${(await res.text()).slice(0, 300)}`);
+  }
+}
+
+// Run both channels, then log every failure. allSettled never rejects, so
+// without inspecting the results a dead bot token would be fully invisible.
+async function sendAllChannels(tag: string, message: string): Promise<void> {
+  const results = await Promise.allSettled([sendTelegram(message), sendEmail(message)]);
+  results.forEach((r, i) => {
+    if (r.status === 'rejected') {
+      console.error(`${tag} [${i === 0 ? 'telegram' : 'email'}]`, r.reason);
+    }
+  });
 }
 
 export async function sendFeedbackAlert(input: FeedbackAlertInput): Promise<void> {
-  const message = buildMessage(input);
-  try {
-    await Promise.allSettled([sendTelegram(message), sendEmail(message)]);
-  } catch (error) {
-    console.error('feedback-notification-error', error);
-  }
+  await sendAllChannels('feedback-notification-error', buildMessage(input));
 }
 
 export async function sendFollowUpComment(storeName: string, typedComment: string): Promise<void> {
-  const message = buildFollowUpCommentMessage(storeName, typedComment);
-  try {
-    await Promise.allSettled([sendTelegram(message), sendEmail(message)]);
-  } catch (error) {
-    console.error('feedback-followup-error', error);
-  }
+  await sendAllChannels('feedback-followup-error', buildFollowUpCommentMessage(storeName, typedComment));
 }

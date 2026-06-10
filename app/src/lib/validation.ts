@@ -87,18 +87,19 @@ export type FeedbackInput = {
   contact: string;
 };
 
+// Customer-facing messages: the voting audience is uz/ru, never English.
 export function validateFeedbackInput(input: FeedbackInput): string | null {
   if (!input.storeId) {
-    return 'Invalid store';
+    return 'Магазин не найден';
   }
   if (!Number.isInteger(input.rating) || input.rating < 1 || input.rating > 5) {
-    return 'Rating must be between 1 and 5';
+    return 'Оценка должна быть от 1 до 5';
   }
   if (input.comment.length > 1000) {
-    return 'Comment is too long';
+    return 'Комментарий слишком длинный (максимум 1000 символов)';
   }
   if (input.contact.length > 200) {
-    return 'Contact is too long';
+    return 'Контакт слишком длинный';
   }
   return null;
 }

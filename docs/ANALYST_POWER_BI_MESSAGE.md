@@ -134,10 +134,10 @@ GET https://web-production-370c1.up.railway.app/api/analytics/stores
 
 Заголовок авторизации:
 ```
-Authorization: Bearer pinbox-reports-2026-secure
+Authorization: Bearer <REPORTS_API_KEY>
 ```
 
-В Power BI: **Получить данные** → **Веб** → вставь URL и в **Дополнительно** добавь HTTP-заголовок `Authorization` со значением `Bearer pinbox-reports-2026-secure`.
+В Power BI: **Получить данные** → **Веб** → вставь URL и в **Дополнительно** добавь HTTP-заголовок `Authorization` со значением `Bearer <REPORTS_API_KEY>`.
 
 ## Если что-то не работает
 
