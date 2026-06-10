@@ -30,6 +30,7 @@ const copy: Record<Language, {
   thankYou: string;
   thankYouSub: string;
   errorRatings: string;
+  errorNetwork: string;
 }> = {
   uz: {
     submitVote: 'Баҳо бериш',
@@ -40,6 +41,7 @@ const copy: Record<Language, {
     thankYou: 'Раҳмат!',
     thankYouSub: 'Хабарингиз қабул қилинди.',
     errorRatings: 'Илтимос, барча саволларга баҳо беринг.',
+    errorNetwork: 'Юбориб бўлмади. Илтимос, яна уриниб кўринг.',
   },
   ru: {
     submitVote: 'Отправить оценку',
@@ -50,6 +52,7 @@ const copy: Record<Language, {
     thankYou: 'Спасибо!',
     thankYouSub: 'Ваше сообщение получено.',
     errorRatings: 'Пожалуйста, оцените все категории.',
+    errorNetwork: 'Не удалось отправить. Пожалуйста, попробуйте ещё раз.',
   },
 };
 
@@ -87,10 +90,15 @@ export default function PublicRatingClient({ store, brand, title }: { store: Sto
   const [ratings, setRatings] = useState([0, 0, 0]);
   const [phase, setPhase] = useState<Phase>('voting');
   const [avgRating, setAvgRating] = useState(0);
+  const [minRating, setMinRating] = useState(5);
   const [comment, setComment] = useState('');
   const [commentSent, setCommentSent] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  // Kept in state so the comment phase reuses the exact id the vote used —
+  // re-reading localStorage there could yield '' (private mode) and collapse
+  // every such user onto a shared '-comment' device id.
+  const [voteDeviceId, setVoteDeviceId] = useState('');
 
   const t = copy[lang];
   const allRated = ratings.every((r) => r > 0);
@@ -115,29 +123,45 @@ export default function PublicRatingClient({ store, brand, title }: { store: Sto
     const testerDeviceId = /^[a-zA-Z0-9_-]{8,120}$/.test(testerParam) ? testerParam : '';
     const existing = typeof window !== 'undefined' ? window.localStorage.getItem(key) : null;
     const deviceId = testerDeviceId || existing || (typeof window !== 'undefined' ? (window.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`) : '');
-    if (typeof window !== 'undefined' && (!existing || testerDeviceId)) window.localStorage.setItem(key, deviceId);
+    if (typeof window !== 'undefined' && (!existing || testerDeviceId)) {
+      try { window.localStorage.setItem(key, deviceId); } catch { /* private mode — state copy below still works */ }
+    }
     formData.set('deviceId', deviceId);
 
-    const result = await submitFeedback(formData);
-    setLoading(false);
-    if (result.error) { setError(result.error); return; }
-    setAvgRating(avg);
-    setPhase('post-vote');
+    try {
+      const result = await submitFeedback(formData);
+      if (result.error) { setError(result.error); return; }
+      setVoteDeviceId(deviceId);
+      setAvgRating(avg);
+      setMinRating(Math.min(...ratings));
+      setPhase('post-vote');
+    } catch {
+      setError(t.errorNetwork);
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleSendComment() {
     if (!comment.trim()) return;
+    setError('');
     setLoading(true);
     const formData = new FormData();
     formData.set('storeId', store.id);
     formData.set('rating', avgRating.toString());
     formData.set('comment', comment.trim());
-    const deviceId = typeof window !== 'undefined' ? window.localStorage.getItem('qr-device-id') ?? '' : '';
-    formData.set('deviceId', deviceId + '-comment');
-    await submitFeedback(formData);
-    setLoading(false);
-    setCommentSent(true);
-    setPhase('done');
+    const baseId = voteDeviceId || (typeof window !== 'undefined' ? window.localStorage.getItem('qr-device-id') ?? '' : '');
+    formData.set('deviceId', baseId + '-comment');
+    try {
+      const result = await submitFeedback(formData);
+      if (result.error) { setError(result.error); return; }
+      setCommentSent(true);
+      setPhase('done');
+    } catch {
+      setError(t.errorNetwork);
+    } finally {
+      setLoading(false);
+    }
   }
 
   const thankYouScreen = (
@@ -151,7 +175,9 @@ export default function PublicRatingClient({ store, brand, title }: { store: Sto
   if (phase === 'done') return thankYouScreen;
 
   if (phase === 'post-vote') {
-    if (avgRating >= 4) return thankYouScreen;
+    // Ask "what went wrong" not only on a low average but also when any single
+    // question got 1-2 stars — [1,5,5] rounds to 4 but is a real complaint.
+    if (avgRating >= 4 && minRating > 2) return thankYouScreen;
     if (commentSent) return thankYouScreen;
 
     return (
@@ -161,6 +187,7 @@ export default function PublicRatingClient({ store, brand, title }: { store: Sto
         </p>
         <textarea
           rows={5}
+          maxLength={1000}
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           placeholder={t.commentPlaceholder}

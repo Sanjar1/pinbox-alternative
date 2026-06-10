@@ -1,5 +1,7 @@
 ﻿import { prisma, withDbRetry } from '@/lib/db';
 import { notFound } from 'next/navigation';
+import { after } from 'next/server';
+import { headers } from 'next/headers';
 import PublicRatingClient from './client';
 import { getBrandByStoreName, getVotingTitle } from '@/lib/brands';
 
@@ -35,13 +37,21 @@ export default async function PublicQRPage({ params }: { params: Promise<{ slug:
     );
   }
 
-  // Track scan (async, non-blocking)
-  await withDbRetry(() =>
-    prisma.qRCode.update({
-      where: { id: qr.id },
-      data: { scans: { increment: 1 } },
-    }),
-  );
+  // Track scan AFTER the response is sent (no TTFB cost), and skip obvious
+  // non-humans: crawlers, link previews, curl and the nightly 41-link QR
+  // health check all hit this page and were inflating the counter.
+  const userAgent = (await headers()).get('user-agent') ?? '';
+  const isBot = !userAgent || /bot|crawl|spider|preview|curl|wget|python|axios|node|go-http|headless/i.test(userAgent);
+  if (!isBot) {
+    after(() =>
+      prisma.qRCode
+        .update({
+          where: { id: qr.id },
+          data: { scans: { increment: 1 } },
+        })
+        .catch((err) => console.error('scan-count-error', err)),
+    );
+  }
 
   const brand = getBrandByStoreName(qr.store.name || '');
   const storeName = qr.store.name || 'Store';

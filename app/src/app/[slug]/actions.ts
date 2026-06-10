@@ -1,8 +1,9 @@
 'use server';
 
-import { prisma } from '@/lib/db';
+import { prisma, withDbRetry } from '@/lib/db';
 import { toCleanString, validateFeedbackInput } from '@/lib/validation';
-import { scheduleAlert, flushAlert } from '@/lib/feedback-alert-buffer';
+import { scheduleAlert, flushAlert, hasAlertSession } from '@/lib/feedback-alert-buffer';
+import { parseRatingsBreakdown } from '@/lib/notifications';
 import { writeAuditLog } from '@/lib/audit';
 import { cookies, headers } from 'next/headers';
 import { getClientIp, getOrCreateDeviceId, isTesterDeviceId, sha256 } from '@/lib/feedback-protection';
@@ -30,7 +31,7 @@ export async function submitFeedback(formData: FormData): Promise<{ error?: stri
     select: { id: true, name: true, tenantId: true },
   });
   if (!store) {
-    return { error: 'Store not found' };
+    return { error: 'Магазин не найден' };
   }
 
   const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
@@ -41,7 +42,7 @@ export async function submitFeedback(formData: FormData): Promise<{ error?: stri
     },
   });
   if (recentStoreCount > 20) {
-    return { error: 'Too many feedback requests. Please try again in a minute.' };
+    return { error: 'Слишком много отзывов. Попробуйте через минуту.' };
   }
 
   if (contact) {
@@ -54,7 +55,7 @@ export async function submitFeedback(formData: FormData): Promise<{ error?: stri
       },
     });
     if (recentContactCount >= 3) {
-      return { error: 'Too many feedback submissions from this contact.' };
+      return { error: 'Слишком много отзывов с этим контактом.' };
     }
   }
 
@@ -74,16 +75,16 @@ export async function submitFeedback(formData: FormData): Promise<{ error?: stri
   let suspicious = false;
 
   if (!antiAbuseDisabled && !testerBypass) {
-    const oneWeekAgo = new Date(Date.now() - 35 * 24 * 60 * 60 * 1000);
-    const weeklyDeviceVotes = await prisma.feedback.count({
+    const deviceCooldownStart = new Date(Date.now() - 35 * 24 * 60 * 60 * 1000);
+    const deviceVotesInCooldown = await prisma.feedback.count({
       where: {
         storeId: store.id,
         deviceHash,
-        createdAt: { gte: oneWeekAgo },
+        createdAt: { gte: deviceCooldownStart },
       },
     });
-    if (weeklyDeviceVotes >= 1) {
-      return { error: 'You can submit one vote per 35 days from this device.' };
+    if (deviceVotesInCooldown >= 1) {
+      return { error: 'С этого устройства можно голосовать один раз в 35 дней.' };
     }
 
     if (ipHash) {
@@ -108,10 +109,10 @@ export async function submitFeedback(formData: FormData): Promise<{ error?: stri
       ]);
 
       if (ipDailyCount >= 25) {
-        return { error: 'Too many feedback submissions from this network today.' };
+        return { error: 'Слишком много отзывов с этой сети сегодня.' };
       }
       if (ipBurstCount >= 5) {
-        return { error: 'Too many feedback requests. Please wait and try again.' };
+        return { error: 'Слишком много запросов. Подождите немного и попробуйте снова.' };
       }
 
       if (ipDailyCount >= 8 || ipBurstCount >= 3) {
@@ -120,18 +121,20 @@ export async function submitFeedback(formData: FormData): Promise<{ error?: stri
     }
   }
 
-  await prisma.feedback.create({
-    data: {
-      storeId: store.id,
-      rating,
-      comment,
-      contact,
-      status: suspicious ? 'FLAGGED' : 'NEW',
-      deviceHash,
-      ipHash: ipHash || null,
-      userAgentHash: userAgentHash || null,
-    },
-  });
+  await withDbRetry(() =>
+    prisma.feedback.create({
+      data: {
+        storeId: store.id,
+        rating,
+        comment,
+        contact,
+        status: suspicious ? 'FLAGGED' : 'NEW',
+        deviceHash,
+        ipHash: ipHash || null,
+        userAgentHash: userAgentHash || null,
+      },
+    }),
+  );
 
   await writeAuditLog({
     action: 'FEEDBACK_SUBMITTED',
@@ -139,10 +142,21 @@ export async function submitFeedback(formData: FormData): Promise<{ error?: stri
     details: { storeId: store.id, rating, suspicious },
   });
 
-  if (rating <= 3) {
-    const isVoteCall = comment.startsWith('[ratings]');
-    const baseDeviceId = isVoteCall ? clientDeviceId : clientDeviceId.replace(/-comment$/, '');
-    const sessionKey = `${store.id}:${baseDeviceId}`;
+  // Alert when the average is low OR any single question got 1-2 stars —
+  // ratings like [1,5,5] round to 4 but are real complaints. For follow-up
+  // comment rows (avg can be 4 in that case) we also flush when this session
+  // already has a pending/recent alert, so the typed comment is never dropped.
+  const isVoteCall = comment.startsWith('[ratings]');
+  const breakdown = isVoteCall ? parseRatingsBreakdown(comment) : null;
+  const minQuestionRating = breakdown
+    ? Math.min(breakdown.service, breakdown.quality, breakdown.prices)
+    : rating;
+  const baseDeviceId = isVoteCall ? clientDeviceId : clientDeviceId.replace(/-comment$/, '');
+  const sessionKey = `${store.id}:${baseDeviceId}`;
+  const shouldAlert = isVoteCall
+    ? rating <= 3 || minQuestionRating <= 2
+    : rating <= 3 || hasAlertSession(sessionKey);
+  if (shouldAlert) {
     const payload = {
       storeName: store.name,
       rating,

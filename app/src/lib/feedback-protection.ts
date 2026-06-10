@@ -35,8 +35,13 @@ export function sha256(value: string): string {
   return crypto.createHash('sha256').update(value).digest('hex');
 }
 
+// Shape of ids we generate client-side: uuid, uuid + "-comment", tester ids,
+// or the legacy Date.now()-Math.random() fallback. Anything else (oversized
+// blobs, junk bytes) is ignored instead of being written into the cookie.
+const CLIENT_DEVICE_ID_RE = /^[A-Za-z0-9][A-Za-z0-9_.-]{7,139}$/;
+
 export function getOrCreateDeviceId(cookieStore: CookieReader, clientDeviceId: string): string {
-  if (clientDeviceId) {
+  if (clientDeviceId && CLIENT_DEVICE_ID_RE.test(clientDeviceId)) {
     cookieStore.set(DEVICE_COOKIE, clientDeviceId, {
       httpOnly: true,
       sameSite: 'lax',
