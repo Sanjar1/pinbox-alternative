@@ -22,7 +22,7 @@
 - [ ] If daily cron confirmed green for several days, mark M5 — Reporting Activation closed in `ROADMAP.md`.
 
 ## Priority 2 — Security hardening (MEDIUM — new from session 3)
-- [ ] Add rate-limiting to `POST /login`. Trivial password (`12345`) on a public-internet URL (`web-production-370c1.up.railway.app/admin`) is a bot brute-force risk. Options: server-action-level counter keyed by IP hash, or a Railway/edge rule. No code change needed if password is changed first, but rate-limiting is good hygiene regardless.
+- [ ] Add rate-limiting to `POST /login`. Trivial password (`<redacted>`) on a public-internet URL (`web-production-370c1.up.railway.app/admin`) is a bot brute-force risk. Options: server-action-level counter keyed by IP hash, or a Railway/edge rule. No code change needed if password is changed first, but rate-limiting is good hygiene regardless.
 - [ ] When the team's trust model changes, update `TEAM_PASSWORD` in Railway dashboard to a stronger value (no code deploy needed — just restart the service).
 
 ## Priority 3 — Cleanup (carried from 2026-05-21)

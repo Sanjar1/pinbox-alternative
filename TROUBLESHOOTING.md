@@ -38,7 +38,7 @@
 ### `POST /api/admin/repair-a5-links` returns 401
 - **Symptom:** `{"error":"Unauthorized"}` from the repair endpoint.
 - **Cause:** `REPORTS_API_KEY` is not set in Railway variables, or the wrong value is used.
-- **Solution:** Run `railway variables list | grep REPORTS_API_KEY`. If missing, set it: `railway variables set REPORTS_API_KEY="pinbox-reports-2026-secure"`.
+- **Solution:** Run `railway variables list | grep REPORTS_API_KEY`. If missing, set it: `railway variables set REPORTS_API_KEY="<REPORTS_API_KEY>"`.
 
 ### Railway free-tier redeploy blocked during daytime
 - **Symptom:** `railway up` fails with peak-hours restriction.

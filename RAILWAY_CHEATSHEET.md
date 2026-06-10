@@ -131,17 +131,17 @@ After a deploy, you may need to fix production DB state. Use the admin APIs:
 
 ```bash
 # Check QR codes and stores in DB
-curl "https://web-production-370c1.up.railway.app/api/admin/qr-check?key=pinbox-qr-diag-2026"
+curl "https://web-production-370c1.up.railway.app/api/admin/qr-check?key=<ADMIN_DIAG_KEY>"
 
 # Fix Glotok Юнусабад/Панельный slugs AND clear all feedback (test votes)
 curl -X POST "https://web-production-370c1.up.railway.app/api/admin/repair-a5-links" \
-  -H "Authorization: Bearer pinbox-reports-2026-secure" \
+  -H "Authorization: Bearer <REPORTS_API_KEY>" \
   -H "Content-Type: application/json" \
   -d '{"clearFeedback": true}'
 
 # Fix slugs only, keep feedback
 curl -X POST "https://web-production-370c1.up.railway.app/api/admin/repair-a5-links" \
-  -H "Authorization: Bearer pinbox-reports-2026-secure" \
+  -H "Authorization: Bearer <REPORTS_API_KEY>" \
   -H "Content-Type: application/json" \
   -d '{"clearFeedback": false}'
 ```
@@ -195,4 +195,4 @@ done
    `railway.json`). Always use the `app/railway.json` via deploying from `app/`.
 4. If map links are non-direct URLs, post-vote map buttons are hidden by design.
 5. `REPORTS_API_KEY` must be set in Railway variables for admin/analytics/reports
-   endpoints to work. Current value: `pinbox-reports-2026-secure`.
+   endpoints to work. Current value: `<REPORTS_API_KEY>`.

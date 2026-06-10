@@ -95,15 +95,15 @@
 
 **Done:**
 - **Replaced email-based login with single-password login.** User requested removal of email field; single password field for the trusted local team. `app/src/app/login/login-form.tsx` fully rewritten: one password input, Russian labels ("Сырная Лавка — Команда" / "Пароль" / "Войти"), `autoFocus` on password field. `app/src/app/login/actions.ts` fully rewritten: reads `process.env.TEAM_PASSWORD`, lazy-creates `team@kaas.local` singleton OWNER user on first successful login (or finds existing one under the first OWNER tenant, creating a "KAAS" tenant if none exists), creates session, audit-logs LOGIN_SUCCESS / LOGIN_FAILED, all error strings in Russian.
-- **Security pushback → deferred to user judgment.** Flagged that dashboard is internet-facing (`web-production-370c1.up.railway.app/admin`) and `12345` is trivially brute-forceable. Offered three alternatives. User chose `12345`. Per the operating agreement ("Defer to user judgment"), implemented as requested after two rounds of pushback.
-- **Set `TEAM_PASSWORD=12345` in Railway.** Used `railway variables --set TEAM_PASSWORD=12345 --service web`. Initial error appeared (peak-hours redeploy block) but verified the WRITE succeeded via `railway variables --service web --kv | grep TEAM_PASSWORD` (returned masked `TEAM_PASSWORD=*******`). Visual confirmation via Railway dashboard in claude-in-chrome.
+- **Security pushback → deferred to user judgment.** Flagged that dashboard is internet-facing (`web-production-370c1.up.railway.app/admin`) and `<redacted>` is trivially brute-forceable. Offered three alternatives. User chose `<redacted>`. Per the operating agreement ("Defer to user judgment"), implemented as requested after two rounds of pushback.
+- **Set `TEAM_PASSWORD=<redacted>` in Railway.** Used `railway variables --set TEAM_PASSWORD=<redacted> --service web`. Initial error appeared (peak-hours redeploy block) but verified the WRITE succeeded via `railway variables --service web --kv | grep TEAM_PASSWORD` (returned masked `TEAM_PASSWORD=*******`). Visual confirmation via Railway dashboard in claude-in-chrome.
 - **Deploy plan unchanged:** Both vote-count fix code and simplified login code are unstaged in working tree. `Pinbox-Railway-Night-Deploy` at 23:05 Tashkent will deploy both together. Env var is already live.
 
 **Found:**
 - `railway variables --set` does TWO things: write the variable AND trigger a redeploy. During free-tier peak hours, the redeploy is blocked, but the WRITE succeeds. The error message ("Free-tier deploys not available during peak hours") makes the whole operation look like it failed. Verify writes with `railway variables --service X --kv | grep VAR` immediately after. Recorded in MISTAKES.md.
 
 **Next session:**
-- After 23:05 deploy: open `/login` — verify single-password Russian UI. Enter `12345` → confirm `/admin` loads.
+- After 23:05 deploy: open `/login` — verify single-password Russian UI. Enter `<redacted>` → confirm `/admin` loads.
 - Verify dashboard vote counts still correct post-deploy.
 - Add `workflow` scope to PAT.
 - Consider rate-limiting `/login` POST (trivial password + public URL = bot brute-force risk).
@@ -232,7 +232,7 @@
 - Analytics/reports endpoints deployed: `/api/analytics/feedback`, `/api/reports/{daily,weekly,monthly}`.
 - Called `POST /api/admin/repair-a5-links` with `clearFeedback: true` � result: 14 test votes cleared, ������ �������� (`4c5350`) and ������ ��������� (`e96943`) created as separate DB stores.
 - Full A5 health check confirmed: **41/41 posters = HTTP 200**, 41 unique slugs, 0 duplicates, 0 placeholders.
-- `REPORTS_API_KEY=pinbox-reports-2026-secure` set in Railway variables.
+- `REPORTS_API_KEY=<REPORTS_API_KEY>` set in Railway variables.
 - `RAILWAY_CHEATSHEET.md` updated with deploy lessons, admin endpoint docs, and post-deploy checklist.
 
 **Found:**
