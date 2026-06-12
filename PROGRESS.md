@@ -1,5 +1,21 @@
 # Progress Log
 
+## 2026-06-12 (session 8) — Scheduled-deploy verification: nightly deploy green, report delivers but ~4h late
+
+**Done:**
+- **Verified the nightly Railway deploy schedule works** (user: "check how well our scheduled deployment worked yesterday or today"). Both runs green: primary Jun 11 22:03 UTC + backup Jun 12 00:21 UTC, **both deployed `e92241b` = current `main` HEAD** — **Verified:** GitHub Actions API run list + head_sha compared against `origin/main`. Every night since the 2026-06-08 cron fix (20:00 + 23:00 UTC) has succeeded; the Jun 7–8 failures predate it.
+- **Verified production is actually serving**, not just that workflows passed — **Verified:** `GET /api/health` → `{"ok":true}`; real voting page `/523da2` → HTTP 200 in 1.6s (curl output shown in session).
+- **Daily Telegram report: delivering, dedup guard works, but GitHub cron drift makes it ~4h late.** Jun 11 fired at 07:28 + 08:47 UTC (crons are 03:00 + 04:00 UTC) → report reached the group ~12:28 Tashkent, not 08:00; the `e92241b` at-most-once dedup correctly prevented a double-send on the backup run — **Verified:** Actions run history via API (both runs `success`). As of 07:11 UTC today (Jun 12) the report run had not yet fired — same drift pattern.
+
+**Found / lessons:**
+- GitHub delays the 03:00/04:00 UTC crons by 3.5–5h consistently (cron congestion at popular times). The deploy crons (20:00/23:00) drift much less (~2h). If the owner wants the report near 08:00 Tashkent, move crons to early off-peak odd minutes (e.g. `23 1 * * *` + `23 2 * * *`) — must stay after 19:00 UTC for the correct previous-Tashkent-day range (D-031).
+
+**Next session:**
+- Owner decision: shift daily-report crons earlier (offered, not yet approved).
+- Still open from session 7 (P0): prod migration pipeline hardening; `/api/health` `SELECT 1`; Railway free-vs-paid decision.
+
+---
+
 ## 2026-06-09 (session 7) — Prod 500 outage fixed; TM grouping fixed (wrong sheet tab); 0-row report format; deployed & verified live
 
 **Done:**

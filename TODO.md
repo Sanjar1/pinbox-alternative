@@ -1,6 +1,6 @@
 # TODO
 
-**Updated:** 2026-06-09 (session 7)
+**Updated:** 2026-06-12 (session 8)
 
 ## Priority 0 — Harden the prod migration pipeline (so a new column can't 500 prod again)
 - [ ] **Make schema changes auto-apply on deploy.** Today's outage: `Store.territorialManager` shipped in code but was never in the prod DB → all 41 posters + the daily report 500'd (`P2022`). Prod has no `_prisma_migrations` table (db-push model); the entrypoint's `migrate deploy` is bypassed and would P3019 anyway (`migration_lock.toml` = `sqlite`). Carefully, in its own approved pass: set `migration_lock.toml` `sqlite`→`postgresql`, **baseline** `_prisma_migrations` against the already-db-push'd schema (`prisma migrate resolve --applied` per existing migration) so `migrate deploy` won't try to re-create existing tables, then confirm the entrypoint actually runs `migrate deploy`. Until then, **manually `prisma db push` any new column as part of its deploy.** (See memory `prod-db-migration-model`, MISTAKES 2026-06-09.)
@@ -18,8 +18,9 @@
 - [x] Fix the `-comment` deviceId double-counting bug (read-side filter approach, deployed pending 23:05 Tashkent auto-task).
 - [x] Simplify login to single password field (code + env var done; ships at 23:05 Tashkent auto-task).
 - [ ] Add `workflow` scope to PAT `telegram-ai-agent deploy` (requires github.com/settings/tokens → email sudo-mode). Blocks future workflow file edits from CLI.
-- [ ] Confirm the automatic 08:00 Tashkent GitHub Actions daily cron is still delivering (last verified 2026-05-21 run #1).
-- [ ] If daily cron confirmed green for several days, mark M5 — Reporting Activation closed in `ROADMAP.md`.
+- [x] Confirm the automatic daily report cron is still delivering — verified 2026-06-12: delivering every day (Jun 6–11 all green), dedup guard works. BUT GitHub drifts the 03:00/04:00 UTC crons by 3.5–5h → report lands ~12:00–13:30 Tashkent, not 08:00.
+- [x] M5 — Reporting Activation closed (session 7, 2026-06-09).
+- [ ] **DECIDE: shift daily-report crons to early off-peak odd minutes** (e.g. `23 1 * * *` + `23 2 * * *`) so the report lands nearer 08:00 Tashkent despite GitHub drift. Constraint: must fire after 19:00 UTC (Tashkent midnight) for the correct previous-day range (D-031). Offered to owner 2026-06-12, awaiting go-ahead.
 
 ## Priority 2 — Security hardening (MEDIUM — new from session 3)
 - [ ] Add rate-limiting to `POST /login`. Trivial password (`<redacted>`) on a public-internet URL (`web-production-370c1.up.railway.app/admin`) is a bot brute-force risk. Options: server-action-level counter keyed by IP hash, or a Railway/edge rule. No code change needed if password is changed first, but rate-limiting is good hygiene regardless.

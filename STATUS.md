@@ -1,6 +1,12 @@
 # Status
 
-**Updated:** 2026-06-09 (session 7 — TM-grouped reports LIVE & verified; prod 500 outage fixed; report format updated)
+**Updated:** 2026-06-12 (session 8 — scheduled deploys verified green; daily report delivers but ~4h late from GitHub cron drift)
+
+## Operational snapshot (2026-06-12)
+- **Nightly Railway deploy: healthy.** Primary (Jun 11 22:03 UTC) + backup (Jun 12 00:21 UTC) both success, both deployed `e92241b` = `main` HEAD. Green every night since the 20:00/23:00 UTC cron fix (2026-06-08).
+- **Production healthy:** `/api/health` ok; voting page `/523da2` HTTP 200 (1.6s).
+- **Daily Telegram report: delivering daily, dedup guard working, but arrives ~12:00–13:30 Tashkent instead of 08:00** — GitHub delays the 03:00/04:00 UTC crons by 3.5–5h. Pending owner decision: shift crons to early off-peak odd minutes (must stay after 19:00 UTC per D-031).
+- Open P0s unchanged from session 7: prod migration pipeline hardening; DB-touching health check; Railway free-vs-paid.
 
 ## Current Phase
 

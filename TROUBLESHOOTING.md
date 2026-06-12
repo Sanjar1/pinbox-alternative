@@ -2,6 +2,11 @@
 
 ## Common Issues
 
+### Daily Telegram report arrives around noon instead of 08:00 Tashkent
+- **Symptom:** The report shows up in the group at ~12:00–13:30 Tashkent; the GitHub Actions runs are green.
+- **Cause:** GitHub cron congestion — the 03:00 + 04:00 UTC schedules consistently fire 3.5–5h late (observed Jun 2026: e.g. Jun 11 fired 07:28 + 08:47 UTC). Nothing is broken: the at-most-once dedup guard ensures a single send whichever attempt runs first.
+- **Solution:** This is delay, not failure — check the run list first (`.../actions/workflows/daily-telegram-report.yml`). To land closer to 08:00, move the crons to early off-peak odd minutes (e.g. `23 1 * * *` + `23 2 * * *`); they MUST stay after 19:00 UTC (Tashkent midnight) or the previous-full-Tashkent-day range (D-031) reports the wrong day. For a one-off immediate report, use the "Run workflow" button.
+
 ### Every QR poster page returns HTTP 500 but `/api/health` is 200
 - **Symptom:** `/{slug}` voting pages (and the daily report) all 500; `/api/health` returns `{"ok":true}`.
 - **Cause:** A Prisma column the deployed code selects is missing from the prod DB. `/api/health` is static and never touches the DB, so it can't catch this. Most likely a new `schema.prisma` column was shipped but never pushed (prod uses `prisma db push`, migrations don't auto-apply — there's no `_prisma_migrations` table).
