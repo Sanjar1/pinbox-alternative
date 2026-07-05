@@ -51,7 +51,6 @@ model Store {
   
   archivedAt  DateTime?
   territorialManager String?   // TM full name from the Менеджеры sheet; null = unassigned
-  migrationCanaryAt  DateTime? // temporary canary — proves auto-migrate works; dropped in the next migration
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
