@@ -5,6 +5,22 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed (2026-07-05 — session 9b)
+- **`/api/health` was blind** — now runs a real `SELECT 1` (5s timeout): 200 `{"ok":true,"db":true}` or 503 with a sanitized error; full diagnostics go to server logs only. A data-layer outage can no longer hide behind a green health check. (`app/src/app/api/health/route.ts`)
+- **Schema migrations never ran in production** — two root causes fixed: the Railway Custom Start Command override (bypassed the entrypoint) was cleared, and the 11 SQLite-dialect migrations were squashed into one PostgreSQL `0_init` with prod baselined (drift gate verified empty; metadata-only). Canary column added + dropped purely via git+deploy proves the June-9 P2022 outage class is gone. (D-051, commits `a5fbf0a`/`7c9bde3`/`a1f9493`)
+- `scripts/check-a5-qr.cjs` (promoted from `tmp-check-a5-qr.cjs`) crashed when run from `app/` — paths now anchored to the script location; verified 41/41 = HTTP 200 from the deploy-and-verify skill's cwd.
+
+### Changed (2026-07-05 — session 9b)
+- `docker-entrypoint.sh`: `migrate deploy` wrapped in a 5-attempt backoff retry, fail-hard after — a bad migration blocks the deploy instead of breaking production.
+- Daily report crons `0 3`/`0 4` → **`23 1`/`23 2` UTC** — odd minutes at a quiet hour drift less; report should land ~08:00–09:00 Tashkent. Dedup guard unchanged. (D-031 margin kept)
+- Nightly deploy workflow: new guard step fails the deploy if a new migration touches `QRCode`/`slug` without an `ALLOW-QRCODE-REVIEWED` marker.
+- Postgres-PlIz: Serverless/sleep disabled (DB always-on so wake-time migrations always have a reachable DB); web keeps sleeping.
+
+### Removed (2026-07-05 — session 9b)
+- Dead `Postgres` Railway service (never ran, $0 usage, no volume) — canvas now has only `Postgres-PlIz` + `web`.
+- `scripts/tmp-extract-qr-links.cjs`, `scripts/tmp-fix-a5-placeholders.cjs`, stray `console.log(JSON.stringify(row)))` file.
+- The 11 SQLite-dialect migration folders (replaced by `0_init`; historical SQL preserved in git history).
+
 ### Fixed (2026-07-05 — session 9)
 - **Total production outage** — Railway Free-plan usage grant ($1.00/mo) exhausted → Railway removed the deployment; all 41 QR posters served Railway's 404 page and the daily report failed. Restored by owner subscribing Hobby ($5/mo, July stopgap) + redeploy via GitHub Actions. Verified: health 200, 41/41 frozen QR links HTTP 200, manager sync `matched:41`, daily report delivered.
 

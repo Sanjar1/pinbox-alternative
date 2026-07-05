@@ -17,10 +17,16 @@
 - **Cause:** GitHub cron congestion — the 03:00 + 04:00 UTC schedules consistently fire 3.5–5h late (observed Jun 2026: e.g. Jun 11 fired 07:28 + 08:47 UTC). Nothing is broken: the at-most-once dedup guard ensures a single send whichever attempt runs first.
 - **Solution:** This is delay, not failure — check the run list first (`.../actions/workflows/daily-telegram-report.yml`). To land closer to 08:00, move the crons to early off-peak odd minutes (e.g. `23 1 * * *` + `23 2 * * *`); they MUST stay after 19:00 UTC (Tashkent midnight) or the previous-full-Tashkent-day range (D-031) reports the wrong day. For a one-off immediate report, use the "Run workflow" button.
 
-### Every QR poster page returns HTTP 500 but `/api/health` is 200
-- **Symptom:** `/{slug}` voting pages (and the daily report) all 500; `/api/health` returns `{"ok":true}`.
-- **Cause:** A Prisma column the deployed code selects is missing from the prod DB. `/api/health` is static and never touches the DB, so it can't catch this. Most likely a new `schema.prisma` column was shipped but never pushed (prod uses `prisma db push`, migrations don't auto-apply — there's no `_prisma_migrations` table).
-- **Solution:** `railway logs` → look for `P2022 column ... does not exist`. Get the public DB URL: `railway variables --service Postgres-PlIz --kv | grep DATABASE_PUBLIC_URL`. Apply the missing column with a targeted additive `ALTER TABLE "..." ADD COLUMN IF NOT EXISTS "..." <type>` (or `DATABASE_URL=<public-url> npx prisma db push`). Re-curl a few frozen slugs to confirm 200. Never alter `QRCode.slug`. See memory `prod-db-migration-model`.
+### Every QR poster page returns HTTP 500 with `P2022 column ... does not exist`
+- **Symptom (historical — should be impossible since 2026-07-05):** `/{slug}` voting pages (and the daily report) all 500 with `P2022`.
+- **Cause:** deployed code selects a Prisma column the prod DB doesn't have. Before 2026-07-05 this happened because migrations never ran (dashboard start-command override + sqlite-dialect migration files) and health was a static `{ok:true}`. BOTH are fixed: migrations auto-apply at container start (D-051) and `/api/health` does a real `SELECT 1` (goes 503 during such an outage).
+- **Solution (if it somehow recurs):** check the deploy log for the entrypoint lines — healthy is `No pending migrations to apply.` / `[entrypoint] migrations up to date - starting server`. If a migration failed, the log shows the exact error and Railway keeps the previous version serving. Fix the migration in code and redeploy. Do NOT `db push` prod and do NOT re-add a dashboard Custom Start Command — both recreate the original disease. Never alter `QRCode.slug`. See D-051 + memory `prod-db-migration-model`.
+
+### How to ship a database schema change (since 2026-07-05)
+- Edit `app/prisma/schema.prisma` AND add a migration folder `app/prisma/migrations/<timestamp>_<name>/migration.sql` with the matching DDL (generate with `npx prisma migrate diff --from-url <prod-public-url> --to-schema-datamodel prisma/schema.prisma --script`).
+- Keep migrations fast (healthcheck gate = 100s): no inline backfills on big tables.
+- Anything touching `QRCode`/`slug` fails CI unless a reviewer adds `-- ALLOW-QRCODE-REVIEWED: <why>`.
+- Push + deploy. Verify in the deploy log: `Applying migration <name>` then `[entrypoint] migrations up to date`.
 
 ### Daily report groups every store under «Без менеджера» (no TM blocks)
 - **Symptom:** report shows TM grouping but all stores land in the «Без менеджера» footer; `POST /api/admin/sync-managers` returns `{matched:0, unmatched:[]}`.

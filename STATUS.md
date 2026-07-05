@@ -1,16 +1,17 @@
 # Status
 
-**Updated:** 2026-07-05 (session 9 — Railway free-tier resources ran out → full outage; restored on Hobby $5; Serverless enabled to fit back under free tier)
+**Updated:** 2026-07-05 (session 9b — both P0s CLOSED: honest DB health check live; schema migrations now auto-apply on deploy, canary-proven end-to-end)
 
-## Operational snapshot (2026-07-05)
-- **Production RESTORED and healthy** after a ~9h total outage (Railway free-tier $1/mo usage grant exhausted → Railway unbound the domain; all 41 posters showed Railway's 404 page). Now on **Hobby plan ($5/mo, paid for July as a stopgap)**: `/api/health` 200, **41/41 frozen QR links HTTP 200**, voting page renders, daily report delivered.
-- **Serverless (App Sleeping) ENABLED on the `web` service** — sleeps after 10 idle min, wakes on request (requests are queued, not dropped). Goal: cut the RAM-hours that were 76% of the bill and fit under the free $1/mo grant so Hobby can be cancelled in early August. **Sleep behavior not yet confirmed** (afternoon test inconclusive — daytime scan traffic); verify via usage-page burn rate in 1–2 days.
-- **Cost facts (measured):** web $0.79/cycle (RAM-dominated), Postgres $0.16/cycle, total $0.95 in 23 days ≈ $1.24/mo unoptimized. With web sleeping, projected ~$0.4–0.6/mo.
-- Daily report cron drift (~4h late) unchanged; P0s unchanged: prod migration pipeline hardening; DB-touching health check.
+## Operational snapshot (2026-07-05, end of day)
+- **Production healthy on commit `a1f9493`** (= main = deployed): `/api/health` → `{"ok":true,"db":true}` (now a REAL `SELECT 1` with 5s timeout — a data-layer outage turns it red); 41/41 frozen QR links HTTP 200; voting 200; QRCode 43/43 distinct slugs intact.
+- **Schema pipeline FIXED + canary-proven:** `prisma migrate deploy` runs automatically at every container start (entrypoint, 5-retry, fail-safe: bad migration can't replace a healthy container). A canary column was added AND dropped purely via git+deploy — zero manual DB work. The June-9 outage class (P2022 missing column) is eliminated. **Never `db push` prod again.**
+- **Cost posture:** Hobby $5 covers July (~5x headroom). Web sleeps when idle (confirmed sleeping mid-day); Postgres deliberately ALWAYS-ON (sleep disabled for migration reliability). Projected ~$0.50–0.70/mo vs the $1.00 free grant → cancel Hobby early August after burn-rate verification.
+- **Daily report crons moved to 01:23/02:23 UTC** (odd minutes) — expect arrival ~08:00–09:00 Tashkent from tomorrow instead of ~12:30. First live datapoint: tomorrow morning.
+- Earlier same day (session 9a): free-tier grant exhaustion outage, restore on Hobby, Serverless enable, budget + frozen-domain hard rules — see PROGRESS 2026-07-05 (session 9).
 
 ## Current Phase
 
-`M6 — Cost sustainability. 2026-07-05 outage: Railway Free plan's $1.00/month usage grant ran out mid-cycle (app costs ~$1.24/mo unoptimized, RAM-hours of the always-on Next.js server = 76%) → Railway took the whole service offline; nightly deploy failed with "You have used all your available resources"; both morning report runs failed. Owner subscribed Hobby ($5/mo) as a July-only stopgap. Restored via GitHub Actions deploy → 41/41 QR links verified 200. Enabled Serverless on web (auto-sleep when idle). Plan: verify real burn rate drops below $1/mo over the next days → cancel Hobby before the August cycle → back to free. Hard rules added to project CLAUDE.md: $1/mo usage budget = production constraint; the production DOMAIN web-production-370c1.up.railway.app is frozen (printed posters encode it) — web app never leaves Railway. Gotcha logged: a stale staged dashboard change (GOOGLE_SERVICE_ACCOUNT swap) got accidentally applied during the session — manager-sync verified still green (matched:41) after.`
+`M6 — Cost sustainability + reliability hardening. Both carried P0s closed on 2026-07-05 via multi-agent run (Opus architect blueprint → Sonnet builder → Opus strict review "ship with fixes" → both blockers fixed pre-ship): (1) /api/health does a real DB check; (2) migrations auto-apply — root causes were a Railway dashboard Custom Start Command override silently bypassing the entrypoint AND 11 SQLite-dialect migration files that could never run on Postgres; fixed by squash-to-0_init + prod baseline (drift gate empty → resolve --applied, metadata only) + lock file postgresql + override CLEARED + retry entrypoint + CI slug-guard on migrations. Full logical backup taken first (8,312 rows / 19 tables). Canary round-trip verified live. Also: report crons shifted earlier; dead Postgres service deleted; tmp scripts cleaned, 41-link checker promoted to scripts/check-a5-qr.cjs (cwd bug fixed). Remaining: verify Railway burn rate in 2-3 days → cancel Hobby before August cycle; review pile of pre-July-5 uncommitted working-tree files.`
 
 ## What Is Done (2026-06-09, session 7)
 

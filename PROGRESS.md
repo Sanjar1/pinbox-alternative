@@ -1,5 +1,30 @@
 # Progress Log
 
+## 2026-07-05 (session 9b) — Both P0s closed: honest health check + auto-applying migrations (canary-proven); crons shifted; cleanup
+
+Multi-agent run per owner's request (Opus stack-architect blueprint → Sonnet backend-builder → Opus strict-reviewer "SHIP WITH FIXES" → 2 blockers fixed before ship). Commits `a5fbf0a`, `7c9bde3`, `a1f9493` — all pushed AND deployed (active Railway deployment = `a1f9493`).
+
+### Done
+- **Honest health check live** — `/api/health` runs `SELECT 1` (5s timeout race, timer cleaned, sanitized 503 body, `force-dynamic`) — **Verified:** prod returns `{"ok":true,"db":true}`; Railway deploy log shows `[health] START db-select-1 → END db-select-1 ok`; builder additionally proved the 503 path against a real unreachable DB locally (503 in 4.7s, full detail only in server log).
+- **Migrations auto-apply on deploy** — root causes: Railway dashboard **Custom Start Command override** silently bypassed the entrypoint (confirmed live in Settings → Deploy) + all 11 migration files were **SQLite dialect** with a `sqlite` lock against Postgres. Fix: squashed to one generated PostgreSQL `0_init` (dialect-checked); **drift gate passed** (`migrate diff` prod vs schema = "empty migration"); **prod baselined** (`migrate resolve --applied 0_init` — metadata only); lock → `postgresql`; **override CLEARED**; entrypoint hardened (5-attempt backoff, fail-hard keeps previous container); CI **slug guard** blocks new migrations touching QRCode/slug without `ALLOW-QRCODE-REVIEWED` (0_init exempt — baselined, never executes) — **Verified:** deploy log shows `1 migration found → No pending migrations to apply → [entrypoint] migrations up to date - starting server`.
+- **Canary round-trip (the behavioral proof)** — added nullable `Store.migrationCanaryAt` via a real migration, shipped by git+deploy only → **Verified:** `migrate status` = 2 migrations up to date; prod `information_schema` showed the column exists. Then dropped it the same way → **Verified:** 3 migrations up to date, column count 0, `QRCode` 43/43 distinct slugs intact, 41/41 posters HTTP 200. Net schema change: zero. A new column can never 500 prod again.
+- **Backup before any prod-DB work** — logical dump of all 19 models — **Verified:** 8,312 rows written (Feedback 4,036, QRCode 43, AuditLog 4,072 …) to session scratchpad.
+- **Daily report crons → `23 1 * * *` + `23 2 * * *` UTC** (odd minutes, quiet hour; D-031 margin kept; dedup guard untouched) — **NOT verified live yet** — first scheduled run is tomorrow morning; expect ~08:00–09:00 Tashkent.
+- **Cleanup** — dead `Postgres` service deleted from Railway (verified: never ran, $0 usage, no volume; double type-to-confirm) — **Verified:** canvas shows only Postgres-PlIz + web. Deleted `scripts/tmp-extract-qr-links.cjs`, `tmp-fix-a5-placeholders.cjs`, stray `console.log(...)` file; **promoted** `tmp-check-a5-qr.cjs` → `scripts/check-a5-qr.cjs` and fixed its cwd-relative path bug (reviewer blocker — it crashed 100% from the documented cwd) — **Verified:** runs from `app/`, 41/41 = HTTP 200.
+- **Postgres-PlIz sleep DISABLED** (was on — found "Sleeping" mid-day) so the DB is always reachable for migrate-on-wake — **Verified:** staged change was exactly `Sleep Application true→false`; voting page 200 in 0.46s after redeploy.
+
+### Problems / found
+- Railway **GitHub auto-deploy did not fire** for the canary push (known flaky integration) — deployed via `workflow_dispatch` instead. Auto-deploy DID fire earlier for `a5fbf0a`. Treat auto-deploy as bonus, workflow as the reliable path.
+- Strict-reviewer subagent died mid-run on a transient API error — resumed with context intact, delivered full verdict.
+- Blocker caught by review worth remembering: the 11 migration deletions were staged while new `0_init` was untracked — committing that half-state would have broken every future deploy. Fixed by atomic staging.
+
+### Next
+- Tomorrow: confirm daily report arrives ~08:00–09:00 Tashkent (first run on new crons).
+- In 2–3 days: `check Railway usage` → burn-rate verdict → owner cancels Hobby before August if <$1/mo.
+- Review the pile of pre-2026-07-05 uncommitted working-tree files (README/SPECS/Dockerfile edits, scratch scripts) — commit or discard file-by-file.
+
+---
+
 ## 2026-07-05 (session 9) — Free-tier resource outage → restored on Hobby; Serverless enabled to get back under $1/mo
 
 ### Done

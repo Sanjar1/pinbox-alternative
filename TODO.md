@@ -1,6 +1,16 @@
 # TODO
 
-**Updated:** 2026-07-05 (session 9)
+**Updated:** 2026-07-05 (session 9b)
+
+### Done 2026-07-05 session 9b — was Priority 0 (both closed, canary-proven)
+- [x] **Prod migration pipeline hardened** — migrations auto-apply at container start (entrypoint `migrate deploy`, retry+fail-safe); SQLite migrations squashed to PostgreSQL `0_init`; prod baselined after empty drift gate; dashboard start-command override cleared (was the silent bypass); CI slug-guard added. Canary column added+dropped via git+deploy only. NEVER `db push` prod again.
+- [x] **`/api/health` does a real `SELECT 1`** — 5s timeout, 503 on DB failure, verified live (`{"ok":true,"db":true}`) + log trace START→END.
+- [x] **Daily-report crons shifted** to `23 1` / `23 2` UTC (approved + shipped; verify arrival time tomorrow).
+- [x] Dead `Postgres` service deleted from Railway (owner OK'd; verified empty first).
+- [x] Tmp-script cleanup + 41-link checker promoted to `scripts/check-a5-qr.cjs` (cwd bug fixed, 41/41 verified).
+
+- [ ] **NEW: review pre-2026-07-05 uncommitted working-tree files** (README/SPECS/GLOSSARY/DEVELOPMENT/app/Dockerfile edits, scratch scripts, deleted test-output) — commit or discard file-by-file. CAUTION: `app/Dockerfile` diff would change the production image if committed blindly.
+- [ ] **NEW: verify tomorrow's report arrives ~08:00–09:00 Tashkent** (first run on the new 01:23/02:23 UTC crons).
 
 ## Priority 0 — Railway cost sustainability (new, from the 2026-07-05 outage)
 - [ ] **Verify App Sleeping actually works (1–2 days after 2026-07-05):** check railway.com/workspace/usage daily burn — sleeping ≈ $0.02/day vs flat ≈ $0.04/day. If flat, find what keeps the app awake (suspect: outbound DB keepalives); fallbacks = scheduled night stop (owner suggested) or move DB to free Neon Postgres (web stays on Railway — domain frozen).
@@ -8,9 +18,9 @@
 - [x] ~~DECIDE: upgrade Railway to paid vs stay free~~ — **decided 2026-07-05:** Hobby $5 paid for July only as a stopgap after the free-tier grant ran out and took prod down; long-term target is back to Free under the $1/mo grant (see CLAUDE.md "Railway usage budget" hard rule).
 - [ ] (Needs owner OK) Delete the dead `Postgres` service on the Railway canvas (build failed 4 months ago, $0 usage, unused) — reduces confusion; zero cost impact.
 
-## Priority 0 — Harden the prod migration pipeline (so a new column can't 500 prod again)
-- [ ] **Make schema changes auto-apply on deploy.** Today's outage: `Store.territorialManager` shipped in code but was never in the prod DB → all 41 posters + the daily report 500'd (`P2022`). Prod has no `_prisma_migrations` table (db-push model); the entrypoint's `migrate deploy` is bypassed and would P3019 anyway (`migration_lock.toml` = `sqlite`). Carefully, in its own approved pass: set `migration_lock.toml` `sqlite`→`postgresql`, **baseline** `_prisma_migrations` against the already-db-push'd schema (`prisma migrate resolve --applied` per existing migration) so `migrate deploy` won't try to re-create existing tables, then confirm the entrypoint actually runs `migrate deploy`. Until then, **manually `prisma db push` any new column as part of its deploy.** (See memory `prod-db-migration-model`, MISTAKES 2026-06-09.)
-- [ ] **Make `/api/health` do a `SELECT 1`** so a data-layer outage turns the health check red (it stayed green through today's total 500 outage).
+## Priority 0 — Harden the prod migration pipeline — ✅ CLOSED 2026-07-05 (session 9b, see above)
+- [x] **Make schema changes auto-apply on deploy** — done differently than sketched: squashed to ONE PostgreSQL `0_init` (the 11 sqlite files could never baseline safely as-is), baselined via `resolve --applied 0_init` after an empty drift gate, AND cleared the Railway start-command override that was the real bypass. Canary-proven. Manual `db push` is now FORBIDDEN (would recreate drift).
+- [x] **Make `/api/health` do a `SELECT 1`** — live: `{"ok":true,"db":true}` / 503 on failure.
 - [ ] **DECIDE: upgrade Railway to paid (~$5/mo Hobby) or stay free-tier?** Nightly deploy was failing on free-tier peak drift; the 20:00/23:00 UTC fix should resolve it, but upgrading removes the peak block entirely. Needs user's spend approval.
 - [ ] (Optional) Assign Катортол + Чилонзор Торговый to a manager in the "Менеджеры" sheet so they appear in a TM block instead of only the totals.
 

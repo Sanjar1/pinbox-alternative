@@ -1,5 +1,12 @@
 # Decisions Log
 
+## D-051: Migrations Auto-Apply at Container Start; Squash-and-Baseline; db push Retired; Slug Guard in CI
+
+- Date: 2026-07-05
+- Decision: (1) Production schema is managed by **`prisma migrate deploy` run by `app/docker-entrypoint.sh` on every container start** (deploys and serverless wakes; ~1–3s no-op; 5-attempt backoff; fail-hard after retries so a broken migration can never replace a healthy container — Railway keeps the previous image serving). (2) The 11 SQLite-dialect migrations were **squashed into one generated PostgreSQL `0_init`** and prod was **baselined** (`migrate resolve --applied 0_init` after a verified-empty drift gate) — metadata only, no DDL executed. (3) The Railway **Custom Start Command override was cleared and is banned** — it silently bypassed the entrypoint and was half the root cause of the 2026-06-09 outage. (4) **`prisma db push` against prod is retired** — rejected as the ongoing mechanism because it can drop/recreate tables outside the slug guard, behaves badly non-interactively (`--accept-data-loss` trap), and leaves no reviewable artifact. (5) New migrations touching `QRCode`/`slug` **fail CI** unless a human adds `-- ALLOW-QRCODE-REVIEWED: <why>` (0_init exempt: baselined, never executes). (6) Keep migrations fast — the 100s healthcheck gate means no inline backfills.
+- Reason: two independent faults made schema changes crash prod (P2022) until manual pushes: the dashboard override (unversioned config, easily lost — exactly why the fix lives in versioned code) and wrong-dialect migration files. Baselining after an empty drift diff records truth without touching data; fail-hard-at-boot inverts the failure mode (bad migration = blocked deploy, not broken production). Proven by a canary column shipped and dropped via git+deploy only.
+- Impact: `app/docker-entrypoint.sh`, `app/prisma/migrations/*` (0_init + lock=postgresql), `.github/workflows/nightly-railway-deploy.yml` (slug-guard step), Railway web service settings (override cleared), Postgres-PlIz sleep disabled (DB must be reachable at wake). Commits `a5fbf0a`/`7c9bde3`/`a1f9493`. Memory `prod-db-migration-model` rewritten. Supersedes the "manually db push new columns" interim rule from 2026-06-09.
+
 ## D-050: Hobby $5 for July Only; Serverless Sleep to Fit Back Under the Free $1/mo Grant; Domain Frozen
 
 - Date: 2026-07-05
