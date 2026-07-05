@@ -2,12 +2,23 @@ name: Daily Telegram Report
 
 on:
   schedule:
-    # Primary: 03:00 UTC = 08:00 Tashkent (UTC+5). GitHub uses UTC for cron.
-    - cron: '0 3 * * *'
-    # Backup: 04:00 UTC = 09:00 Tashkent — covers nights when GitHub skips or
-    # heavily delays the primary cron. The dedup step below makes sure the
-    # report is still sent AT MOST ONCE per day, whichever attempt runs first.
-    - cron: '0 4 * * *'
+    # Primary: nominal 01:23 UTC = 06:23 Tashkent (UTC+5). GitHub uses UTC for
+    # cron. We deliberately use an odd non-`:00` minute at an unpopular UTC
+    # hour: GitHub Actions delays `:00` crons at popular hours (e.g. the old
+    # 03:00/04:00 UTC slots) by 3.5-5h under load, which pushed the report to
+    # ~12:00-13:30 Tashkent instead of the target ~08:00 Tashkent. Odd-minute
+    # crons at quieter hours drift far less, so this run should land near
+    # 08:00 Tashkent.
+    # D-031 constraint: the report covers the previous FULL Tashkent day, so
+    # the run must start after Tashkent midnight = after 19:00 UTC of the
+    # previous UTC day. 01:23 UTC clears that by ~6h of margin.
+    - cron: '23 1 * * *'
+    # Backup: nominal 02:23 UTC = 07:23 Tashkent — covers nights when GitHub
+    # skips or heavily delays the primary cron. Same odd-minute/quiet-hour
+    # reasoning as above, and same D-031 margin (satisfied with ~7h to spare).
+    # The dedup step below makes sure the report is still sent AT MOST ONCE
+    # per day, whichever attempt runs first.
+    - cron: '23 2 * * *'
   # Also allows manual trigger from the GitHub Actions UI ("Run workflow" button).
   workflow_dispatch:
 
