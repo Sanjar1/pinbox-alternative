@@ -2,6 +2,16 @@
 
 ## Common Issues
 
+### QR scan shows Railway's "Not Found — The train has not arrived at the station" page
+- **Symptom:** Every poster URL (and `/api/health`) returns Railway's own 404 page / `{"message":"Application not found"}` — this is Railway's edge, not our app (our app's errors look different).
+- **Cause:** Railway has no running deployment bound to the domain. Seen 2026-07-05 when the Free-plan usage grant ran out ("You have used all your available resources" in the deploy log) and Railway removed the deployment. Other possible causes: service deleted, or a failed deploy left no active deployment.
+- **Solution:** (1) Check the account badge / usage page at railway.com/workspace/usage — if out of resources, the plan needs credit (Hobby) or the monthly grant reset. (2) Once resources exist, redeploy: GitHub → Actions → `nightly-railway-deploy.yml` → Run workflow (branch `main`). (3) Verify: `/api/health` 200, then run the 41-link check against `data/qr-links-frozen-2026-05-21.json`. Prevention: $1/mo budget rule in CLAUDE.md + App Sleeping stays enabled.
+
+### First QR scan after a quiet period takes ~3–10 seconds to load
+- **Symptom:** A voting page hangs a few seconds before rendering; subsequent scans are instant.
+- **Cause:** Not a bug. Serverless (App Sleeping) is enabled on the `web` service (D-050, 2026-07-05): after 10 idle minutes the container sleeps; the next request wakes it (requests queue during wake).
+- **Solution:** None needed — this is the accepted cost of staying under the free tier. Do NOT disable Serverless to "fix" it (CLAUDE.md hard rule); that re-creates the $1.24/mo burn that caused the July 2026 outage.
+
 ### Daily Telegram report arrives around noon instead of 08:00 Tashkent
 - **Symptom:** The report shows up in the group at ~12:00–13:30 Tashkent; the GitHub Actions runs are green.
 - **Cause:** GitHub cron congestion — the 03:00 + 04:00 UTC schedules consistently fire 3.5–5h late (observed Jun 2026: e.g. Jun 11 fired 07:28 + 08:47 UTC). Nothing is broken: the at-most-once dedup guard ensures a single send whichever attempt runs first.

@@ -5,6 +5,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed (2026-07-05 — session 9)
+- **Total production outage** — Railway Free-plan usage grant ($1.00/mo) exhausted → Railway removed the deployment; all 41 QR posters served Railway's 404 page and the daily report failed. Restored by owner subscribing Hobby ($5/mo, July stopgap) + redeploy via GitHub Actions. Verified: health 200, 41/41 frozen QR links HTTP 200, manager sync `matched:41`, daily report delivered.
+
+### Changed (2026-07-05 — session 9)
+- **Serverless (App Sleeping) enabled on the Railway `web` service** — sleeps after 10 idle minutes, wakes on request (queued, not dropped; first request after idle ~3–10 s). Purpose: cut idle RAM-hours (76% of cost) to fit under the free $1/mo grant so Hobby can be cancelled in August. (D-050)
+- Project CLAUDE.md: new hard rules — **$1/mo Railway usage budget** and **frozen production domain** (`web-production-370c1.up.railway.app`, printed on 41 posters; web app never leaves Railway). (D-050)
+
 ### Fixed (2026-06-09 — session 7)
 - **Production outage** — all 41 QR poster voting pages and the daily Telegram report were returning HTTP 500 (`P2022: column Store.territorialManager does not exist`). The TM column was in the schema/code but never pushed to the prod DB (prod uses `prisma db push`, not `migrate deploy`). Added the column directly (`ALTER TABLE "Store" ADD COLUMN IF NOT EXISTS "territorialManager" TEXT`); 41/41 posters back to HTTP 200, daily report restored.
 - **TM report grouping** — `manager-sync` matched 0 stores (report collapsed to «Без менеджера») because the hardcoded «Менеджеры» sheet gid had been reassigned to an unrelated tab by a spreadsheet reorg. `manager-sync.ts` now resolves the tab by **title** (gid as fallback) → `matched:41`. (`89e9d2c`, D-049)

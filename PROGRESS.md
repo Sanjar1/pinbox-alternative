@@ -1,5 +1,29 @@
 # Progress Log
 
+## 2026-07-05 (session 9) — Free-tier resource outage → restored on Hobby; Serverless enabled to get back under $1/mo
+
+### Done
+- **Diagnosed the outage** (user: QR scans show Railway's "train has not arrived at the station"). Root cause: Railway Free plan's **$1.00/month usage grant ran out mid-cycle** → Railway removed the deployment and unbound the domain — **Verified:** prod health returned Railway-edge `404 "Application not found"`; nightly deploy log (Jul 5 00:04 UTC) shows `railway up` failing with literal "You have used all your available resources"; usage page showed "0 days or $0.05 left", Free plan $1.00/mo grant. May/June survived on leftover starter credit, now gone.
+- **Owner subscribed Railway Hobby ($5/mo) as a July-only stopgap** (payment done by owner in browser; decision: optimize under $1/mo and cancel before August).
+- **Restored production** — dispatched `nightly-railway-deploy.yml` via GitHub API → success — **Verified:** `/api/health` 200 `{"ok":true}`; **41/41 frozen QR links HTTP 200** (checked against `data/qr-links-frozen-2026-05-21.json`); voting page `/523da2` renders (screenshot in session); manager sync `{"ok":true,"used":"live","matched":41}`; daily report `{"ok":true,"sent":true}` from workflow log.
+- **Measured where the money goes** (Railway per-service breakdown, Jun 12–Jul 5): web $0.789 (RAM $0.72 = 76% of total), Postgres-PlIz $0.156, total $0.949 in 23 days ≈ $1.24/mo unoptimized. The cost is idle RAM-hours of the always-on server, not traffic.
+- **Enabled Serverless (App Sleeping) on `web`** via dashboard Settings → Deploy → Enable Serverless; change deployed — **Verified:** toggle ON after redeploy, service Online, health 200 + 41/41 links re-checked after. Railway queues requests during sleep and wakes on demand. Projected ~$0.4–0.6/mo with sleeping (vs $1.00 grant).
+- **Sleep behavior NOT yet verified** — 12-min-idle wake test returned 0.45s (warm). Either daytime scans kept it awake (benign) or DB-connection keepalives prevent sleep (would keep us over budget). Real verdict = usage-page burn rate in 1–2 days.
+- **Hard rules codified** — project CLAUDE.md: new "Railway usage budget (HARD RULE)" section ($1/mo budget, check RAM impact before shipping, never disable App Sleeping); frozen-domain rule (`web-production-370c1.up.railway.app` is printed on 41 posters — web app never leaves Railway; only backing services may move). Memory file `railway-usage-budget.md` created.
+
+### Problems
+- **Stale staged dashboard change accidentally applied:** a ~6-week-old staged `GOOGLE_SERVICE_ACCOUNT` variable swap sat in the Railway UI (blocked in May by free-tier peak hours). During the Serverless work one Deploy click applied it before the discard registered — **manager sync verified still green after** (`matched:41`, `used:"live"`). Lesson logged in MISTAKES.
+- **Duplicate daily report sent:** manual `workflow_dispatch` of the daily report bypasses the at-most-once dedup guard (it guards scheduled runs) → the group got today's report twice (first dispatch was the legit catch-up after the outage; second was a credential test). Don't dispatch that workflow casually.
+- Railway usage-page "Usage by Project" hit a rate limit (480 queries/60s) once; resolved by waiting.
+
+### Next
+- **In 1–2 days: check Railway usage burn rate** — if daily burn dropped to ~$0.02/day, sleeping works → under free grant. If flat at ~$0.04/day, investigate what keeps the app awake (likely outbound DB keepalives) → fallback: scheduled night stop (owner's idea) or move DB to free external Postgres (Neon), web stays on Railway (domain frozen).
+- **Early August (before next $5 charge):** if projection < $1/mo confirmed → owner cancels Hobby → back to Free plan.
+- Cleanup candidate (needs owner OK): delete the dead `Postgres` service (build failed 4 months ago, $0 usage) left on the Railway canvas.
+- Carried P0s: prod migration pipeline hardening; `/api/health` `SELECT 1`.
+
+---
+
 ## 2026-06-12 (session 8) — Scheduled-deploy verification: nightly deploy green, report delivers but ~4h late
 
 **Done:**

@@ -1,6 +1,12 @@
 # TODO
 
-**Updated:** 2026-06-12 (session 8)
+**Updated:** 2026-07-05 (session 9)
+
+## Priority 0 — Railway cost sustainability (new, from the 2026-07-05 outage)
+- [ ] **Verify App Sleeping actually works (1–2 days after 2026-07-05):** check railway.com/workspace/usage daily burn — sleeping ≈ $0.02/day vs flat ≈ $0.04/day. If flat, find what keeps the app awake (suspect: outbound DB keepalives); fallbacks = scheduled night stop (owner suggested) or move DB to free Neon Postgres (web stays on Railway — domain frozen).
+- [ ] **Early August, BEFORE the next $5 charge:** if projected usage < $1.00/mo, owner cancels Hobby (Workspace → Manage your Plan) → back to Free. If not under $1, decide: keep Hobby vs deeper optimization.
+- [x] ~~DECIDE: upgrade Railway to paid vs stay free~~ — **decided 2026-07-05:** Hobby $5 paid for July only as a stopgap after the free-tier grant ran out and took prod down; long-term target is back to Free under the $1/mo grant (see CLAUDE.md "Railway usage budget" hard rule).
+- [ ] (Needs owner OK) Delete the dead `Postgres` service on the Railway canvas (build failed 4 months ago, $0 usage, unused) — reduces confusion; zero cost impact.
 
 ## Priority 0 — Harden the prod migration pipeline (so a new column can't 500 prod again)
 - [ ] **Make schema changes auto-apply on deploy.** Today's outage: `Store.territorialManager` shipped in code but was never in the prod DB → all 41 posters + the daily report 500'd (`P2022`). Prod has no `_prisma_migrations` table (db-push model); the entrypoint's `migrate deploy` is bypassed and would P3019 anyway (`migration_lock.toml` = `sqlite`). Carefully, in its own approved pass: set `migration_lock.toml` `sqlite`→`postgresql`, **baseline** `_prisma_migrations` against the already-db-push'd schema (`prisma migrate resolve --applied` per existing migration) so `migrate deploy` won't try to re-create existing tables, then confirm the entrypoint actually runs `migrate deploy`. Until then, **manually `prisma db push` any new column as part of its deploy.** (See memory `prod-db-migration-model`, MISTAKES 2026-06-09.)

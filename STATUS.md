@@ -1,16 +1,16 @@
 # Status
 
-**Updated:** 2026-06-12 (session 8 — scheduled deploys verified green; daily report delivers but ~4h late from GitHub cron drift)
+**Updated:** 2026-07-05 (session 9 — Railway free-tier resources ran out → full outage; restored on Hobby $5; Serverless enabled to fit back under free tier)
 
-## Operational snapshot (2026-06-12)
-- **Nightly Railway deploy: healthy.** Primary (Jun 11 22:03 UTC) + backup (Jun 12 00:21 UTC) both success, both deployed `e92241b` = `main` HEAD. Green every night since the 20:00/23:00 UTC cron fix (2026-06-08).
-- **Production healthy:** `/api/health` ok; voting page `/523da2` HTTP 200 (1.6s).
-- **Daily Telegram report: delivering daily, dedup guard working, but arrives ~12:00–13:30 Tashkent instead of 08:00** — GitHub delays the 03:00/04:00 UTC crons by 3.5–5h. Pending owner decision: shift crons to early off-peak odd minutes (must stay after 19:00 UTC per D-031).
-- Open P0s unchanged from session 7: prod migration pipeline hardening; DB-touching health check; Railway free-vs-paid.
+## Operational snapshot (2026-07-05)
+- **Production RESTORED and healthy** after a ~9h total outage (Railway free-tier $1/mo usage grant exhausted → Railway unbound the domain; all 41 posters showed Railway's 404 page). Now on **Hobby plan ($5/mo, paid for July as a stopgap)**: `/api/health` 200, **41/41 frozen QR links HTTP 200**, voting page renders, daily report delivered.
+- **Serverless (App Sleeping) ENABLED on the `web` service** — sleeps after 10 idle min, wakes on request (requests are queued, not dropped). Goal: cut the RAM-hours that were 76% of the bill and fit under the free $1/mo grant so Hobby can be cancelled in early August. **Sleep behavior not yet confirmed** (afternoon test inconclusive — daytime scan traffic); verify via usage-page burn rate in 1–2 days.
+- **Cost facts (measured):** web $0.79/cycle (RAM-dominated), Postgres $0.16/cycle, total $0.95 in 23 days ≈ $1.24/mo unoptimized. With web sleeping, projected ~$0.4–0.6/mo.
+- Daily report cron drift (~4h late) unchanged; P0s unchanged: prod migration pipeline hardening; DB-touching health check.
 
 ## Current Phase
 
-`M5 — Reporting Activation — DONE & VERIFIED LIVE. The TM-grouped daily report is now firing correctly in the managers group. This session fixed three things end-to-end: (1) a production outage — ALL 41 QR voting pages + the daily report were returning HTTP 500 because the Store.territorialManager column was never pushed to the prod DB (prod is managed by prisma db push, not migrate deploy; migrations don't auto-apply); added the column directly → 41/41 posters back to 200; (2) the TM grouping was broken (manager-sync matched:0) because the hardcoded Менеджеры sheet gid had been silently reassigned to an unrelated tab — now resolved by tab TITLE → matched:41; (3) per user request, 0-review stores now show as explicit rows (0 / —) under each TM instead of a compact «Молчат:» line. Deployed via GitHub Actions workflow_dispatch (local railway up still OOMs); verified live: health 200, voting 200, sync matched:41, report confirmed in the group with the new format. OPEN: prod migration pipeline still doesn't auto-apply schema changes (next added column will repeat the outage) — needs a separate hardening pass; Railway free-tier-vs-paid decision still pending.`
+`M6 — Cost sustainability. 2026-07-05 outage: Railway Free plan's $1.00/month usage grant ran out mid-cycle (app costs ~$1.24/mo unoptimized, RAM-hours of the always-on Next.js server = 76%) → Railway took the whole service offline; nightly deploy failed with "You have used all your available resources"; both morning report runs failed. Owner subscribed Hobby ($5/mo) as a July-only stopgap. Restored via GitHub Actions deploy → 41/41 QR links verified 200. Enabled Serverless on web (auto-sleep when idle). Plan: verify real burn rate drops below $1/mo over the next days → cancel Hobby before the August cycle → back to free. Hard rules added to project CLAUDE.md: $1/mo usage budget = production constraint; the production DOMAIN web-production-370c1.up.railway.app is frozen (printed posters encode it) — web app never leaves Railway. Gotcha logged: a stale staged dashboard change (GOOGLE_SERVICE_ACCOUNT swap) got accidentally applied during the session — manager-sync verified still green (matched:41) after.`
 
 ## What Is Done (2026-06-09, session 7)
 

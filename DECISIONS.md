@@ -1,6 +1,11 @@
 # Decisions Log
 
-## D-049: Resolve the «Менеджеры» Sheet Tab by Title; Show Every Store as a Row Under Its TM
+## D-050: Hobby $5 for July Only; Serverless Sleep to Fit Back Under the Free $1/mo Grant; Domain Frozen
+
+- Date: 2026-07-05
+- Decision: (1) After the free-tier grant exhaustion took ALL of production offline, the owner paid **Railway Hobby ($5/mo) for July only** as a stopgap. (2) **Serverless (App Sleeping) is enabled on `web`** and must stay enabled — it is the mechanism for fitting under the Free plan's $1.00/month grant (~$1.24/mo unoptimized, 76% = idle RAM of the always-on server; projected ~$0.4–0.6/mo sleeping). (3) Target: cancel Hobby before the August cycle once measured burn < $1/mo. (4) The **production domain `web-production-370c1.up.railway.app` is frozen** like the slugs — 41 printed posters encode full URLs; the web app never migrates off Railway; only backing services (e.g. the DB) may ever move behind the same domain. (5) $1/mo is now a **hard engineering budget**: every feature is checked against RAM-minutes impact before shipping (project CLAUDE.md "Railway usage budget").
+- Reason: printed posters make the domain a physical dependency — hosting must stay alive but the owner wants $0/month steady-state. The measured cost driver is idle RAM-hours, which sleep eliminates without touching the frozen URLs; a fixed on/off schedule (owner's suggestion) was rejected as primary because a failed "on" leaves posters hard-dead, while wake-on-request fails safe — it remains the fallback if sleep proves blocked (e.g. by DB keepalives).
+- Impact: Railway `web` service setting (dashboard, not config-as-code); CLAUDE.md hard rules; TODO P0 verification + August cancel checkpoint; accepted UX tradeoff: first scan after an idle period waits ~3–10 s (queued, not dropped).
 
 - Date: 2026-06-09
 - Decision: (1) `manager-sync.ts` resolves the manager tab by **title** (`'Менеджеры'`) first, falling back to the gid (`1309841635`), instead of trusting a hardcoded gid. (2) The grouped report renders **every store as its own row** under its TM — reviewed stores first (by performance), then 0-review stores showing `0   —` — replacing the compact «Молчат: …» name list. The universal «N из M магазинов молчат…» line stays.
