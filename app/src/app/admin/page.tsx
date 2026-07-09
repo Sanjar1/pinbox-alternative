@@ -1,15 +1,14 @@
+import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { requireCurrentUser } from '@/lib/auth';
 import { storeWhereForUser } from '@/lib/store-access';
 import { VOTE_ROW_FILTER } from '@/lib/feedback-filters';
 import { parseRatingsBreakdown } from '@/lib/notifications';
-import { buildTrendSeries } from '@/lib/dashboard-trends';
+import { buildTrendSeries, type DashboardPeriod } from '@/lib/dashboard-trends';
+import { resolveDashboardRange } from '@/lib/dashboard-range';
 import { MetricCardsWithTrends } from './metric-cards-with-trends';
 
-type DashboardPeriod = 'daily' | 'weekly' | 'monthly' | 'yearly';
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
-
-const TASHKENT_MS = 5 * 60 * 60 * 1000;
 
 const periodLabels: Record<DashboardPeriod, string> = {
   daily: 'Сегодня',
@@ -17,43 +16,6 @@ const periodLabels: Record<DashboardPeriod, string> = {
   monthly: 'Этот месяц',
   yearly: 'Этот год',
 };
-
-function nowTashkent(): Date {
-  return new Date(Date.now() + TASHKENT_MS);
-}
-
-function toUtc(tashkentDate: Date): Date {
-  return new Date(tashkentDate.getTime() - TASHKENT_MS);
-}
-
-function getPeriodRange(period: DashboardPeriod): { start: Date; end: Date; label: string } {
-  const t = nowTashkent();
-  const startT = new Date(t);
-  startT.setUTCHours(0, 0, 0, 0);
-
-  if (period === 'weekly') {
-    startT.setUTCDate(startT.getUTCDate() - 6);
-  }
-
-  if (period === 'monthly') {
-    startT.setUTCDate(1);
-  }
-
-  if (period === 'yearly') {
-    startT.setUTCMonth(0, 1);
-  }
-
-  const label = period === 'daily'
-    ? t.toLocaleDateString('ru-RU', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' })
-    : `${startT.toLocaleDateString('ru-RU', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' })} - ${t.toLocaleDateString('ru-RU', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' })}`;
-
-  return { start: toUtc(startT), end: new Date(), label };
-}
-
-function normalizePeriod(value: string | string[] | undefined): DashboardPeriod {
-  const raw = Array.isArray(value) ? value[0] : value;
-  return raw === 'weekly' || raw === 'monthly' || raw === 'yearly' ? raw : 'daily';
-}
 
 function formatDateTime(date: Date): string {
   return date.toLocaleString('ru-RU', {
@@ -92,9 +54,18 @@ export default async function AdminDashboard({
   searchParams?: SearchParams;
 }) {
   const params = searchParams ? await searchParams : {};
-  const period = normalizePeriod(params.period);
-  const range = getPeriodRange(period);
+  const range = resolveDashboardRange(params);
+  const period = range.period;
   const generatedAt = new Date();
+
+  console.log(
+    `[admin-dashboard] START render custom=${range.isCustom} period=${range.period} ` +
+      `from=${range.from ?? '-'} to=${range.to ?? '-'}`,
+  );
+  console.log(
+    `[admin-dashboard] range resolved bucketMode=${range.bucketMode} ` +
+      `start=${range.start.toISOString()} end=${range.end.toISOString()} label="${range.label}"`,
+  );
 
   const user = await requireCurrentUser();
   const storeWhere = storeWhereForUser(user);
@@ -147,7 +118,12 @@ export default async function AdminDashboard({
         0,
       ) / totalVotes;
   const zeroVoteStores = stores.filter((store) => store.feedbacks.length === 0).length;
-  const trends = buildTrendSeries(period, range.start, range.end, stores);
+  const trends = buildTrendSeries(range.bucketMode, range.start, range.end, stores);
+
+  console.log(
+    `[admin-dashboard] END render stores=${totalStores} votes=${totalVotes} ` +
+      `avgRating=${avgRating.toFixed(2)} zeroVoteStores=${zeroVoteStores} latest=${latestFeedback.length}`,
+  );
 
   const storeRows = stores
     .map((store) => {
@@ -190,23 +166,62 @@ export default async function AdminDashboard({
               Дашборд голосования
             </h2>
             <p className="mt-2 text-sm text-slate-500">
-              Период: {periodLabels[period]} ({range.label}). Обновлено: {formatDateTime(generatedAt)} (Ташкент).
+              Период: {range.periodLabel} ({range.label}). Обновлено: {formatDateTime(generatedAt)} (Ташкент).
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {(Object.keys(periodLabels) as DashboardPeriod[]).map((key) => (
-              <a
-                key={key}
-                href={`/admin?period=${key}`}
-                className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
-                  key === period
-                    ? 'bg-slate-950 text-white shadow-sm'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                }`}
+          <div className="flex flex-col gap-3 lg:items-end">
+            <div className="flex flex-wrap gap-2">
+              {(Object.keys(periodLabels) as DashboardPeriod[]).map((key) => (
+                <Link
+                  key={key}
+                  href={`/admin?period=${key}`}
+                  className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                    !range.isCustom && key === period
+                      ? 'bg-slate-950 text-white shadow-sm'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  }`}
+                >
+                  {periodLabels[key]}
+                </Link>
+              ))}
+            </div>
+            <form method="get" action="/admin" className="flex flex-wrap items-end gap-2">
+              <label className="flex flex-col text-xs font-semibold text-slate-500">
+                С даты
+                <input
+                  type="date"
+                  name="from"
+                  defaultValue={range.from ?? ''}
+                  className="mt-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-800 shadow-sm focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-200"
+                />
+              </label>
+              <label className="flex flex-col text-xs font-semibold text-slate-500">
+                По дату
+                <input
+                  type="date"
+                  name="to"
+                  defaultValue={range.to ?? ''}
+                  className="mt-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-800 shadow-sm focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-200"
+                />
+              </label>
+              <button
+                type="submit"
+                className="rounded-full bg-amber-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-600"
               >
-                {periodLabels[key]}
-              </a>
-            ))}
+                Показать
+              </button>
+              {range.isCustom && (
+                <Link
+                  href="/admin?period=daily"
+                  className="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
+                >
+                  Сбросить
+                </Link>
+              )}
+            </form>
+            <p className="text-[11px] text-slate-400 lg:text-right">
+              Выберите одну дату или диапазон, затем нажмите «Показать».
+            </p>
           </div>
         </div>
       </header>

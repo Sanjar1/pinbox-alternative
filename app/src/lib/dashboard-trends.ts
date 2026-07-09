@@ -3,6 +3,12 @@
 // the existing nowTashkent / getPeriodRange helpers in app/admin/page.tsx.
 
 export type DashboardPeriod = 'daily' | 'weekly' | 'monthly' | 'yearly';
+// 'custom' = an arbitrary from/to range picked in the UI; its chart granularity
+// is chosen from the span (see resolveGranularity) rather than fixed by preset.
+export type BucketMode = DashboardPeriod | 'custom';
+type Granularity = 'hour' | 'day' | 'month';
+
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 export type TrendPoint = {
   // x-axis label rendered under each bucket ("14:00", "Пн", "12 май", "Янв")
@@ -45,22 +51,34 @@ const RU_MONTHS_SHORT = [
 ];
 const RU_WEEKDAYS_SHORT = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
 
-// Returns ascending list of bucket-start instants (UTC) covering [start, end).
-// Granularity is chosen by period:
-//   daily  -> 1 hour buckets (Tashkent wall-clock hours)
-//   weekly -> 1 day buckets
-//   monthly -> 1 day buckets
-//   yearly -> 1 month buckets
+// Chart granularity per bucket mode. Presets keep their original fixed
+// granularity; a 'custom' range picks by span so the chart stays readable
+// and the bucket count stays bounded:
+//   daily  -> hour   |  weekly/monthly -> day  |  yearly -> month
+//   custom -> hour (<=2 days), day (<=62 days), else month
+function resolveGranularity(mode: BucketMode, start: Date, end: Date): Granularity {
+  if (mode === 'daily') return 'hour';
+  if (mode === 'yearly') return 'month';
+  if (mode === 'weekly' || mode === 'monthly') return 'day';
+  const spanDays = (end.getTime() - start.getTime()) / DAY_MS;
+  if (spanDays <= 2) return 'hour';
+  if (spanDays <= 62) return 'day';
+  return 'month';
+}
+
+// Returns ascending list of bucket-start instants (UTC) covering [start, end),
+// bucketed at the granularity resolved from `mode` + span.
 export function buildBuckets(
-  period: DashboardPeriod,
+  mode: BucketMode,
   start: Date,
   end: Date,
 ): { startUtc: Date; label: string }[] {
   const buckets: { startUtc: Date; label: string }[] = [];
   const startT = toTashkent(start);
   const endT = toTashkent(end);
+  const granularity = resolveGranularity(mode, start, end);
 
-  if (period === 'daily') {
+  if (granularity === 'hour') {
     const cursor = new Date(startT);
     cursor.setUTCMinutes(0, 0, 0);
     while (cursor < endT) {
@@ -73,7 +91,7 @@ export function buildBuckets(
     return buckets;
   }
 
-  if (period === 'yearly') {
+  if (granularity === 'month') {
     const cursor = new Date(startT);
     cursor.setUTCDate(1);
     cursor.setUTCHours(0, 0, 0, 0);
@@ -87,11 +105,11 @@ export function buildBuckets(
     return buckets;
   }
 
-  // weekly + monthly => day buckets
+  // day granularity: weekday labels for the weekly preset, calendar dates otherwise
   const cursor = new Date(startT);
   cursor.setUTCHours(0, 0, 0, 0);
   while (cursor < endT) {
-    const label = period === 'weekly'
+    const label = mode === 'weekly'
       ? RU_WEEKDAYS_SHORT[cursor.getUTCDay()]
       : `${cursor.getUTCDate()} ${RU_MONTHS_SHORT[cursor.getUTCMonth()]}`;
     buckets.push({ startUtc: fromTashkent(cursor), label });
@@ -114,12 +132,12 @@ function bucketIndexFor(
 }
 
 export function buildTrendSeries(
-  period: DashboardPeriod,
+  mode: BucketMode,
   start: Date,
   end: Date,
   stores: StoreForTrend[],
 ): { votes: TrendSeries; rating: TrendSeries; zero: TrendSeries } {
-  const buckets = buildBuckets(period, start, end);
+  const buckets = buildBuckets(mode, start, end);
 
   const voteCounts = new Array(buckets.length).fill(0) as number[];
   const ratingSums = new Array(buckets.length).fill(0) as number[];
