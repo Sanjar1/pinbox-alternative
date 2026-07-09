@@ -1,5 +1,22 @@
 # Progress Log
 
+## 2026-07-09 — Admin dashboard date picker (custom date/range) + 3rd off-peak cloud deploy schedule
+
+### Done
+- **Date picker on the reviews admin dashboard** (`/admin`) — new `?from=&to=` (Tashkent calendar dates) alongside the daily/weekly/monthly/yearly presets. One date = single day, two = inclusive range; «Сбросить» clears back to Today; chart granularity auto-picked by span (hour ≤2d / day ≤62d / month). New pure `resolveDashboardRange()` helper (`app/src/lib/dashboard-range.ts`) + `buildBuckets` `'custom'` mode (`dashboard-trends.ts`); step logging `[admin-dashboard] START → range → END`. — **Verified (code):** 13/13 new vitest tests (range resolver + custom bucketing) green; `tsc --noEmit` 0 errors; eslint clean (internal links converted to `next/link`); `next build` ✓ (`/admin` dynamic route). Full suite 26/27 — the 1 failure is the pre-existing `_render_preview` live-Google-Sheets test needing a `GSA` env var, proven to fail identically with my changes stashed. Commit `f1749d0`, pushed to `main`. — **NOT verified live** — Railway deploy peak-blocked (pushed 13:00 Tashkent, inside the 11:00–23:00 block); live browser screenshot pending the first off-peak deploy.
+- **Third off-peak cloud deploy schedule** — `nightly-railway-deploy.yml` now fires 3× (20:00 / 21:30 / 23:00 UTC = 01:00 / 02:30 / 04:00 Tashkent), all off-peak and before the 01:23 UTC daily report; runs on GitHub cloud runners so the director's PC can be off. Three spread tries survive GitHub cron drift/skips. Commit `ceda193`, pushed. — **Verified (config):** YAML reviewed; the existing 2-schedule workflow is already proven to deploy off-peak.
+
+### Changed
+- Admin period selector: preset pills no longer highlight while a custom range is active; the header caption uses the resolved range label («Выбранный период»).
+
+### Problems
+- Pushed during EU-West peak (free-tier deploy block) → cannot deploy/verify live immediately; relies on tonight's off-peak schedules.
+
+### Next
+- After the first off-peak deploy (~01:00 Tashkent tonight, else ~07:00 tomorrow): open live `/admin`, pick a past date/range, screenshot the working picker, confirm counts change — the only outstanding proof for this feature.
+
+---
+
 ## 2026-07-05 (session 9b) — Both P0s closed: honest health check + auto-applying migrations (canary-proven); crons shifted; cleanup
 
 Multi-agent run per owner's request (Opus stack-architect blueprint → Sonnet backend-builder → Opus strict-reviewer "SHIP WITH FIXES" → 2 blockers fixed before ship). Commits `a5fbf0a`, `7c9bde3`, `a1f9493` — all pushed AND deployed (active Railway deployment = `a1f9493`).

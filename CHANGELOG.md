@@ -5,6 +5,12 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added (2026-07-09)
+- **Admin dashboard date picker** — `/admin` now accepts `?from=&to=` (Tashkent dates) for any single day or custom range, alongside the daily/weekly/monthly/yearly presets. Pick one date or two; «Сбросить» resets; chart granularity auto-adjusts (hour/day/month by span). Pure unit-tested `resolveDashboardRange()` + `buildBuckets` `'custom'` mode (13 tests). (`app/src/app/admin/page.tsx`, `app/src/lib/dashboard-range.ts`, `app/src/lib/dashboard-trends.ts`; commit `f1749d0`) — not yet live (deploy peak-blocked at push time; ships next off-peak).
+
+### Changed (2026-07-09)
+- Nightly Railway deploy: **third off-peak schedule added** — now 20:00 / 21:30 / 23:00 UTC (was two) for cloud-side resilience against GitHub cron drift/skips; runs entirely on GitHub runners so deploys no longer depend on the local PC being on. (`.github/workflows/nightly-railway-deploy.yml`; commit `ceda193`)
+
 ### Fixed (2026-07-05 — session 9b)
 - **`/api/health` was blind** — now runs a real `SELECT 1` (5s timeout): 200 `{"ok":true,"db":true}` or 503 with a sanitized error; full diagnostics go to server logs only. A data-layer outage can no longer hide behind a green health check. (`app/src/app/api/health/route.ts`)
 - **Schema migrations never ran in production** — two root causes fixed: the Railway Custom Start Command override (bypassed the entrypoint) was cleared, and the 11 SQLite-dialect migrations were squashed into one PostgreSQL `0_init` with prod baselined (drift gate verified empty; metadata-only). Canary column added + dropped purely via git+deploy proves the June-9 P2022 outage class is gone. (D-051, commits `a5fbf0a`/`7c9bde3`/`a1f9493`)

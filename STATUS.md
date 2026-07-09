@@ -1,5 +1,13 @@
 # Status
 
+**Updated:** 2026-07-09 (admin dashboard date picker built + pushed; 3rd off-peak cloud deploy schedule added — both awaiting the next off-peak Railway deploy to go live)
+
+## Latest (2026-07-09)
+- **Admin date picker** (`/admin?from=&to=`) built, unit-tested (13 tests), build/lint/types green, committed `f1749d0` → `main`. **Live verification pending** — pushed inside EU-West peak-hours block, so it deploys at the next off-peak window; then screenshot the live picker.
+- **Deploy resilience:** `nightly-railway-deploy.yml` now runs 3 off-peak cloud schedules (20:00 / 21:30 / 23:00 UTC), PC-independent. Commit `ceda193`. First to fire tonight ~01:00 Tashkent will ship the date picker.
+
+---
+
 **Updated:** 2026-07-05 (session 9b — both P0s CLOSED: honest DB health check live; schema migrations now auto-apply on deploy, canary-proven end-to-end)
 
 ## Operational snapshot (2026-07-05, end of day)
