@@ -7,6 +7,7 @@ import { parseRatingsBreakdown } from '@/lib/notifications';
 import { writeAuditLog } from '@/lib/audit';
 import { cookies, headers } from 'next/headers';
 import { getClientIp, getOrCreateDeviceId, isTesterDeviceId, sha256 } from '@/lib/feedback-protection';
+import { pushVoteToTmBot } from '@/lib/tm-vote-hook';
 
 export async function submitFeedback(formData: FormData): Promise<{ error?: string; success?: string }> {
   const submittedAt = new Date();
@@ -121,7 +122,7 @@ export async function submitFeedback(formData: FormData): Promise<{ error?: stri
     }
   }
 
-  await withDbRetry(() =>
+  const created = await withDbRetry(() =>
     prisma.feedback.create({
       data: {
         storeId: store.id,
@@ -169,6 +170,25 @@ export async function submitFeedback(formData: FormData): Promise<{ error?: stri
     } else {
       flushAlert(sessionKey, payload);
     }
+  }
+
+  // Let the TM checklist bot credit a territorial manager who is standing in this store
+  // running their 30-minute QR-vote task. Vote rows only — the follow-up comment row is
+  // the same customer event and must not count twice. `positive` is the exact complement
+  // of the isVoteCall branch of `shouldAlert` above, so the bot and this app can never
+  // disagree about what counts as a complaint. Fire-and-forget: never blocks the vote.
+  if (isVoteCall) {
+    pushVoteToTmBot({
+      feedbackId: created.id,
+      storeId: store.id,
+      storeName: store.name,
+      rating,
+      minQuestionRating,
+      positive: !(rating <= 3 || minQuestionRating <= 2),
+      flagged: suspicious,
+      tester: testerBypass,
+      votedAt: created.createdAt,
+    });
   }
 
   return { success: 'ok' };
