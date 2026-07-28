@@ -49,9 +49,40 @@ function indexDbStores(db: DbStore[]): Map<string, DbStore> {
   return byNorm;
 }
 
+export type StoreIndex = {
+  byNorm: Map<string, DbStore>;
+  byExactName: Map<string, DbStore>;
+};
+
+export function buildStoreIndex(db: DbStore[]): StoreIndex {
+  return {
+    byNorm: indexDbStores(db),
+    byExactName: new Map(db.map((s) => [s.name, s])),
+  };
+}
+
+// Match ONE sheet store name to a DB store, in priority order: raw exact alias →
+// normalized alias → normalized direct match. Extracted from resolveAssignments so the
+// TM checklist bot can resolve names through this same table (via /api/tm/store-map)
+// instead of keeping a second copy of the aliases that would silently drift.
+//
+// Deliberately does NOT apply SKIP_NAMES: resolveAssignments `continue`s a skip-name
+// WITHOUT recording it as unmatched, and folding the check in here would change what
+// the manager sync reports.
+export function matchStoreName(sheetName: string, index: StoreIndex): DbStore | undefined {
+  const storeName = (sheetName ?? '').trim();
+  if (!storeName) return undefined;
+
+  const aliasDbName = RAW_ALIASES[storeName];
+  if (aliasDbName) return index.byExactName.get(aliasDbName);
+
+  const norm = normalizeStoreName(storeName);
+  const target = NORMALIZED_ALIASES[norm];
+  return target ? index.byExactName.get(target) : index.byNorm.get(norm);
+}
+
 export function resolveAssignments(rows: SheetRow[], db: DbStore[]): ResolveResult {
-  const byNorm = indexDbStores(db);
-  const byExactName = new Map(db.map((s) => [s.name, s]));
+  const index = buildStoreIndex(db);
   const assignments = new Map<string, string>();
   const unmatched: string[] = [];
   const seen = new Map<string, string>(); // storeId → first sheet name (dupe check)
@@ -64,19 +95,7 @@ export function resolveAssignments(rows: SheetRow[], db: DbStore[]): ResolveResu
     if (!storeName || !tm) continue;
     if (SKIP_NAMES.has(storeName)) continue;
 
-    // 1) raw exact alias (Глоток stores) → DB store by exact name
-    let store: DbStore | undefined;
-    const aliasDbName = RAW_ALIASES[storeName];
-    if (aliasDbName) {
-      store = byExactName.get(aliasDbName);
-    } else {
-      // 2) normalized alias, else 3) normalized direct match
-      const norm = normalizeStoreName(storeName);
-      const target = NORMALIZED_ALIASES[norm];
-      store = target
-        ? byExactName.get(target)
-        : byNorm.get(norm);
-    }
+    const store = matchStoreName(storeName, index);
 
     if (!store) { unmatched.push(storeName); continue; }
     if (seen.has(store.id)) { duplicateTargets.push(store.id); continue; }

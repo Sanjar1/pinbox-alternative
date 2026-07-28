@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { normalizeStoreName, resolveAssignments } from './manager-match';
+import { normalizeStoreName, resolveAssignments, buildStoreIndex, matchStoreName } from './manager-match';
 
 // Minimal DB-store stand-ins.
 const DB = [
@@ -143,5 +143,60 @@ describe('resolveAssignments', () => {
     expect(glotok.id).not.toBe(plain.id);
     expect(r.assignments.get(glotok.id)).toBe('Абдухамитова Арофат');
     expect(r.assignments.get(plain.id)).toBe('Абдухамитова Арофат');
+  });
+});
+
+// --- Extracted single-name matcher (for the TM bot's store-map endpoint) ---
+// The TM checklist bot must resolve Менеджеры-sheet names to QR-app store ids without
+// duplicating this alias table. These cases lock the extraction's behaviour so the
+// endpoint and the manager sync can never disagree about what "Лавка Сергели" means.
+describe('matchStoreName', () => {
+  const idx = buildStoreIndex(DB);
+
+  it('strips the "Лавка " prefix', () => {
+    expect(matchStoreName('Лавка Юнусабад', idx)?.name).toBe('Юнусабад');
+  });
+
+  it('strips the "Ruba " prefix', () => {
+    expect(matchStoreName('Ruba Бухара', idx)?.name).toBe('Бухара');
+  });
+
+  it('applies a normalized alias', () => {
+    expect(matchStoreName('Лавка Юнусобод', idx)?.name).toBe('Юнусабад');
+  });
+
+  it('applies a latin-target normalized alias', () => {
+    expect(matchStoreName('Лавка Фуд сити', idx)?.name).toBe('Food city');
+  });
+
+  it('applies a raw alias without stripping the prefix', () => {
+    expect(matchStoreName('Глоток Панелный', idx)?.name).toBe('Глоток Панельный');
+  });
+
+  it('does not collide Глоток Юнусабад with plain Юнусабад', () => {
+    expect(matchStoreName('Глоток Юнусабад', idx)?.name).toBe('Глоток Юнусабад');
+  });
+
+  it('is ё-insensitive and whitespace tolerant', () => {
+    expect(matchStoreName('  Лавка   Ялангоч ', idx)?.name).toBe('Ялангач');
+  });
+
+  it('is case tolerant', () => {
+    expect(matchStoreName('Лавка ЦУМ', idx)?.name).toBe('Цум');
+  });
+
+  it('returns undefined for an unknown store', () => {
+    expect(matchStoreName('Лавка Марс', idx)).toBeUndefined();
+  });
+
+  it('returns undefined for blank input', () => {
+    expect(matchStoreName('   ', idx)).toBeUndefined();
+  });
+
+  // SKIP_NAMES filtering deliberately stays in resolveAssignments: today a skip-name
+  // is `continue`d WITHOUT being pushed to `unmatched`, and moving the check in here
+  // would change the manager sync's reported output.
+  it('does not itself apply SKIP_NAMES', () => {
+    expect(matchStoreName('НЕ НАЗНАЧЕН', idx)).toBeUndefined();
   });
 });
