@@ -15,7 +15,7 @@ bot. That bot left Fly.io on 2026-08-06 and now runs on our own server.
 |---|---|
 | Railway variable | `TM_BOT_VOTE_HOOK_URL` on service `web` |
 | Old value | `https://tm-checklist-bot.fly.dev/qr-vote` ← **dead** |
-| Current value | `https://bots.sirnayalavka.uz/qr-vote` |
+| Current value | `https://bots.159.69.107.254.nip.io/qr-vote` |
 
 **Why this matters more than it looks:** the push is fire-and-forget with a 2.5-second timeout
 and **zero retries**. If this URL is ever wrong, votes are lost silently — the vote row still
