@@ -2,6 +2,22 @@
 
 ## Common Issues
 
+### Posters dead and Railway says the trial expired / deployments are paused
+- **Symptom:** Every poster URL shows Railway's "Not Found - The train has not arrived at the station". `railway up` is rejected with `Your trial has expired. Please select a plan to continue using Railway.` The Railway dashboard reads "Your trial is over / 30 day trial expired / All deployments are paused".
+- **Cause:** The workspace has no active paid plan. Seen 2026-08-12/13 (~21 h outage) after Hobby was cancelled: the workspace fell to a 30-day trial which then expired **by date** - not by spending; ~$4.31 of the $5 credit was still unused. Nothing is deleted (services and volumes survive), but every deployment is paused.
+- **Solution:** The owner must select a plan at `railway.com/workspace/plans`. Railway rebuilds automatically once the subscription is active. Then verify: `/api/health` -> `{"ok":true,"db":true}`, `node scripts/check-a5-qr.cjs` -> 41/41 HTTP 200, and read the boot log for `migrations up to date` -> `Ready`. **Prevention: never cancel Hobby** - this account is not offered a Free plan (`hasExhaustedFreePlan: true`). See the `CLAUDE.md` "Railway plan & usage budget" hard rule.
+- **Do not trust `railway status` here** - during this outage it reported a stale deployment from May and a misleading `Failed` state. Query deployments through the GraphQL API instead (`https://backboard.railway.com/graphql/v2`, `Authorization: Bearer <user.accessToken from ~/.railway/config.json>`, and a `User-Agent: railwayapp/4.0.0` header or Cloudflare returns error 1010).
+
+### A customer says "my vote doesn't work" but the site is up
+- **Symptom:** The poster page loads, but the owner's own vote is refused or seems to do nothing.
+- **Cause:** Usually **by design**. `app/src/app/[slug]/actions.ts` allows **one vote per device, per store, per 35 days** and returns the Russian message "С этого устройства можно голосовать один раз в 35 дней." Other limits: >=5 votes from one IP in 10 minutes, >=25 per store per day, >20 per store per minute. Separately, App Sleeping makes the first load after idle take 3-10 s, which can feel like a dead page.
+- **Solution:** Ask what exactly appeared (which red message / stuck button / nothing at all). Test from a **different store's poster** or a different network - if that works, it is the per-device rule and nothing is broken. To confirm the system overall, query the DB for today's rows (`SELECT COUNT(*) FROM "Feedback" WHERE "createdAt"::date = CURRENT_DATE`).
+
+### The star buttons stop responding while automating the voting page
+- **Symptom:** During browser automation the stars stop lighting up on every store, React `onClick` is attached but calling it changes nothing.
+- **Cause:** The **automation browser tab is wedged**, not the app. The tell is `Page.captureScreenshot` timing out with "the renderer may be frozen or unresponsive" shortly beforehand.
+- **Solution:** Re-test in a second, independent browser (Playwright) before reporting any bug. Seen 2026-08-13, where a clean browser ran the full star->submit flow perfectly.
+
 ### QR scan shows Railway's "Not Found — The train has not arrived at the station" page
 - **Symptom:** Every poster URL (and `/api/health`) returns Railway's own 404 page / `{"message":"Application not found"}` — this is Railway's edge, not our app (our app's errors look different).
 - **Cause:** Railway has no running deployment bound to the domain. Seen 2026-07-05 when the Free-plan usage grant ran out ("You have used all your available resources" in the deploy log) and Railway removed the deployment. Other possible causes: service deleted, or a failed deploy left no active deployment.

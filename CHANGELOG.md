@@ -5,6 +5,18 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed (2026-08-13)
+- **Production outage resolved (~21 h, all 41 posters dark).** Railway's 30-day trial expired by date on 2026-08-12 and Railway paused every deployment; the app itself was healthy (last build clean, healthcheck passed). Restored by subscribing to **Hobby $5/mo**. Verified live: `/api/health` -> `{"ok":true,"db":true}`, root `http=200`, `scripts/check-a5-qr.cjs` -> 41/41 HTTP 200, clean START->END log trace.
+- **Removed the documented instruction that caused the outage.** `CLAUDE.md`, `STATUS.md`, `PROGRESS.md`, `DECISIONS.md` and `TODO.md` all told a future session to "cancel Hobby -> back to Free". This account is not offered a Free plan (`/workspace/plans` = Hobby/Pro only; API `hasExhaustedFreePlan: true`). All five rewritten; repo-wide grep confirms no live instruction remains.
+
+### Changed (2026-08-13)
+- **`CLAUDE.md` hard rule rewritten** - section renamed "Railway plan & usage budget". Rule 1 is now *never leave this workspace without a paid plan* and explicitly outranks the $1/mo cost budget; both outages (2026-07-05, 2026-08-12/13) are recorded; asserting Railway's plan catalog without reading `/workspace/plans` live is now forbidden. Old file backed up to the session scratchpad.
+- Railway workspace: expired trial -> **Hobby $5/mo**, `sub_1U3rzECJoPsRzQsdkjfqfuC0`, billing period 2026-08-13 -> 2026-09-13. August usage $0.69 (cost was never the constraint).
+
+### Verified, not changed (2026-08-13)
+- **TM bot vote hook proven live end-to-end for the first time.** Previously only the URL was read; the push is fire-and-forget (2.5 s timeout, zero retries) so a break is invisible. Unauthenticated `POST /qr-vote` -> `401 {"error":"unauthorized"}` in 0.55 s (fails loudly); authenticated push with production's real credentials -> `200 {"ok":true}` in 0.646 s.
+- **Voting works.** Real vote submitted through a poster page -> success screen; row in prod DB `2026-08-13T07:40:35 rating=5 status=NEW`; 13 real customer votes the same day. One synthetic 5/5/5 test row exists on RUBA BUHARA - discount it.
+
 ### Added (2026-07-09)
 - **Admin dashboard date picker** — `/admin` now accepts `?from=&to=` (Tashkent dates) for any single day or custom range, alongside the daily/weekly/monthly/yearly presets. Pick one date or two; «Сбросить» resets; chart granularity auto-adjusts (hour/day/month by span). Pure unit-tested `resolveDashboardRange()` + `buildBuckets` `'custom'` mode (13 tests). (`app/src/app/admin/page.tsx`, `app/src/lib/dashboard-range.ts`, `app/src/lib/dashboard-trends.ts`; commit `f1749d0`) — not yet live (deploy peak-blocked at push time; ships next off-peak).
 

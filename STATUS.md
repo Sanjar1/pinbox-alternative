@@ -1,6 +1,21 @@
 # Status
 
-**Updated:** 2026-07-09 (admin dashboard date picker built + pushed; 3rd off-peak cloud deploy schedule added — both awaiting the next off-peak Railway deploy to go live)
+**Updated:** 2026-08-13 (production restored on Hobby $5 after a ~21 h trial-expiry outage; the doc rule that caused it removed from all 5 files; Railway support thread sent)
+
+## Latest (2026-08-13)
+- **Production is UP and verified.** `/api/health` -> `{"ok":true,"db":true}`; root `http=200`; **41/41** poster URLs HTTP 200 (`scripts/check-a5-qr.cjs`); log trace clean (`migrations up to date` -> `Ready in 136ms` -> `[health] START/END db-select-1 ok`).
+- **Cause of the outage (2026-08-12 09:31 UTC -> 2026-08-13 06:21 UTC, ~21 h):** not code. Railway's 30-day trial expired **by date** and Railway paused every deployment. Fixed by subscribing to **Hobby $5/mo** (`sub_1U3rzECJoPsRzQsdkjfqfuC0`, ACTIVE, renews 13 Sep 2026). Votes during the window were dropped, not queued.
+- **Plan posture (CHANGED - read this before touching billing):** **stay on Hobby $5.** This account is **not offered a Free plan** - `/workspace/plans` shows only Hobby ($5) and Pro ($20); API reports `hasExhaustedFreePlan: true`. Usage is irrelevant to the bill: August was **$0.69**, this cycle $0.003. **Do NOT cancel Hobby** unless Railway confirms in writing that Free is available - cancelling is exactly what caused this outage.
+- **Railway support thread sent**, awaiting reply (community support, no guaranteed response): https://station.railway.com/support/trial-expired-with-no-free-plan-offered-043303db
+- **TM bot vote hook proven live** for the first time: unauth `401` in 0.55 s (fails loudly), authenticated push `200 {"ok":true}` in 0.646 s (inside the 2.5 s timeout).
+- **Voting confirmed working** - real vote stored (`2026-08-13T07:40:35 rating=5 status=NEW`), 13 real customer votes today. One synthetic 5/5/5 test row on RUBA BUHARA is mine; discount it.
+- **Blocked on the owner:** (1) re-run or skip the missing 12 Aug daily report (OWNER-3); (2) approve building uptime alerting (Priority 0); (3) say what he actually saw when voting failed (OWNER-4).
+- **Biggest open risk:** still **no uptime alerting**. This outage ran ~19 of its 21 hours undetected and was found only because the owner scanned a poster; July 2026 had the identical shape.
+
+---
+
+
+**Updated:** 2026-07-09 (admin dashboard date picker built + pushed; 3rd off-peak cloud deploy schedule added)
 
 ## Latest (2026-07-09)
 - **Admin date picker** (`/admin?from=&to=`) built, unit-tested (13 tests), build/lint/types green, committed `f1749d0` → `main`. **Live verification pending** — pushed inside EU-West peak-hours block, so it deploys at the next off-peak window; then screenshot the live picker.
@@ -13,13 +28,13 @@
 ## Operational snapshot (2026-07-05, end of day)
 - **Production healthy on commit `a1f9493`** (= main = deployed): `/api/health` → `{"ok":true,"db":true}` (now a REAL `SELECT 1` with 5s timeout — a data-layer outage turns it red); 41/41 frozen QR links HTTP 200; voting 200; QRCode 43/43 distinct slugs intact.
 - **Schema pipeline FIXED + canary-proven:** `prisma migrate deploy` runs automatically at every container start (entrypoint, 5-retry, fail-safe: bad migration can't replace a healthy container). A canary column was added AND dropped purely via git+deploy — zero manual DB work. The June-9 outage class (P2022 missing column) is eliminated. **Never `db push` prod again.**
-- **Cost posture:** Hobby $5 covers July (~5x headroom). Web sleeps when idle (confirmed sleeping mid-day); Postgres deliberately ALWAYS-ON (sleep disabled for migration reliability). Projected ~$0.50–0.70/mo vs the $1.00 free grant → cancel Hobby early August after burn-rate verification.
+- **Cost posture:** Hobby $5 covers July (~5x headroom). Web sleeps when idle (confirmed sleeping mid-day); Postgres deliberately ALWAYS-ON (sleep disabled for migration reliability). Projected ~$0.50–0.70/mo vs the $1.00 free grant. 🔴 **The old plan here — "cancel Hobby early August" — was carried out and CAUSED a ~21 h outage on 2026-08-12/13:** the workspace fell to a trial, the trial expired by date, Railway paused all deployments and every one of the 41 posters went dark. This account is not offered a Free plan (`/workspace/plans` shows only Hobby/Pro; `hasExhaustedFreePlan: true`). **Stay on Hobby $5** unless Railway confirms otherwise — see the CLAUDE.md "Railway plan & usage budget" hard rule.
 - **Daily report crons moved to 01:23/02:23 UTC** (odd minutes) — expect arrival ~08:00–09:00 Tashkent from tomorrow instead of ~12:30. First live datapoint: tomorrow morning.
 - Earlier same day (session 9a): free-tier grant exhaustion outage, restore on Hobby, Serverless enable, budget + frozen-domain hard rules — see PROGRESS 2026-07-05 (session 9).
 
 ## Current Phase
 
-`M6 — Cost sustainability + reliability hardening. Both carried P0s closed on 2026-07-05 via multi-agent run (Opus architect blueprint → Sonnet builder → Opus strict review "ship with fixes" → both blockers fixed pre-ship): (1) /api/health does a real DB check; (2) migrations auto-apply — root causes were a Railway dashboard Custom Start Command override silently bypassing the entrypoint AND 11 SQLite-dialect migration files that could never run on Postgres; fixed by squash-to-0_init + prod baseline (drift gate empty → resolve --applied, metadata only) + lock file postgresql + override CLEARED + retry entrypoint + CI slug-guard on migrations. Full logical backup taken first (8,312 rows / 19 tables). Canary round-trip verified live. Also: report crons shifted earlier; dead Postgres service deleted; tmp scripts cleaned, 41-link checker promoted to scripts/check-a5-qr.cjs (cwd bug fixed). Remaining: verify Railway burn rate in 2-3 days → cancel Hobby before August cycle; review pile of pre-July-5 uncommitted working-tree files.`
+`M6 — Cost sustainability + reliability hardening. Both carried P0s closed on 2026-07-05 via multi-agent run (Opus architect blueprint → Sonnet builder → Opus strict review "ship with fixes" → both blockers fixed pre-ship): (1) /api/health does a real DB check; (2) migrations auto-apply — root causes were a Railway dashboard Custom Start Command override silently bypassing the entrypoint AND 11 SQLite-dialect migration files that could never run on Postgres; fixed by squash-to-0_init + prod baseline (drift gate empty → resolve --applied, metadata only) + lock file postgresql + override CLEARED + retry entrypoint + CI slug-guard on migrations. Full logical backup taken first (8,312 rows / 19 tables). Canary round-trip verified live. Also: report crons shifted earlier; dead Postgres service deleted; tmp scripts cleaned, 41-link checker promoted to scripts/check-a5-qr.cjs (cwd bug fixed). Remaining: ~~cancel Hobby before August cycle~~ — DO NOT (that step caused the 2026-08-12 outage; workspace stays on Hobby); review pile of pre-July-5 uncommitted working-tree files.`
 
 ## What Is Done (2026-06-09, session 7)
 

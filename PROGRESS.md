@@ -1,5 +1,35 @@
 # Progress Log
 
+## 2026-08-13 - Production restored after a ~21 h outage (expired Railway trial); support thread sent; the doc rule that caused it removed
+
+### Done
+- **Diagnosed the outage - not a code fault.** The last deploy (2026-08-11 23:45 UTC) built cleanly and passed its healthcheck. Railway's 30-day trial expired **by date** and Railway paused every deployment. - **Verified:** `/workspace/plans` read "Your trial is over / 30 day trial expired / All deployments are paused"; deploys rejected with `Your trial has expired. Please select a plan to continue using Railway.`; API showed `isTrialing` and `hasExhaustedFreePlan: true`. Both services (`web`, `Postgres-PlIz`) and `postgres-volume` still present - nothing deleted.
+- **Restored production** - owner approved Hobby $5; subscribed via the Railway billing UI (saved card; no card data entered by me). - **Verified:** API returns `plan: HOBBY`, `state: ACTIVE`, `isUsageSubscriber: true`, `subscriptions: [{id: "sub_1U3rzECJoPsRzQsdkjfqfuC0", status: "active"}]`; billing period 2026-08-13 -> 2026-09-13.
+- **Confirmed the app is actually serving.** - **Verified:** `/api/health` -> `{"ok":true,"db":true}`; root -> `http=200`; `scripts/check-a5-qr.cjs` -> `{"total": 41, "summary": {"200": 41}}`; log trace `No pending migrations to apply` -> `[entrypoint] migrations up to date - starting server` -> `Ready in 136ms` -> `[health] START db-select-1` -> `[health] END db-select-1 ok`.
+- **Closed the vote-path check that had never been proven.** Previously only the hook URL was *read*; the push is fire-and-forget (2.5 s timeout, no retries) so a broken one fails invisibly. - **Verified live, both directions:** unauthenticated `POST /qr-vote` -> `401 {"error":"unauthorized"}` in 0.55 s (refuses loudly); authenticated push with production's real credentials -> `200 {"ok":true}` in 0.646 s, inside the timeout. Sent with `tester: true`, which the bot ignores by contract.
+- **Sent the Railway support thread** asking whether this workspace can move to the Free plan. - **Verified:** thread live at https://station.railway.com/support/trial-expired-with-no-free-plan-offered-043303db , author `sanjar1`/HOBBY/OP, all 9 paragraphs rendered, key facts intact (`21 hours`, `hasExhaustedFreePlan`, `$4.31`, `41 physical posters`).
+- **Removed the instruction that caused the outage from all 5 files that carried it** - `CLAUDE.md` (auto-loaded every session), `STATUS.md`, `PROGRESS.md`, `DECISIONS.md`, `TODO.md`. The `CLAUDE.md` section is now "Railway plan & usage budget" with rule 1 = *never leave this workspace without a paid plan*, explicitly outranking the cost budget. - **Verified:** repo-wide grep for `cancel hobby|downgrade back to free|back to free` returns only struck-through text inside the warnings themselves; no live instruction remains.
+- **Answered "my votes don't work" - votes DO work.** - **Verified:** submitted a real vote through a poster page -> success screen "Rahmat! Xabaringiz qabul qilindi." (Cyrillic in app); row present in prod DB `2026-08-13T07:40:35 rating=5 status=NEW`; **13 real customer votes today**, all `status=NEW`; full star->submit flow re-verified in an independent browser (submit enables once all three questions are rated).
+
+### Changed
+- Railway workspace moved from expired trial to **Hobby $5/mo** (auto-renews 13 Sep 2026). Usage this cycle $0.003; August total $0.69 - cost was never the constraint, the *plan* was.
+- Test data note: one synthetic 5/5/5 vote exists on **RUBA BUHARA** at 07:40:35 UTC (mine) - discount it when reading that store's numbers.
+
+### Problems
+- **The outage ran ~19 of its 21 hours undetected.** It was found only because the owner scanned a poster. The `nightly-railway-deploy` and `daily-telegram-report` workflows both failed silently into GitHub's UI. The 2026-07-05 outage had the identical shape - twice is a pattern. No uptime alerting exists yet (TODO Priority 0).
+- **The owner never received his 12 August daily report** (both runs failed, 03:33 and 04:22 UTC). A re-run would cover a day whose back half has no data - it would read as a feedback collapse rather than an outage artefact. Owner decision pending (OWNER-3).
+- **Unexplained:** daily votes 10 Aug **134** -> 11 Aug **62** -> 12 Aug **49** -> 13 Aug **13 so far**. The 134->62 fall predates the outage, so the outage does not explain it. Not investigated.
+- Railway's Central Station composer fought automation: "Get help" is a `div` with a React handler (not a button), and its Slate editor ignores programmatically inserted text - the first submit was rejected with "Description is required" despite the text being visible on screen. The body had to be entered as genuine keystrokes.
+
+### Next
+- Owner decision: (a) re-run the 12 Aug report labelled "morning only", or (b) skip it - OWNER-3.
+- Owner decision: approve building uptime alerting on the poster domain, ideally from the Hetzner box so it survives a Railway outage - TODO Priority 0.
+- Owner detail needed: exactly what he saw when voting failed (red message / stuck button / nothing) - distinguishes the by-design 35-day per-device rule from a real bug - OWNER-4.
+- Watch the support thread for a Railway reply (community support, **no guaranteed response**).
+
+---
+
+
 ## 2026-07-09 — Admin dashboard date picker (custom date/range) + 3rd off-peak cloud deploy schedule
 
 ### Done
@@ -60,7 +90,10 @@ Multi-agent run per owner's request (Opus stack-architect blueprint → Sonnet b
 
 ### Next
 - **In 1–2 days: check Railway usage burn rate** — if daily burn dropped to ~$0.02/day, sleeping works → under free grant. If flat at ~$0.04/day, investigate what keeps the app awake (likely outbound DB keepalives) → fallback: scheduled night stop (owner's idea) or move DB to free external Postgres (Neon), web stays on Railway (domain frozen).
-- **Early August (before next $5 charge):** if projection < $1/mo confirmed → owner cancels Hobby → back to Free plan.
+- ~~**Early August (before next $5 charge):** owner cancels Hobby → back to Free plan.~~
+  🔴 **DONE, AND IT BROKE PRODUCTION (2026-08-12/13).** Hobby was cancelled; the workspace fell to a
+  trial that expired by date; Railway paused all deployments; the app was offline ~21 h and all 41
+  posters were dead. There is no Free plan available to this account. **Workspace stays on Hobby $5.**
 - Cleanup candidate (needs owner OK): delete the dead `Postgres` service (build failed 4 months ago, $0 usage) left on the Railway canvas.
 - Carried P0s: prod migration pipeline hardening; `/api/health` `SELECT 1`.
 

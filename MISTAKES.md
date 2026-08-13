@@ -1,5 +1,27 @@
 # Mistakes and Lessons Learned
 
+## 2026-08-13 - A project doc told a future session to cancel the paid plan; it did, and 41 posters went dark for ~21 hours
+
+- **What happened:** Hobby was cancelled in early August per the documented plan. The workspace dropped to a 30-day trial. The trial expired **by date** (not by spending - ~$4.31 of the $5 credit was still unused) on 2026-08-12, Railway paused every deployment, and all 41 printed QR posters returned Railway's "train has not arrived" page for ~21 hours (09:31 UTC 12 Aug -> 06:21 UTC 13 Aug). Votes in that window were dropped, not queued.
+- **Root cause:** The instruction lived in **five** project files, including `CLAUDE.md`, which is auto-loaded into context at the start of every session: *"optimize under $1.00/mo and downgrade back to Free"* and, as an open unchecked TODO, *"Early August, BEFORE the next $5 charge: owner cancels Hobby -> back to Free."* It was followed exactly as written. The premise was false: **this account is not offered a Free plan at all** - `/workspace/plans` lists only Hobby ($5) and Pro ($20), and the API reports `hasExhaustedFreePlan: true`. Cost was never the problem; August usage was **$0.69**, comfortably inside even the $1 free grant.
+- **How found:** The owner scanned a poster and saw the 404. Diagnosis needed the Railway GraphQL API (the CLI's `railway status` pointed at a stale May deployment and was actively misleading) plus the billing page, which stated the trial expiry and the paused deployments verbatim.
+- **Lesson:** (1) **A written plan is an instruction to your future self - a stale one is an active landmine, not merely stale.** It must be deleted or struck through the moment reality changes, in *every* file that carries it; a warning in `TODO.md` loses to a rule in `CLAUDE.md`, because `CLAUDE.md` loads first. (2) **Never assert what a vendor's plan catalog offers from memory or from a doc - read the live billing page.** A "Free plan" existing as a public product does not mean *this account* can select it. (3) Availability now outranks cost in `CLAUDE.md`: rule 1 is *never leave this workspace without a paid plan*. (4) Trials can expire by **date** while credit remains - never treat unspent credit as remaining runway.
+
+## 2026-08-13 - I told the owner "there is no zero-cost path back", and he was right to push back
+
+- **What happened:** I stated flatly that the account had no free option. The owner objected that he had run free before and had removed his other Railway projects. Checking `railway.com/pricing` showed a **Free plan does exist** - $0/month with $1 of usage credit, 0.5 GB RAM, 1 vCPU. My statement was wrong as phrased.
+- **Root cause:** I generalised from one screen (this workspace's `/workspace/plans`, which offers only Hobby and Pro) to a claim about Railway's whole product line, and stated it with more confidence than the evidence carried. The accurate, narrower statement is: *Free exists as a product, but this account is not offered it (`hasExhaustedFreePlan: true`).*
+- **How found:** The owner's pushback, then verification against the public pricing page.
+- **Lesson:** (1) Separate "what the vendor sells" from "what this account can select" - they are different claims needing different evidence. (2) When the owner contradicts a claim from lived experience, **check before defending**; he was right, and the correction went to disk as well as to chat. (3) Corrected the same session: the trial expired by date, not by spending.
+
+## 2026-08-13 - I nearly reported a fake bug because my own browser tab was wedged
+
+- **What happened:** Investigating "votes don't work", I successfully submitted a real vote, then on the next pass the star buttons stopped responding entirely - across two different stores. React fiber and `onClick` were attached, calling the handler directly threw no error, and nothing updated. It looked exactly like a genuine, reproducible frontend bug.
+- **Root cause:** The Chrome tab's renderer was wedged - `Page.captureScreenshot` had been timing out with "the renderer may be frozen" since the first vote. The app was fine. An independent Playwright browser ran the full star->submit flow perfectly and enabled the submit button.
+- **How found:** Noticed the screenshot timeouts correlated with the "bug" appearing, and re-tested in a different browser rather than writing it up.
+- **Lesson:** (1) **A tool malfunction can perfectly imitate an application bug.** Before reporting a UI fault, reproduce it in a second, independent browser. (2) Treat tool-level errors (screenshot timeouts, frozen-renderer warnings) as evidence about the *tool*, not noise to work around. (3) The cheap tell: the failure appeared only in the session that had been driving the page for a while, never on a fresh one.
+
+
 ## 2026-07-05 — Free-tier usage grant ran out with zero warning margin → total production outage (all 41 posters dark)
 
 - **What happened:** Every printed QR poster showed Railway's "train has not arrived at the station" 404. Railway had removed the deployment and unbound the domain because the account's Free-plan usage grant ($1.00/month) was exhausted. The nightly deploy failed with "You have used all your available resources"; both morning report runs failed. Total outage ~9h until diagnosed + owner paid Hobby + redeploy.

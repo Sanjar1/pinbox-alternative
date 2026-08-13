@@ -2,7 +2,11 @@
 
 ## Current Milestone: M6 — Deploy/DB Pipeline Hardening (next)
 
-**Status:** Active (opened 2026-06-09). M5 is closed (below). Focus: make schema migrations auto-apply on deploy (today a new Prisma column 500'd all 41 posters because prod is db-push-managed and migrations don't run), make `/api/health` exercise the DB, and decide Railway free-tier-vs-paid. See TODO Priority 0 and memory `prod-db-migration-model`.
+**Status:** Active (opened 2026-06-09). M5 is closed (below). Original focus DONE 2026-07-05: migrations auto-apply on deploy and `/api/health` exercises the DB.
+
+**Railway free-tier-vs-paid: DECIDED 2026-08-13 (D-052) — stay on Hobby $5/mo indefinitely.** This account is not offered a Free plan (`hasExhaustedFreePlan: true`); trying to return to Free is what caused the ~21 h outage on 2026-08-12/13. Never cancel Hobby without written confirmation from Railway.
+
+**Remaining in M6 — the gap both outages exposed: nothing watches production.** Twice now the app has been down for most of a day and been found only because the owner scanned a poster. Next: uptime alerting on the poster domain, run from the Hetzner box so it survives a Railway outage, plus wiring the Telegram failure-alert step into `daily-telegram-report.yml` and `nightly-railway-deploy.yml`. See TODO Priority 0.
 
 ## Previous Milestone: M5 — Reporting Activation
 
