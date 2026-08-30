@@ -40,6 +40,9 @@ export async function GET(req: Request) {
       contact: true,
       status: true,
       createdAt: true,
+      // 30.08.2026: the Задачи bot ranks stores by positive votes from DISTINCT
+      // devices (anti-gaming); the hash is opaque and already indexed.
+      deviceHash: true,
       store: {
         select: {
           id: true,
@@ -58,6 +61,7 @@ export async function GET(req: Request) {
     contact: f.contact,
     status: f.status,
     createdAt: f.createdAt,
+    deviceHash: f.deviceHash ?? null,
   }));
 
   return NextResponse.json({
