@@ -188,7 +188,7 @@ describe('matchStoreName', () => {
   it('maps the sheet name «Лавка Чирчик Восемь» to the DB store «Чирчик Восьмой»', () => {
     const withNew = buildStoreIndex([...DB, { id: 'chirchik-8', name: 'Чирчик Восьмой' }]);
     expect(matchStoreName('Лавка Чирчик Восемь', withNew)?.name).toBe('Чирчик Восьмой');
-    expect(matchStoreName('Лавка Чирчик', withNew)?.name).not.toBe('Чирчик Восьмой');
+    expect(matchStoreName('Лавка Чирчик', withNew)?.name).toBe('Чирчик');
   });
 
   it('returns undefined for an unknown store', () => {

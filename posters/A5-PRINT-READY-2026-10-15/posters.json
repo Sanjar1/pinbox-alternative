@@ -1,0 +1,385 @@
+{
+  "generatedAt": "2026-10-15T14:20:21.072Z",
+  "base": "https://qr.sirnayalavka.uz",
+  "total": 42,
+  "posters": [
+    {
+      "n": 1,
+      "store": "Лавка Авайхон",
+      "brand": "kaas",
+      "slug": "c37261",
+      "url": "https://qr.sirnayalavka.uz/c37261",
+      "html": "Лавка Авайхон.html",
+      "pdf": "pages/01.pdf"
+    },
+    {
+      "n": 2,
+      "store": "Лавка Авиасозлар",
+      "brand": "kaas",
+      "slug": "523da2",
+      "url": "https://qr.sirnayalavka.uz/523da2",
+      "html": "Лавка Авиасозлар.html",
+      "pdf": "pages/02.pdf"
+    },
+    {
+      "n": 3,
+      "store": "Лавка Аския",
+      "brand": "kaas",
+      "slug": "e6bbb0",
+      "url": "https://qr.sirnayalavka.uz/e6bbb0",
+      "html": "Лавка Аския.html",
+      "pdf": "pages/03.pdf"
+    },
+    {
+      "n": 4,
+      "store": "Лавка Бектемир",
+      "brand": "kaas",
+      "slug": "14c32a",
+      "url": "https://qr.sirnayalavka.uz/14c32a",
+      "html": "Лавка Бектемир.html",
+      "pdf": "pages/04.pdf"
+    },
+    {
+      "n": 5,
+      "store": "Лавка Буз Базар",
+      "brand": "kaas",
+      "slug": "b05e4f",
+      "url": "https://qr.sirnayalavka.uz/b05e4f",
+      "html": "Лавка Буз Базар.html",
+      "pdf": "pages/05.pdf"
+    },
+    {
+      "n": 6,
+      "store": "Лавка Газалкент",
+      "brand": "kaas",
+      "slug": "0c3900",
+      "url": "https://qr.sirnayalavka.uz/0c3900",
+      "html": "Лавка Газалкент.html",
+      "pdf": "pages/06.pdf"
+    },
+    {
+      "n": 7,
+      "store": "Лавка Госпитальный",
+      "brand": "kaas",
+      "slug": "daf942",
+      "url": "https://qr.sirnayalavka.uz/daf942",
+      "html": "Лавка Госпитальный.html",
+      "pdf": "pages/07.pdf"
+    },
+    {
+      "n": 8,
+      "store": "Лавка Дубовый",
+      "brand": "kaas",
+      "slug": "19d917",
+      "url": "https://qr.sirnayalavka.uz/19d917",
+      "html": "Лавка Дубовый.html",
+      "pdf": "pages/08.pdf"
+    },
+    {
+      "n": 9,
+      "store": "Лавка Кадышева",
+      "brand": "kaas",
+      "slug": "82fa74",
+      "url": "https://qr.sirnayalavka.uz/82fa74",
+      "html": "Лавка Кадышева.html",
+      "pdf": "pages/09.pdf"
+    },
+    {
+      "n": 10,
+      "store": "Лавка Келес",
+      "brand": "kaas",
+      "slug": "947313",
+      "url": "https://qr.sirnayalavka.uz/947313",
+      "html": "Лавка Келес.html",
+      "pdf": "pages/10.pdf"
+    },
+    {
+      "n": 11,
+      "store": "Лавка Корасув",
+      "brand": "kaas",
+      "slug": "01c7a6",
+      "url": "https://qr.sirnayalavka.uz/01c7a6",
+      "html": "Лавка Корасув.html",
+      "pdf": "pages/11.pdf"
+    },
+    {
+      "n": 12,
+      "store": "Лавка Навруз",
+      "brand": "kaas",
+      "slug": "4d28f9",
+      "url": "https://qr.sirnayalavka.uz/4d28f9",
+      "html": "Лавка Навруз.html",
+      "pdf": "pages/12.pdf"
+    },
+    {
+      "n": 13,
+      "store": "Лавка Олой",
+      "brand": "kaas",
+      "slug": "9fea08",
+      "url": "https://qr.sirnayalavka.uz/9fea08",
+      "html": "Лавка Олой.html",
+      "pdf": "pages/13.pdf"
+    },
+    {
+      "n": 14,
+      "store": "Лавка Панельный",
+      "brand": "kaas",
+      "slug": "34945c",
+      "url": "https://qr.sirnayalavka.uz/34945c",
+      "html": "Лавка Панельный.html",
+      "pdf": "pages/14.pdf"
+    },
+    {
+      "n": 15,
+      "store": "Лавка Паркентский",
+      "brand": "kaas",
+      "slug": "f8bc06",
+      "url": "https://qr.sirnayalavka.uz/f8bc06",
+      "html": "Лавка Паркентский.html",
+      "pdf": "pages/15.pdf"
+    },
+    {
+      "n": 16,
+      "store": "Лавка Рисовый",
+      "brand": "kaas",
+      "slug": "58c50a",
+      "url": "https://qr.sirnayalavka.uz/58c50a",
+      "html": "Лавка Рисовый.html",
+      "pdf": "pages/16.pdf"
+    },
+    {
+      "n": 17,
+      "store": "Лавка Сайрам",
+      "brand": "kaas",
+      "slug": "d1a543",
+      "url": "https://qr.sirnayalavka.uz/d1a543",
+      "html": "Лавка Сайрам.html",
+      "pdf": "pages/17.pdf"
+    },
+    {
+      "n": 18,
+      "store": "Лавка Самарканд",
+      "brand": "kaas",
+      "slug": "38d1d4",
+      "url": "https://qr.sirnayalavka.uz/38d1d4",
+      "html": "Лавка Самарканд.html",
+      "pdf": "pages/18.pdf"
+    },
+    {
+      "n": 19,
+      "store": "Лавка Тансикбоев",
+      "brand": "kaas",
+      "slug": "0e1467",
+      "url": "https://qr.sirnayalavka.uz/0e1467",
+      "html": "Лавка Тансикбоев.html",
+      "pdf": "pages/19.pdf"
+    },
+    {
+      "n": 20,
+      "store": "Лавка Торговый Центр",
+      "brand": "kaas",
+      "slug": "50f174",
+      "url": "https://qr.sirnayalavka.uz/50f174",
+      "html": "Лавка Торговый Центр.html",
+      "pdf": "pages/20.pdf"
+    },
+    {
+      "n": 21,
+      "store": "Лавка ТТЗ",
+      "brand": "kaas",
+      "slug": "0ad28c",
+      "url": "https://qr.sirnayalavka.uz/0ad28c",
+      "html": "Лавка ТТЗ.html",
+      "pdf": "pages/21.pdf"
+    },
+    {
+      "n": 22,
+      "store": "Лавка Учтепа",
+      "brand": "kaas",
+      "slug": "f923b7",
+      "url": "https://qr.sirnayalavka.uz/f923b7",
+      "html": "Лавка Учтепа.html",
+      "pdf": "pages/22.pdf"
+    },
+    {
+      "n": 23,
+      "store": "Лавка Фаргона",
+      "brand": "kaas",
+      "slug": "d5b4d3",
+      "url": "https://qr.sirnayalavka.uz/d5b4d3",
+      "html": "Лавка Фаргона.html",
+      "pdf": "pages/23.pdf"
+    },
+    {
+      "n": 24,
+      "store": "Лавка Фарход",
+      "brand": "kaas",
+      "slug": "75a667",
+      "url": "https://qr.sirnayalavka.uz/75a667",
+      "html": "Лавка Фарход.html",
+      "pdf": "pages/24.pdf"
+    },
+    {
+      "n": 25,
+      "store": "Лавка Фуд Сити",
+      "brand": "kaas",
+      "slug": "798ddc",
+      "url": "https://qr.sirnayalavka.uz/798ddc",
+      "html": "Лавка Фуд Сити.html",
+      "pdf": "pages/25.pdf"
+    },
+    {
+      "n": 26,
+      "store": "Лавка Хасанбой",
+      "brand": "kaas",
+      "slug": "ced0d8",
+      "url": "https://qr.sirnayalavka.uz/ced0d8",
+      "html": "Лавка Хасанбой.html",
+      "pdf": "pages/26.pdf"
+    },
+    {
+      "n": 27,
+      "store": "Лавка ЦУМ",
+      "brand": "kaas",
+      "slug": "0858a2",
+      "url": "https://qr.sirnayalavka.uz/0858a2",
+      "html": "Лавка ЦУМ.html",
+      "pdf": "pages/27.pdf"
+    },
+    {
+      "n": 28,
+      "store": "Лавка Чилонзор 21",
+      "brand": "kaas",
+      "slug": "e000fb",
+      "url": "https://qr.sirnayalavka.uz/e000fb",
+      "html": "Лавка Чилонзор 21.html",
+      "pdf": "pages/28.pdf"
+    },
+    {
+      "n": 29,
+      "store": "Лавка Чилонзор Метро",
+      "brand": "kaas",
+      "slug": "450e28",
+      "url": "https://qr.sirnayalavka.uz/450e28",
+      "html": "Лавка Чилонзор Метро.html",
+      "pdf": "pages/29.pdf"
+    },
+    {
+      "n": 30,
+      "store": "Лавка Чирчик",
+      "brand": "kaas",
+      "slug": "9586b1",
+      "url": "https://qr.sirnayalavka.uz/9586b1",
+      "html": "Лавка Чирчик.html",
+      "pdf": "pages/30.pdf"
+    },
+    {
+      "n": 31,
+      "store": "Лавка Чирчик Восьмой",
+      "brand": "kaas",
+      "slug": "c28e90",
+      "url": "https://qr.sirnayalavka.uz/c28e90",
+      "html": "Лавка Чирчик Восьмой.html",
+      "pdf": "pages/31.pdf"
+    },
+    {
+      "n": 32,
+      "store": "Лавка Чорсу",
+      "brand": "kaas",
+      "slug": "d20a12",
+      "url": "https://qr.sirnayalavka.uz/d20a12",
+      "html": "Лавка Чорсу.html",
+      "pdf": "pages/32.pdf"
+    },
+    {
+      "n": 33,
+      "store": "Лавка Эко",
+      "brand": "kaas",
+      "slug": "ea1062",
+      "url": "https://qr.sirnayalavka.uz/ea1062",
+      "html": "Лавка Эко.html",
+      "pdf": "pages/33.pdf"
+    },
+    {
+      "n": 34,
+      "store": "Лавка Юнусабад",
+      "brand": "kaas",
+      "slug": "ac16ce",
+      "url": "https://qr.sirnayalavka.uz/ac16ce",
+      "html": "Лавка Юнусабад.html",
+      "pdf": "pages/34.pdf"
+    },
+    {
+      "n": 35,
+      "store": "Лавка Ялангоч",
+      "brand": "kaas",
+      "slug": "c6435b",
+      "url": "https://qr.sirnayalavka.uz/c6435b",
+      "html": "Лавка Ялангоч.html",
+      "pdf": "pages/35.pdf"
+    },
+    {
+      "n": 36,
+      "store": "Лавка Янги Ҳаёт",
+      "brand": "kaas",
+      "slug": "7153eb",
+      "url": "https://qr.sirnayalavka.uz/7153eb",
+      "html": "Лавка Янги Ҳаёт.html",
+      "pdf": "pages/36.pdf"
+    },
+    {
+      "n": 37,
+      "store": "Лавка Янгиюль",
+      "brand": "kaas",
+      "slug": "15aa51",
+      "url": "https://qr.sirnayalavka.uz/15aa51",
+      "html": "Лавка Янгиюль.html",
+      "pdf": "pages/37.pdf"
+    },
+    {
+      "n": 38,
+      "store": "Глоток Панельный",
+      "brand": "glotok",
+      "slug": "e96943",
+      "url": "https://qr.sirnayalavka.uz/e96943",
+      "html": "Глоток Панельный.html",
+      "pdf": "pages/38.pdf"
+    },
+    {
+      "n": 39,
+      "store": "Глоток Юнусабад",
+      "brand": "glotok",
+      "slug": "4c5350",
+      "url": "https://qr.sirnayalavka.uz/4c5350",
+      "html": "Глоток Юнусабад.html",
+      "pdf": "pages/39.pdf"
+    },
+    {
+      "n": 40,
+      "store": "Ruba Бухара",
+      "brand": "ruba",
+      "slug": "0cce0b",
+      "url": "https://qr.sirnayalavka.uz/0cce0b",
+      "html": "Ruba Бухара.html",
+      "pdf": "pages/40.pdf"
+    },
+    {
+      "n": 41,
+      "store": "Ruba Сергели Оптом",
+      "brand": "ruba",
+      "slug": "4a2554",
+      "url": "https://qr.sirnayalavka.uz/4a2554",
+      "html": "Ruba Сергели Оптом.html",
+      "pdf": "pages/41.pdf"
+    },
+    {
+      "n": 42,
+      "store": "Ruba Урикзор",
+      "brand": "ruba",
+      "slug": "708167",
+      "url": "https://qr.sirnayalavka.uz/708167",
+      "html": "Ruba Урикзор.html",
+      "pdf": "pages/42.pdf"
+    }
+  ]
+}

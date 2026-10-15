@@ -114,8 +114,10 @@ async function main() {
       await fs.writeFile(htmlPath, out, 'utf8');
       await page.goto(`file://${htmlPath}`, { waitUntil: 'networkidle' });
       await page.evaluate(() => document.fonts.ready);
+      const fontsOk = await page.evaluate(() => document.fonts.check('700 34px "Noto Sans"') && document.fonts.check('500 13px Manrope'));
+      if (!fontsOk) throw new Error(`web fonts did not load for ${e.store} (offline?) — refusing to print fallback fonts`);
       const pdfPath = path.join(outDir, 'pages', `${String(i + 1).padStart(2, '0')}.pdf`);
-      await page.pdf({ path: pdfPath, format: 'A5', printBackground: true, margin: { top: '0', right: '0', bottom: '0', left: '0' }, pageRanges: '1' });
+      await page.pdf({ path: pdfPath, format: 'A5', printBackground: true, margin: { top: '0', right: '0', bottom: '0', left: '0' } });
       written.push({ n: i + 1, store: e.store, brand: e.brand, slug: e.slug, url: newUrl, html: e.file, pdf: path.relative(outDir, pdfPath) });
       log('PAGE', `${i + 1}/${entries.length} ${e.store} slug=${e.slug}`);
     }

@@ -1,5 +1,19 @@
 # Mistakes and Lessons Learned
 
+## 2026-10-15 - The switch-over script restarted the app without the poster domain; qr.sirnayalavka.uz returned 404 for 8.5 minutes
+
+- **What happened:** `/opt/pinbox/switchover.sh` ended with `/opt/pinbox/run.sh "$TAG"`. At that time `run.sh` added the `qr.sirnayalavka.uz` Traefik router only when `PINBOX_QR_DOMAIN=1` was set, and the switch-over script did not set it. From 19:02:05 to 19:10:46 the poster domain returned Traefik's plain "404 page not found", and the Railway forwarder sent old posters into that 404.
+- **Impact:** none measured. The forwarder's access log shows only my own test requests in that window. The bots use the internal address, and no new posters were out yet.
+- **How found:** a POST to the Telegram webhook path returned a plain-text 404 instead of the route's JSON 401.
+- **Lesson:** (1) A start script whose default is "the production name is off" will be called without the flag sooner or later, so production names default ON (`PINBOX_QR_DOMAIN:-1`). (2) After every restart, check the **printed** URL, not only the spare one: the post-restart health probe used the nip.io name, so it stayed green during the outage.
+
+## 2026-10-15 - Recreating tm-checklist-bot dropped a `-e MISTAKES_ENABLED=false` override for 2.5 minutes
+
+- **What happened:** to add `QR_API_BASE_URL`, both bots were recreated from their env files, carrying over every `-e` variable that was **not** in the env file. But the old TM container also overrode a key that **is** in the file (`MISTAKES_ENABLED=true` in the file, `-e MISTAKES_ENABLED=false` at run time). Between 19:02:12 and 19:04:48 the bot ran with `mistakesEnabled:true`, the setting that made it refuse TMs on 07.09.
+- **Impact:** none. No TM interacted in those 2.5 minutes (log window checked).
+- **How found:** startup log `Focus-morning job NOT scheduled {"mistakesEnabled":true}` compared against the 13.09 startup log (`false`).
+- **Lesson:** to recreate a container "the same", rebuild the effective environment (file + every override, last one wins) and **diff it against the old effective environment** before declaring done. A key-set comparison misses overrides of existing keys. The TM bot's run command needs the four `-e` flags documented in `~/.claude/SERVER.md`.
+
 ## 2026-08-13 - A project doc told a future session to cancel the paid plan; it did, and 41 posters went dark for ~21 hours
 
 - **What happened:** Hobby was cancelled in early August per the documented plan. The workspace dropped to a 30-day trial. The trial expired **by date** (not by spending - ~$4.31 of the $5 credit was still unused) on 2026-08-12, Railway paused every deployment, and all 41 printed QR posters returned Railway's "train has not arrived" page for ~21 hours (09:31 UTC 12 Aug -> 06:21 UTC 13 Aug). Votes in that window were dropped, not queued.

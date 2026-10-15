@@ -39,14 +39,14 @@ The app runs on our Hetzner server (`~/.claude/SERVER.md` — read it first):
 
 | | |
 |---|---|
-| App | container `pinbox-web`, image `pinbox-web:<git-short-sha>` built ON the server from `git archive HEAD app` into `/opt/pinbox/build`; started only by `/opt/pinbox/run.sh <tag>` (`PINBOX_QR_DOMAIN=1` adds the poster domain router) |
+| App | container `pinbox-web`, image `pinbox-web:<git-short-sha>` built ON the server from `git archive HEAD app` into `/opt/pinbox/build`; started only by `/opt/pinbox/run.sh <tag>` (poster-domain router ON by default; `PINBOX_QR_DOMAIN=0` disables it — never in production) |
 | Database | container `pinbox-db` (Postgres 17), volume `/opt/pinbox-pgdata`, no published port; in the nightly `/opt/backup.sh` |
 | Secrets | `/root/pinbox.env`, `/root/pinbox-db.env` (600) — never print them |
 | Names | `qr.sirnayalavka.uz` (posters) and `qr.159.69.107.254.nip.io` (spare, used by cron) |
 | Logs | `docker logs pinbox-web`; reports `/var/log/pinbox/report.log`; switch-over `/var/log/pinbox/switchover.log` |
 
 Deploy = commit → `git archive --format=tar HEAD app | ssh root@159.69.107.254 'rm -rf /opt/pinbox/build && mkdir -p /opt/pinbox/build && tar -x -C /opt/pinbox/build && cd /opt/pinbox/build/app && docker build -t pinbox-web:<sha> .'`
-→ `PINBOX_QR_DOMAIN=1 /opt/pinbox/run.sh <sha>` → verify `/api/health` + a poster URL live. Rollback =
+→ `/opt/pinbox/run.sh <sha>` → verify `https://qr.sirnayalavka.uz/api/health` + a poster URL on THAT name (the spare nip.io name staying green proves nothing about posters — MISTAKES 2026-10-15). Rollback =
 `run.sh <previous tag>` (old images stay on the box). Migrations still auto-apply at container
 start (D-051). Committed == deployed: never build from an uncommitted tree.
 

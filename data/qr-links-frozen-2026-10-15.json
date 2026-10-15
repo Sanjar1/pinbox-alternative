@@ -1,0 +1,262 @@
+{
+  "frozenAt": "2026-10-15",
+  "reason": "A5 posters re-issued for the new domain qr.sirnayalavka.uz (D-053). 41 slugs identical to the 2026-05-21 freeze + new store Чирчик Восьмой (c28e90). Every slug below will be on a wall. Do NOT change any slug or the domain without reprinting.",
+  "verifiedAt": "2026-10-15",
+  "verifiedBy": "zbarimg decoded 42/42 from the PDF; 42/42 HTTP 200 on qr.sirnayalavka.uz with matching store titles",
+  "baseUrl": "https://qr.sirnayalavka.uz",
+  "total": 42,
+  "links": [
+    {
+      "poster": "Лавка Авайхон",
+      "brand": "kaas",
+      "slug": "c37261",
+      "url": "https://qr.sirnayalavka.uz/c37261"
+    },
+    {
+      "poster": "Лавка Авиасозлар",
+      "brand": "kaas",
+      "slug": "523da2",
+      "url": "https://qr.sirnayalavka.uz/523da2"
+    },
+    {
+      "poster": "Лавка Аския",
+      "brand": "kaas",
+      "slug": "e6bbb0",
+      "url": "https://qr.sirnayalavka.uz/e6bbb0"
+    },
+    {
+      "poster": "Лавка Бектемир",
+      "brand": "kaas",
+      "slug": "14c32a",
+      "url": "https://qr.sirnayalavka.uz/14c32a"
+    },
+    {
+      "poster": "Лавка Буз Базар",
+      "brand": "kaas",
+      "slug": "b05e4f",
+      "url": "https://qr.sirnayalavka.uz/b05e4f"
+    },
+    {
+      "poster": "Лавка Газалкент",
+      "brand": "kaas",
+      "slug": "0c3900",
+      "url": "https://qr.sirnayalavka.uz/0c3900"
+    },
+    {
+      "poster": "Лавка Госпитальный",
+      "brand": "kaas",
+      "slug": "daf942",
+      "url": "https://qr.sirnayalavka.uz/daf942"
+    },
+    {
+      "poster": "Лавка Дубовый",
+      "brand": "kaas",
+      "slug": "19d917",
+      "url": "https://qr.sirnayalavka.uz/19d917"
+    },
+    {
+      "poster": "Лавка Кадышева",
+      "brand": "kaas",
+      "slug": "82fa74",
+      "url": "https://qr.sirnayalavka.uz/82fa74"
+    },
+    {
+      "poster": "Лавка Келес",
+      "brand": "kaas",
+      "slug": "947313",
+      "url": "https://qr.sirnayalavka.uz/947313"
+    },
+    {
+      "poster": "Лавка Корасув",
+      "brand": "kaas",
+      "slug": "01c7a6",
+      "url": "https://qr.sirnayalavka.uz/01c7a6"
+    },
+    {
+      "poster": "Лавка Навруз",
+      "brand": "kaas",
+      "slug": "4d28f9",
+      "url": "https://qr.sirnayalavka.uz/4d28f9"
+    },
+    {
+      "poster": "Лавка Олой",
+      "brand": "kaas",
+      "slug": "9fea08",
+      "url": "https://qr.sirnayalavka.uz/9fea08"
+    },
+    {
+      "poster": "Лавка Панельный",
+      "brand": "kaas",
+      "slug": "34945c",
+      "url": "https://qr.sirnayalavka.uz/34945c"
+    },
+    {
+      "poster": "Лавка Паркентский",
+      "brand": "kaas",
+      "slug": "f8bc06",
+      "url": "https://qr.sirnayalavka.uz/f8bc06"
+    },
+    {
+      "poster": "Лавка Рисовый",
+      "brand": "kaas",
+      "slug": "58c50a",
+      "url": "https://qr.sirnayalavka.uz/58c50a"
+    },
+    {
+      "poster": "Лавка Сайрам",
+      "brand": "kaas",
+      "slug": "d1a543",
+      "url": "https://qr.sirnayalavka.uz/d1a543"
+    },
+    {
+      "poster": "Лавка Самарканд",
+      "brand": "kaas",
+      "slug": "38d1d4",
+      "url": "https://qr.sirnayalavka.uz/38d1d4"
+    },
+    {
+      "poster": "Лавка Тансикбоев",
+      "brand": "kaas",
+      "slug": "0e1467",
+      "url": "https://qr.sirnayalavka.uz/0e1467"
+    },
+    {
+      "poster": "Лавка Торговый Центр",
+      "brand": "kaas",
+      "slug": "50f174",
+      "url": "https://qr.sirnayalavka.uz/50f174"
+    },
+    {
+      "poster": "Лавка ТТЗ",
+      "brand": "kaas",
+      "slug": "0ad28c",
+      "url": "https://qr.sirnayalavka.uz/0ad28c"
+    },
+    {
+      "poster": "Лавка Учтепа",
+      "brand": "kaas",
+      "slug": "f923b7",
+      "url": "https://qr.sirnayalavka.uz/f923b7"
+    },
+    {
+      "poster": "Лавка Фаргона",
+      "brand": "kaas",
+      "slug": "d5b4d3",
+      "url": "https://qr.sirnayalavka.uz/d5b4d3"
+    },
+    {
+      "poster": "Лавка Фарход",
+      "brand": "kaas",
+      "slug": "75a667",
+      "url": "https://qr.sirnayalavka.uz/75a667"
+    },
+    {
+      "poster": "Лавка Фуд Сити",
+      "brand": "kaas",
+      "slug": "798ddc",
+      "url": "https://qr.sirnayalavka.uz/798ddc"
+    },
+    {
+      "poster": "Лавка Хасанбой",
+      "brand": "kaas",
+      "slug": "ced0d8",
+      "url": "https://qr.sirnayalavka.uz/ced0d8"
+    },
+    {
+      "poster": "Лавка ЦУМ",
+      "brand": "kaas",
+      "slug": "0858a2",
+      "url": "https://qr.sirnayalavka.uz/0858a2"
+    },
+    {
+      "poster": "Лавка Чилонзор 21",
+      "brand": "kaas",
+      "slug": "e000fb",
+      "url": "https://qr.sirnayalavka.uz/e000fb"
+    },
+    {
+      "poster": "Лавка Чилонзор Метро",
+      "brand": "kaas",
+      "slug": "450e28",
+      "url": "https://qr.sirnayalavka.uz/450e28"
+    },
+    {
+      "poster": "Лавка Чирчик",
+      "brand": "kaas",
+      "slug": "9586b1",
+      "url": "https://qr.sirnayalavka.uz/9586b1"
+    },
+    {
+      "poster": "Лавка Чирчик Восьмой",
+      "brand": "kaas",
+      "slug": "c28e90",
+      "url": "https://qr.sirnayalavka.uz/c28e90"
+    },
+    {
+      "poster": "Лавка Чорсу",
+      "brand": "kaas",
+      "slug": "d20a12",
+      "url": "https://qr.sirnayalavka.uz/d20a12"
+    },
+    {
+      "poster": "Лавка Эко",
+      "brand": "kaas",
+      "slug": "ea1062",
+      "url": "https://qr.sirnayalavka.uz/ea1062"
+    },
+    {
+      "poster": "Лавка Юнусабад",
+      "brand": "kaas",
+      "slug": "ac16ce",
+      "url": "https://qr.sirnayalavka.uz/ac16ce"
+    },
+    {
+      "poster": "Лавка Ялангоч",
+      "brand": "kaas",
+      "slug": "c6435b",
+      "url": "https://qr.sirnayalavka.uz/c6435b"
+    },
+    {
+      "poster": "Лавка Янги Ҳаёт",
+      "brand": "kaas",
+      "slug": "7153eb",
+      "url": "https://qr.sirnayalavka.uz/7153eb"
+    },
+    {
+      "poster": "Лавка Янгиюль",
+      "brand": "kaas",
+      "slug": "15aa51",
+      "url": "https://qr.sirnayalavka.uz/15aa51"
+    },
+    {
+      "poster": "Глоток Панельный",
+      "brand": "glotok",
+      "slug": "e96943",
+      "url": "https://qr.sirnayalavka.uz/e96943"
+    },
+    {
+      "poster": "Глоток Юнусабад",
+      "brand": "glotok",
+      "slug": "4c5350",
+      "url": "https://qr.sirnayalavka.uz/4c5350"
+    },
+    {
+      "poster": "Ruba Бухара",
+      "brand": "ruba",
+      "slug": "0cce0b",
+      "url": "https://qr.sirnayalavka.uz/0cce0b"
+    },
+    {
+      "poster": "Ruba Сергели Оптом",
+      "brand": "ruba",
+      "slug": "4a2554",
+      "url": "https://qr.sirnayalavka.uz/4a2554"
+    },
+    {
+      "poster": "Ruba Урикзор",
+      "brand": "ruba",
+      "slug": "708167",
+      "url": "https://qr.sirnayalavka.uz/708167"
+    }
+  ]
+}
