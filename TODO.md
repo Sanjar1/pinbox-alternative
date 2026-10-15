@@ -9,11 +9,22 @@
 ### OWNER-5 (2026-10-15) — Answer the migration decision board (8 cards)
 Board: https://claude.ai/artifact/TwjpCKqRNvjv5WXywR91Da (file `docs/boards/2026-10-15-hetzner-migration.html`).
 Skipped cards = recommendation accepted. Read answers back with ArtifactData `list answers` — never re-ask in chat.
-Card 8 (Railway login in Chrome) — owner signed in 15.10 16:40; CLI device approval in progress.
+✅ Answered 15.10 16:58, all 8 = recommendation.
 
-### OWNER-7 (2026-10-15) — Log in to the DNS panel (DirectAdmin) so the `qr` record can be added
+### ✅ OWNER-7 (2026-10-15) — DONE 17:55: record added, live 18:21 on all 4 NS — Log in to the DNS panel (DirectAdmin) so the `qr` record can be added
 Chrome tab is open at https://web5.webspace.uz:2222 — log in, reply "logged in". The agent then adds ONLY
 `qr A 159.69.107.254` (card 1). Blocks: switch-over, sending the PDF to Alijon.
+
+### OWNER-9 (2026-10-15) — Is the Power BI analyst still pulling data? (answer in chat)
+Power BI was set up in May to read Railway's database directly (`bi_readonly` @ `metro.proxy.rlwy.net:36355`).
+Since 19:02 15.10 that database is frozen (no new votes) and it disappears when Railway is cancelled.
+Our server's database is not open to the internet. If the analyst still uses it, I will set up read access
+on the new server (read-only API key or a locked-down DB user); if not, nothing to do.
+
+### OWNER-10 (2026-10-15) — Store-ops bot: Redis errors (pre-existing, not from the move)
+`storeops-task-bot` logs `ioredis ECONNREFUSED` (69 on 14.10, 74 on 15.10 before any change today):
+its env has `REDIS_URL=redis://localhost:6379`, but Redis runs in container `storeops-redis`. Decide whether
+to fix (point it to `redis://storeops-redis:6379`) — belongs to the Store managers task bot project.
 
 ### OWNER-8 (2026-10-15) — On the Windows PC: delete the old scheduled task «Pinbox-Railway-Night-Deploy»
 If it still exists it would re-deploy the old app over the Railway forwarder at night. (GitHub's nightly
@@ -163,14 +174,14 @@ Either way no votes can be recovered: they were never queued, they were lost at 
 Overrides the "never leave Railway / frozen domain" rule by owner decision 15.10 (slugs stay frozen).
 - [x] #M1 Owner answers board — all 8 = recommendation (read back 15.10 16:58)
 - [x] #M2 (15.10 17:03: 21/21 tables equal, Feedback 24189) Copy Railway variables → `/root/pinbox.env` (never printed); pg_dump Railway → `pinbox-db`; row counts equal
-- [~] #M3 (nip.io live, 42/42 = 200; qr.sirnayalavka.uz waits on DNS) `pinbox-web` on server (image from git archive), Traefik on new domain + `qr.159.69.107.254.nip.io`; 42/42 links 200
+- [x] #M3 (15.10 18:24 LE cert qr.sirnayalavka.uz; 42/42 = 200 with matching store titles; app-verifier PASS) `pinbox-web` on server (image from git archive), Traefik on new domain + `qr.159.69.107.254.nip.io`; 42/42 links 200
 - [x] #M4 (slug c28e90; sheet alias «Чирчик Восемь» added, commit 456d0fd) New store «Лавка Чирчик Восьмой» + QRCode row (Бектемир exists: `14c32a` — not duplicated)
 - [x] #M5 (QR-posters-A5-2026-10-15.pdf, 42 pages, zbar 42/42) One A5 PDF, 42 pages, QR decoded 42/42 → `posters/A5-PRINT-READY-2026-10-15/`
-- [ ] #M6 Evening switch-over: delta vote copy, Railway `web` → 308 forwarder, counts reconcile
-- [ ] #M7 Reports + sync-managers → server cron; disable GitHub report/deploy workflows
-- [ ] #M8 tm-checklist-bot + storeops-task-bot `QR_API_BASE_URL` → new address (improve-snapshot first)
-- [ ] #M9 Send PDF to Alijon (chat 901154237) with approved text
-- [ ] #M10 Docs: CLAUDE.md rules, DECISIONS, MIGRATION.md, ~/.claude/SERVER.md; tell Power BI analyst the new address
+- [x] #M6 (19:01 forwarder live; 19:02 final copy Feedback 24254 = Railway 24254; test vote old URL → DB → TM bot, removed) Evening switch-over: delta vote copy, Railway `web` → 308 forwarder, counts reconcile
+- [x] #M7 (/etc/cron.d/pinbox 08:00/08:05 Mon/08:10 1st; 4 GitHub workflows disabled; first real run 16.10 08:00 — check report.log) Reports + sync-managers → server cron; disable GitHub report/deploy workflows
+- [x] #M8 (both QR_API_BASE_URL=http://pinbox-web:3000; TM bot keeps its 4 -e flags incl. MISTAKES_ENABLED=false) tm-checklist-bot + storeops-task-bot `QR_API_BASE_URL` → new address (improve-snapshot first)
+- [ ] #M9 Send PDF to Alijon (chat 901154237) with approved text — HELD by the 09:00–18:00 rule; session job set for 16.10 09:04 (or owner says «send now»)
+- [x] #M10 Docs: CLAUDE.md, DECISIONS D-053, MIGRATION.md, MISTAKES ×2, SERVER.md (commits 291cdac, 6c94efe). Power BI → OWNER-9
 
 ## Priority 0 — Restore production — ✅ DONE 2026-08-13
 - [x] **DONE 2026-08-13 — production restored and verified.** Railway rebuilt after the Hobby
@@ -280,3 +291,10 @@ Overrides the "never leave Railway / frozen domain" rule by owner decision 15.10
 - 2026-05-21 — Admin dashboard Russian translation done locally.
 - 2026-05-18 — 41/41 A5 poster QR links HTTP 200 in production.
 - 2026-05-18 — Repair endpoint + brand theming + archivedAt + admin/analytics endpoints deployed.
+
+## Follow-ups from the 2026-10-15 move (not done, on purpose)
+- [ ] report.sh FAIL only logs; no Telegram alert to the owner on a failed report (reviewer SHOULD-FIX #2) — add when the owner picks the alert chat.
+- [ ] Drop database `pinbox_old` (pre-switch copy) and `/opt/pinbox/dumps/*` after 2026-11-15.
+- [ ] TM bot logged two sessions restored «WITHOUT focusVisit» at the 19:02/19:04 restarts (Олой chat 342191432, Келес chat 687296582) — bot's own advice: if those visits had focus axes, the TM redoes them.
+- [ ] `src/lib/_render_preview.test.ts` is an untracked local file that always fails (needs env); delete or gitignore.
+- [ ] Voting submit has no server log line (only the TM bot logs "vote accepted") — add START/END logging to the vote action.
