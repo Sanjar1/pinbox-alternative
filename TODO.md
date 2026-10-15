@@ -21,7 +21,7 @@ Since 19:02 15.10 that database is frozen (no new votes) and it disappears when 
 Our server's database is not open to the internet. If the analyst still uses it, I will set up read access
 on the new server (read-only API key or a locked-down DB user); if not, nothing to do.
 
-### OWNER-10 (2026-10-15) — Store-ops bot: Redis errors (pre-existing, not from the move)
+### OWNER-10 (2026-10-15) — decided «by recommendation»: fix runs 15.10 23:41 (session job; script /root/storeops-redis-fix-20261015.sh, log /var/log/pinbox/switchover.log) — Store-ops bot: Redis errors (pre-existing, not from the move)
 `storeops-task-bot` logs `ioredis ECONNREFUSED` (69 on 14.10, 74 on 15.10 before any change today):
 its env has `REDIS_URL=redis://localhost:6379`, but Redis runs in container `storeops-redis`. Decide whether
 to fix (point it to `redis://storeops-redis:6379`) — belongs to the Store managers task bot project.
@@ -30,7 +30,7 @@ to fix (point it to `redis://storeops-redis:6379`) — belongs to the Store mana
 If it still exists it would re-deploy the old app over the Railway forwarder at night. (GitHub's nightly
 deploy workflow was disabled 15.10.)
 
-### OWNER-6 (2026-10-15) — After Alijon confirms all new posters are on the walls: cancel Railway
+### OWNER-6 (2026-10-15) — owner chose to cancel NOW (15.10 19:3x, Railway Billing page opened in Chrome). Effect: the 41 May posters stop working when Railway stops serving, until the new posters are on the walls. Data is safe: final Railway dump in /opt/pinbox/dumps/railway-final-20261015-190157.dump. — After Alijon confirms all new posters are on the walls: cancel Railway
 Only after the swap (the Railway forwarder keeps old posters alive until then). Not before.
 
 ### ✅ OWNER-1 (2026-08-13) — RESOLVED: Pinbox is back online. Hobby $5 paid.
@@ -181,6 +181,7 @@ Overrides the "never leave Railway / frozen domain" rule by owner decision 15.10
 - [x] #M7 (/etc/cron.d/pinbox 08:00/08:05 Mon/08:10 1st; 4 GitHub workflows disabled; first real run 16.10 08:00 — check report.log) Reports + sync-managers → server cron; disable GitHub report/deploy workflows
 - [x] #M8 (both QR_API_BASE_URL=http://pinbox-web:3000; TM bot keeps its 4 -e flags incl. MISTAKES_ENABLED=false) tm-checklist-bot + storeops-task-bot `QR_API_BASE_URL` → new address (improve-snapshot first)
 - [ ] #M9 Send PDF to Alijon (chat 901154237) with approved text — HELD by the 09:00–18:00 rule; session job set for 16.10 09:04 (or owner says «send now»)
+- [x] pushed to GitHub main e71e7f6..d938f04 (15.10 19:3x; no Railway auto-deploy fired — checked)
 - [x] #M10 Docs: CLAUDE.md, DECISIONS D-053, MIGRATION.md, MISTAKES ×2, SERVER.md (commits 291cdac, 6c94efe). Power BI → OWNER-9
 
 ## Priority 0 — Restore production — ✅ DONE 2026-08-13
