@@ -1,0 +1,21 @@
+# Railway "web" service after the move to Hetzner (2026-10-15).
+# The 41 posters printed in May 2026 encode https://web-production-370c1.up.railway.app/<slug>.
+# Until every poster is swapped, this service only forwards each request, path and query
+# intact, to the app on our own server. 308 keeps POST bodies (TM bot store-map, reports).
+{
+	admin off
+	auto_https off
+}
+
+:{$PORT:8080} {
+	log {
+		output stdout
+		format json
+	}
+	handle /__forwarder/health {
+		respond "forwarder ok -> https://qr.sirnayalavka.uz" 200
+	}
+	handle {
+		redir https://qr.sirnayalavka.uz{uri} 308
+	}
+}

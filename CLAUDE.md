@@ -24,87 +24,59 @@ Forbidden, no exceptions without first reprinting + redistributing the affected 
 Creating NEW `QRCode` rows for NEW stores added AFTER 2026-05-21 is fine.
 Incrementing `scans` is fine. Only `slug` writes are blocked.
 
-**The production DOMAIN is frozen too.** The printed posters encode the full URL
-`https://web-production-370c1.up.railway.app/{slug}` — the app must keep answering
-on that exact domain. Never delete/rename the Railway `web` service, never migrate
-the web app off Railway, never let the Railway account lapse (see "Railway plan & usage
-budget" below). Moving backing services (e.g. the database) is allowed as long as
-the same domain keeps serving the same URLs.
+**The production DOMAINS are frozen too.** Since 2026-10-15 (D-053) the posters encode
+`https://qr.sirnayalavka.uz/{slug}` — A record `qr` → `159.69.107.254` in the sirnayalavka.uz
+zone (DirectAdmin `web5.webspace.uz:2222`, owner login). Never remove or repoint that record
+except to a new server that serves the same paths. The zone stays because company mail lives
+there. Until every May poster is swapped (TODO OWNER-6), the old domain
+`https://web-production-370c1.up.railway.app/{slug}` must keep answering: the Railway `web`
+service runs ONLY the forwarder in `forwarder/` (308 to the new domain). Never redeploy the
+app to Railway; never cancel Railway before the owner confirms the swap.
 
-## Railway plan & usage budget (HARD RULE — added 2026-07-05, rewritten 2026-08-13)
+## Hosting (HARD RULE — rewritten 2026-10-15, owner decision D-053)
 
-### 1. Never leave this workspace without a paid plan. This rule outranks the budget below.
+The app runs on our Hetzner server (`~/.claude/SERVER.md` — read it first):
 
-**Do NOT cancel or downgrade Hobby.** The workspace must always sit on a plan that keeps
-deployments running. Twice now the app has gone fully offline — all 41 printed QR posters dead —
-because it was left with no paid plan to land on:
+| | |
+|---|---|
+| App | container `pinbox-web`, image `pinbox-web:<git-short-sha>` built ON the server from `git archive HEAD app` into `/opt/pinbox/build`; started only by `/opt/pinbox/run.sh <tag>` (`PINBOX_QR_DOMAIN=1` adds the poster domain router) |
+| Database | container `pinbox-db` (Postgres 17), volume `/opt/pinbox-pgdata`, no published port; in the nightly `/opt/backup.sh` |
+| Secrets | `/root/pinbox.env`, `/root/pinbox-db.env` (600) — never print them |
+| Names | `qr.sirnayalavka.uz` (posters) and `qr.159.69.107.254.nip.io` (spare, used by cron) |
+| Logs | `docker logs pinbox-web`; reports `/var/log/pinbox/report.log`; switch-over `/var/log/pinbox/switchover.log` |
 
-- **2026-07-05:** the Free-plan grant ran out mid-cycle and Railway took the app offline.
-- **2026-08-12 → 08-13:** the 30-day trial expired *by date* and Railway paused every deployment.
-  Down ~21 hours (09:31 UTC 12 Aug → 06:21 UTC 13 Aug). Votes in that window were lost, not
-  queued. Found only because the owner scanned a poster. Fixed by subscribing to Hobby ($5).
+Deploy = commit → `git archive --format=tar HEAD app | ssh root@159.69.107.254 'rm -rf /opt/pinbox/build && mkdir -p /opt/pinbox/build && tar -x -C /opt/pinbox/build && cd /opt/pinbox/build/app && docker build -t pinbox-web:<sha> .'`
+→ `PINBOX_QR_DOMAIN=1 /opt/pinbox/run.sh <sha>` → verify `/api/health` + a poster URL live. Rollback =
+`run.sh <previous tag>` (old images stay on the box). Migrations still auto-apply at container
+start (D-051). Committed == deployed: never build from an uncommitted tree.
 
-**The old version of this rule is what caused the second outage.** It said the goal was to
-"optimize under $1.00/mo and downgrade back to Free" — so the plan was cancelled, and there was
-no free tier to fall back to.
+Railway history (2026-03 → 2026-10) — two silent outages from plan lapses — is in D-050/D-052.
+The Railway rules there no longer apply except: keep the forwarder alive until the swap.
 
-**Verified 2026-08-13:** a Free plan does exist as a product ($0/mo, $1 usage credit, 0.5 GB RAM,
-1 vCPU — railway.com/pricing), but this workspace is **not offered it**. `/workspace/plans` lists
-only Hobby ($5) and Pro ($20), and the API reports `hasExhaustedFreePlan: true`. Whether Free can
-ever be re-enabled here is an open question with Railway support (thread linked in `TODO.md`,
-OWNER-2).
+## Telegram reports
 
-**So:** treat $5/month as the running cost of this app until Railway states in writing that this
-workspace can move to Free. Only the owner may change the plan. Before any plan change, re-check
-`/workspace/plans` in the browser and confirm what the account is actually offered — never assert
-what Railway's plan catalog contains from memory or from this file.
+Server cron `/etc/cron.d/pinbox` runs `/opt/pinbox/report.sh daily|weekly|monthly` at 08:00
+Tashkent (daily; weekly on Monday; monthly on the 1st). Each run first syncs the store→TM map
+(`POST /api/admin/sync-managers`), then posts the report, logging START → steps → END/FAIL
+to `/var/log/pinbox/report.log`. The GitHub report workflows are disabled (do not re-enable —
+that would send every report twice).
 
-### 2. Keep usage low anyway — but as headroom, not as a reason to cancel.
+If the report does not arrive one morning: `tail -20 /var/log/pinbox/report.log` on the server,
+then `docker logs pinbox-web | grep reports`.
 
-Staying cheap is still worth doing: it protects the $5 Hobby plan from usage overage, and it is
-the precondition for ever moving to Free if Railway allows it.
+The report is grouped by territorial manager. The store→TM mapping comes from the
+«Менеджеры» Google Sheet (reuses the "Store managers task bot" service account; see
+`docs/MANAGER_SYNC_SETUP.md`). Sheet names that differ from DB names go in the alias table in
+`app/src/lib/manager-match.ts` (e.g. «Лавка Чирчик Восемь» → «Чирчик Восьмой»).
 
-Facts (measured 2026-07-05, cycle ending ~Jul 12):
-- Cost driver is **RAM-minutes**: ~$1.38/mo of a $1.53/mo total. CPU/egress/disk are noise.
-- Free plan grant (if ever available): $1.00/mo. Resets monthly, does NOT roll over.
-- August 2026 usage was **$0.69** — comfortably inside even the Free grant.
+## Who calls this app
 
-Rules:
-- Any new feature/service/cron must be checked against the RAM-minutes budget before shipping.
-- No new always-on processes, no second Railway service, no RAM-hungry dependencies without owner approval.
-- Check `railway.com/workspace/usage` (Current Usage vs Included Usage) during any deploy-related work; surface the number in the session report if it's past 50% mid-cycle.
-- App Sleeping (scale-to-zero) is the intended mechanism to stay cheap — do not disable it once enabled. Known tradeoff: first request after idle takes ~3–10 s.
-
-### 3. The outage was silent. Assume it will be again until alerting exists.
-
-Both outages ran for many hours undetected; the workflows failed into GitHub's UI where nobody
-looks. Until an uptime check on the poster domain exists (tracked in `TODO.md`), a green workflow
-or a passing test proves nothing about whether the posters actually work. Verify with a live
-request against the production URL.
-
-## Daily Telegram report
-
-Fires automatically every day at **08:00 Tashkent (03:00 UTC)** via
-`.github/workflows/daily-telegram-report.yml` (GitHub Actions). Manual run
-from the GitHub Actions UI is available via the "Run workflow" button.
-Endpoint hit: `POST /api/reports/daily` on the Railway production app.
-
-If the report does not arrive one morning:
-1. Check `https://github.com/Sanjar1/pinbox-alternative/actions/workflows/daily-telegram-report.yml` for the latest run status.
-2. If red — inspect the response body in the log (printed by `curl --fail-with-body`).
-3. If green but no message — check Railway logs for `/api/reports/daily`.
-
-The report is grouped by territorial manager. The store→TM mapping is synced from
-a Google Sheet before each report via `POST /api/admin/sync-managers` (reuses the
-"Store managers task bot" service account; see `docs/MANAGER_SYNC_SETUP.md`).
-Mapping changes need only a sheet edit, no redeploy. Fallback snapshot:
-`app/data/manager-assignments.json`.
-
-## Deploy (Railway, NOT Vercel)
-
-Railway CLI from `app/` subdirectory: `cd app && railway up --service web`.
-Never deploy from the repo root — `railway.json` path is wrong there.
-Full notes: `RAILWAY_CHEATSHEET.md`.
+- Customers: poster QR codes (above).
+- `tm-checklist-bot` and `storeops-task-bot` (same server): `QR_API_BASE_URL=http://pinbox-web:3000`
+  in their env files (internal Docker network).
+- The app pushes each vote to the TM bot: `TM_BOT_VOTE_HOOK_URL` (fire-and-forget, no retries).
+- Telegram webhook of the review bot: `https://qr.sirnayalavka.uz/api/telegram/webhook`.
+- Power BI analyst: `GET /api/analytics/feedback` (tell them about any address change).
 
 ## Tashkent time
 

@@ -1,5 +1,12 @@
 # Decisions Log
 
+## D-053: Leave Railway for Our Hetzner Server; New Poster Domain qr.sirnayalavka.uz; Railway Becomes a Forwarder Until the Swap
+
+- Date: 2026-10-15
+- Decision (owner, decision board https://claude.ai/artifact/TwjpCKqRNvjv5WXywR91Da, all 8 cards = recommendation): (1) the app and its database move to our Hetzner server (`pinbox-web` + `pinbox-db`, Postgres 17). (2) New posters encode `https://qr.sirnayalavka.uz/{slug}` — one A record in the sirnayalavka.uz zone (owner-approved exception to the 06.08 "do not touch the zone" rule). nip.io was rejected for print: a free third-party DNS plus the server IP baked into paper. (3) All 42 posters are re-issued (41 May posters with the SAME frozen slugs + new store «Чирчик Восьмой» `c28e90`) as one A5 PDF sent to Alijon. (4) Railway `web` runs only a Caddy forwarder (308, path+query kept) until Alijon confirms every poster is swapped; then the owner cancels Railway. (5) Reports move from GitHub Actions to server cron. (6) Bektemir already existed (`14c32a`) — not duplicated.
+- Reason: owner request 15.10. Two silent Railway outages (D-052) came from the plan lapsing, not from the code; our server already runs the backups and both bots that consume this app. Slugs stay frozen, so only the domain changes and old posters keep working through the forwarder.
+- Impact: supersedes the "web app never leaves Railway" part of D-050/D-052 and CLAUDE.md (rewritten). Data copied with exact row-count reconciliation (21 tables). `forwarder/`, `app/scripts/generate-a5-pdf-from-printed-posters.mjs`, `merge-posters-pdf.py`, alias «Лавка Чирчик Восемь» in `manager-match.ts`. Poster footer for KAAS now `kaas.uz` (sirnayalavka.uz 301s there since 25.09) and the mis-encoded «KAAS В·» header fixed. GitHub "Nightly Railway Deploy" disabled.
+
 ## D-052: Stay on Railway Hobby $5/mo Indefinitely; Plan Availability Outranks the Cost Budget; Never Cancel Without Written Confirmation
 
 - Date: 2026-08-13

@@ -1,10 +1,26 @@
 # TODO
 
-**Updated:** 2026-08-13 — PRODUCTION IS DOWN (see OWNER ACTIONS)
+**Updated:** 2026-10-15 — migration Railway → Hetzner started (see «Priority 0 — Move to Hetzner»)
 
 ---
 
 ## 🔴 OWNER ACTIONS — open until you say they're done
+
+### OWNER-5 (2026-10-15) — Answer the migration decision board (8 cards)
+Board: https://claude.ai/artifact/TwjpCKqRNvjv5WXywR91Da (file `docs/boards/2026-10-15-hetzner-migration.html`).
+Skipped cards = recommendation accepted. Read answers back with ArtifactData `list answers` — never re-ask in chat.
+Card 8 (Railway login in Chrome) — owner signed in 15.10 16:40; CLI device approval in progress.
+
+### OWNER-7 (2026-10-15) — Log in to the DNS panel (DirectAdmin) so the `qr` record can be added
+Chrome tab is open at https://web5.webspace.uz:2222 — log in, reply "logged in". The agent then adds ONLY
+`qr A 159.69.107.254` (card 1). Blocks: switch-over, sending the PDF to Alijon.
+
+### OWNER-8 (2026-10-15) — On the Windows PC: delete the old scheduled task «Pinbox-Railway-Night-Deploy»
+If it still exists it would re-deploy the old app over the Railway forwarder at night. (GitHub's nightly
+deploy workflow was disabled 15.10.)
+
+### OWNER-6 (2026-10-15) — After Alijon confirms all new posters are on the walls: cancel Railway
+Only after the swap (the Railway forwarder keeps old posters alive until then). Not before.
 
 ### ✅ OWNER-1 (2026-08-13) — RESOLVED: Pinbox is back online. Hobby $5 paid.
 
@@ -142,6 +158,19 @@ collapse in customer feedback when it is really an outage artefact.
 - **(b)** Skip 12 Aug entirely and let 13 Aug be the next report.
 
 Either way no votes can be recovered: they were never queued, they were lost at the door.
+
+## Priority 0 — Move to Hetzner + new posters (owner request 2026-10-15)
+Overrides the "never leave Railway / frozen domain" rule by owner decision 15.10 (slugs stay frozen).
+- [x] #M1 Owner answers board — all 8 = recommendation (read back 15.10 16:58)
+- [x] #M2 (15.10 17:03: 21/21 tables equal, Feedback 24189) Copy Railway variables → `/root/pinbox.env` (never printed); pg_dump Railway → `pinbox-db`; row counts equal
+- [~] #M3 (nip.io live, 42/42 = 200; qr.sirnayalavka.uz waits on DNS) `pinbox-web` on server (image from git archive), Traefik on new domain + `qr.159.69.107.254.nip.io`; 42/42 links 200
+- [x] #M4 (slug c28e90; sheet alias «Чирчик Восемь» added, commit 456d0fd) New store «Лавка Чирчик Восьмой» + QRCode row (Бектемир exists: `14c32a` — not duplicated)
+- [x] #M5 (QR-posters-A5-2026-10-15.pdf, 42 pages, zbar 42/42) One A5 PDF, 42 pages, QR decoded 42/42 → `posters/A5-PRINT-READY-2026-10-15/`
+- [ ] #M6 Evening switch-over: delta vote copy, Railway `web` → 308 forwarder, counts reconcile
+- [ ] #M7 Reports + sync-managers → server cron; disable GitHub report/deploy workflows
+- [ ] #M8 tm-checklist-bot + storeops-task-bot `QR_API_BASE_URL` → new address (improve-snapshot first)
+- [ ] #M9 Send PDF to Alijon (chat 901154237) with approved text
+- [ ] #M10 Docs: CLAUDE.md rules, DECISIONS, MIGRATION.md, ~/.claude/SERVER.md; tell Power BI analyst the new address
 
 ## Priority 0 — Restore production — ✅ DONE 2026-08-13
 - [x] **DONE 2026-08-13 — production restored and verified.** Railway rebuilt after the Hobby
