@@ -185,6 +185,12 @@ describe('matchStoreName', () => {
     expect(matchStoreName('Лавка ЦУМ', idx)?.name).toBe('Цум');
   });
 
+  it('maps the sheet name «Лавка Чирчик Восемь» to the DB store «Чирчик Восьмой»', () => {
+    const withNew = buildStoreIndex([...DB, { id: 'chirchik-8', name: 'Чирчик Восьмой' }]);
+    expect(matchStoreName('Лавка Чирчик Восемь', withNew)?.name).toBe('Чирчик Восьмой');
+    expect(matchStoreName('Лавка Чирчик', withNew)?.name).not.toBe('Чирчик Восьмой');
+  });
+
   it('returns undefined for an unknown store', () => {
     expect(matchStoreName('Лавка Марс', idx)).toBeUndefined();
   });

@@ -21,6 +21,7 @@ const NORMALIZED_ALIASES: Record<string, string> = {
   'фаргона': 'Фергана',
   'чилонзор метро': 'Метро Чиланзар',
   'панелный': 'Панельный',
+  'чирчик восемь': 'Чирчик Восьмой', // sheet name for the store opened Oct 2026
 };
 
 const STORE_PREFIXES = [/^лавка\s+/i, /^ruba\s+/i];
